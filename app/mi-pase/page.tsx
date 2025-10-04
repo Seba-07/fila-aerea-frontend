@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { boardingAPI } from '@/lib/api';
 import QRCode from 'qrcode.react';
 
-export default function MiPasePage() {
+function MiPaseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const boardingPassId = searchParams.get('id');
@@ -119,5 +119,17 @@ export default function MiPasePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function MiPasePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <MiPaseContent />
+    </Suspense>
   );
 }
