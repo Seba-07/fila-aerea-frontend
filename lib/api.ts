@@ -1,0 +1,78 @@
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api';
+
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Interceptor para agregar token
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+// Interceptor para manejar errores
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth
+export const authAPI = {
+  requestOTP: (email: string) => api.post('/auth/request-otp', { email }),
+  verifyOTP: (email: string, code: string, nombre?: string) =>
+    api.post('/auth/verify-otp', { email, code, nombre }),
+  logout: () => api.post('/auth/logout'),
+};
+
+// Usuario
+export const userAPI = {
+  getMe: () => api.get('/me'),
+};
+
+// Vuelos
+export const flightsAPI = {
+  getFlights: (estado?: string) => api.get('/flights', { params: { estado } }),
+  getFlightById: (id: string) => api.get(`/flights/${id}`),
+  createFlight: (data: any) => api.post('/flights', data),
+  updateFlight: (id: string, data: any) => api.patch(`/flights/${id}`, data),
+  closeFlight: (id: string) => api.post(`/flights/${id}/close`),
+};
+
+// Asientos
+export const seatsAPI = {
+  holdSeat: (flightId: string, seatNumber: string) =>
+    api.post(`/flights/${flightId}/seats/hold`, { seatNumber }),
+  confirmSeat: (flightId: string, seatNumber: string) =>
+    api.post(`/flights/${flightId}/seats/confirm`, { seatNumber }),
+  releaseSeat: (flightId: string, seatNumber: string) =>
+    api.post(`/flights/${flightId}/seats/release`, { seatNumber }),
+  markNoShow: (flightId: string, seatNumber: string) =>
+    api.post(`/flights/${flightId}/no_show`, { seatNumber }),
+};
+
+// Boarding
+export const boardingAPI = {
+  getBoardingPass: (id: string) => api.get(`/boarding_pass/${id}`),
+  scanQR: (qr_token: string) => api.post('/boarding_pass/scan', { qr_token }),
+};
