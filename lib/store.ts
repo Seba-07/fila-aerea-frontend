@@ -26,12 +26,23 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => {
+  // DESARROLLO: bypass de autenticación
+  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
+
   // Cargar estado inicial del localStorage (solo en cliente)
   let initialUser = null;
   let initialTicket = null;
   let initialToken = null;
 
-  if (typeof window !== 'undefined') {
+  if (bypassAuth) {
+    initialUser = {
+      id: '507f1f77bcf86cd799439011',
+      nombre: 'Usuario Dev',
+      email: 'dev@test.com',
+      rol: 'passenger' as const,
+    };
+    initialToken = 'bypass-token';
+  } else if (typeof window !== 'undefined') {
     const storedUser = localStorage.getItem('user');
     const storedTicket = localStorage.getItem('ticket');
     const storedToken = localStorage.getItem('token');
@@ -45,7 +56,7 @@ export const useAuthStore = create<AuthState>((set) => {
     user: initialUser,
     ticket: initialTicket,
     token: initialToken,
-    isAuthenticated: !!initialToken,
+    isAuthenticated: bypassAuth || !!initialToken,
 
     setAuth: (user, ticket, token) => {
       if (typeof window !== 'undefined') {
