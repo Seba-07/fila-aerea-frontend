@@ -99,27 +99,20 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Banner Turno - Solo para pasajeros */}
+        {/* Banner Ticket */}
         {ticket && (
-          <>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-8 mb-8 text-white">
-              <div className="text-center">
-                <p className="text-sm uppercase tracking-wide opacity-90">Tu Turno</p>
-                <p className="text-6xl font-bold my-2">#{ticket.turno_global}</p>
-                <p className="text-lg opacity-90">{ticket.codigo_ticket}</p>
-              </div>
+          <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-8 mb-8 text-white">
+            <div className="text-center">
+              <p className="text-sm uppercase tracking-wide opacity-90">Tu Ticket</p>
+              <p className="text-4xl font-bold my-2">{ticket.codigo_ticket}</p>
+              <p className="text-lg opacity-90">
+                {ticket.cantidad_pasajeros} {ticket.cantidad_pasajeros === 1 ? 'Pasajero' : 'Pasajeros'}
+              </p>
+              {ticket.estado === 'pendiente' && (
+                <p className="text-sm mt-2 opacity-75">Debes inscribirte en una tanda</p>
+              )}
             </div>
-
-            {/* Cooldown Warning */}
-            {ticket.cooldownUntil && new Date(ticket.cooldownUntil) > new Date() && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <p className="text-yellow-800 font-medium">
-                  ⚠️ Tienes un cooldown activo por no-show hasta{' '}
-                  {new Date(ticket.cooldownUntil).toLocaleTimeString('es-ES')}
-                </p>
-              </div>
-            )}
-          </>
+          </div>
         )}
 
         {/* Usuario Info */}
