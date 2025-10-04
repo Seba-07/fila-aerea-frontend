@@ -13,7 +13,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Si no está autenticado y no hay bypass, redirigir a login
+    if (!isAuthenticated && process.env.NEXT_PUBLIC_BYPASS_AUTH !== 'true') {
       router.push('/login');
       return;
     }
