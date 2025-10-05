@@ -7,12 +7,18 @@ interface User {
   rol: 'passenger' | 'staff' | 'admin';
 }
 
+interface Pasajero {
+  nombre: string;
+  rut: string;
+}
+
 interface Ticket {
   id: string;
   codigo_ticket: string;
-  turno_global: number;
-  estado: string;
-  cooldownUntil?: string;
+  pasajeros: Pasajero[];
+  cantidad_pasajeros: number;
+  flightId?: string;
+  estado: 'pendiente' | 'inscrito' | 'volado' | 'cancelado';
 }
 
 interface AuthState {
