@@ -9,50 +9,25 @@ export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
 
-  const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleRequestOTP = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await authAPI.requestOTP(email);
-      setStep('code');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al enviar código');
-    } finally {
-      setLoading(false);
-    }
-  };
+      const { data } = await authAPI.login(email);
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const { data } = await authAPI.verifyOTP(email, code, nombre || undefined);
-      setAuth(data.user, data.user.ticket || null, data.token);
-
-      // Cargar perfil completo
+      // Cargar perfil completo con ticket
       const profileData = await userAPI.getMe();
-      if (profileData.data.ticket) {
-        setAuth(data.user, profileData.data.ticket, data.token);
-      }
+      setAuth(data.user, profileData.data.ticket || null, data.token);
 
       router.push('/');
     } catch (err: any) {
-      if (err.response?.status === 400 && err.response?.data?.error?.includes('nombre')) {
-        setError('Por favor ingresa tu nombre');
-      } else {
-        setError(err.response?.data?.error || 'Error al verificar código');
-      }
+      setError(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
@@ -63,7 +38,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">✈️ Fila Aérea</h1>
-          <p className="text-gray-600 mt-2">Inicia sesión para continuar</p>
+          <p className="text-gray-600 mt-2">Inicia sesión con tu email</p>
         </div>
 
         {error && (
@@ -72,88 +47,36 @@ export default function LoginPage() {
           </div>
         )}
 
-        {step === 'email' ? (
-          <form onSubmit={handleRequestOTP} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="tu@email.com"
-              />
-            </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="tu@email.com"
+            />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Enviando...' : 'Enviar Código'}
-            </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </button>
 
-            <p className="text-xs text-gray-500 text-center">
-              Recibirás un código de 6 dígitos por email
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOTP} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Código OTP
-              </label>
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                required
-                maxLength={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
-                placeholder="000000"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enviado a {email}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre (opcional para usuarios nuevos)
-              </label>
-              <input
-                type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Tu nombre"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || code.length !== 6}
-              className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Verificando...' : 'Verificar'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setStep('email');
-                setCode('');
-                setError('');
-              }}
-              className="w-full text-sm text-gray-600 hover:text-gray-800"
-            >
-              ← Cambiar email
-            </button>
-          </form>
-        )}
+          <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+            <p className="font-medium mb-1">Usuarios de prueba:</p>
+            <p>• pasajero1@test.com</p>
+            <p>• pasajero2@test.com</p>
+            <p>• staff@test.com</p>
+          </div>
+        </form>
       </div>
     </div>
   );
