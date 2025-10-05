@@ -58,8 +58,8 @@ export default function VuelosPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {flights.map((flight) => {
-              const turnoHabilitado =
-                ticket && ticket.turno_global <= flight.turno_max_permitido;
+              const asientosDisponibles = flight.asientos_disponibles || 0;
+              const puedeInscribirse = ticket && ticket.cantidad_pasajeros <= asientosDisponibles;
 
               return (
                 <div
@@ -68,16 +68,17 @@ export default function VuelosPage() {
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-bold text-lg">{flight.aircraftId?.alias}</h3>
-                      <p className="text-sm text-gray-500">
-                        {new Date(flight.fechaHoraProg).toLocaleString('es-ES')}
+                      <h3 className="font-bold text-lg">Tanda #{flight.numero_tanda}</h3>
+                      <p className="text-sm text-gray-600">{flight.aircraftId?.matricula}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(flight.fecha_hora).toLocaleString('es-ES')}
                       </p>
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         flight.estado === 'abierto'
                           ? 'bg-green-100 text-green-800'
-                          : flight.estado === 'boarding'
+                          : flight.estado === 'programado'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
@@ -88,30 +89,25 @@ export default function VuelosPage() {
 
                   <div className="space-y-2 text-sm mb-4">
                     <p>
-                      <span className="font-medium">Zona:</span> {flight.zona}
-                      {flight.puerta && ` - Puerta ${flight.puerta}`}
+                      <span className="font-medium">Avión:</span> {flight.aircraftId?.modelo}
                     </p>
                     <p>
-                      <span className="font-medium">Asientos libres:</span> {flight.asientosLibres}
-                    </p>
-                    <p>
-                      <span className="font-medium">Turnos admitidos:</span> 1 -{' '}
-                      {flight.turno_max_permitido}
+                      <span className="font-medium">Asientos disponibles:</span> {asientosDisponibles}/{flight.capacidad_total}
                     </p>
                   </div>
 
-                  {!turnoHabilitado && (
+                  {!puedeInscribirse && ticket && (
                     <p className="text-sm text-yellow-600 mb-3">
-                      Tu turno aún no está habilitado
+                      No hay espacio suficiente para tu grupo ({ticket.cantidad_pasajeros} pasajeros)
                     </p>
                   )}
 
                   <button
                     onClick={() => router.push(`/vuelos/${flight._id}`)}
-                    disabled={!turnoHabilitado}
+                    disabled={!puedeInscribirse}
                     className="w-full bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Ver Asientos
+                    Inscribirse
                   </button>
                 </div>
               );
