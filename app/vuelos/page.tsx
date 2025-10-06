@@ -163,7 +163,12 @@ export default function VuelosPage() {
   };
 
   const handleEditTanda = (numero_tanda: number) => {
-    const tandaFlights = flights.filter(f => f.numero_tanda === numero_tanda);
+    // Solo incluir vuelos activos (no reprogramados ni cancelados)
+    const tandaFlights = flights.filter(
+      f => f.numero_tanda === numero_tanda &&
+      f.estado !== 'reprogramado' &&
+      f.estado !== 'cancelado'
+    );
     setSelectedAircrafts(tandaFlights.map(f => f.aircraftId._id || f.aircraftId));
     setEditingTanda(numero_tanda);
   };
