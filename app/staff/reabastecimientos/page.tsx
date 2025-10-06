@@ -20,7 +20,6 @@ export default function ReabastecimientosPage() {
     aircraftId: '',
     fecha: new Date().toISOString().split('T')[0],
     litros: 0,
-    costo: 0,
     notas: '',
   });
 
@@ -89,7 +88,6 @@ export default function ReabastecimientosPage() {
         aircraftId: '',
         fecha: new Date().toISOString().split('T')[0],
         litros: 0,
-        costo: 0,
         notas: '',
       });
 
@@ -230,21 +228,6 @@ export default function ReabastecimientosPage() {
                     onChange={(e) => setFormData({ ...formData, litros: Number(e.target.value) })}
                     required
                     placeholder="Ej: 150.5"
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Costo (opcional)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.costo}
-                    onChange={(e) => setFormData({ ...formData, costo: Number(e.target.value) })}
-                    placeholder="Ej: 75000"
                     className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
                   />
                 </div>
