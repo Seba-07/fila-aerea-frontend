@@ -41,7 +41,7 @@ export default function PasajerosPage() {
   const handleSave = async (passengerId: string) => {
     try {
       await staffAPI.updatePassengerTickets(passengerId, editValue);
-      alert(' Tickets actualizados');
+      alert('Tickets actualizados');
       setEditingId(null);
       fetchPassengers();
     } catch (error: any) {
@@ -67,7 +67,7 @@ export default function PasajerosPage() {
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
-            ê Inicio
+            Volver
           </button>
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
@@ -136,7 +136,6 @@ export default function PasajerosPage() {
                   </div>
                 </div>
 
-                {/* Lista de tickets */}
                 {passenger.tickets && passenger.tickets.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-slate-700">
                     <p className="text-sm font-semibold text-slate-300 mb-3">Tickets:</p>

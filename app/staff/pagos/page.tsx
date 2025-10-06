@@ -46,7 +46,7 @@ export default function PagosPage() {
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
-            ê Inicio
+            Volver
           </button>
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
@@ -58,14 +58,12 @@ export default function PagosPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Resumen Total */}
         <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-8 mb-8 text-white shadow-2xl">
           <h2 className="text-lg opacity-90 mb-2">Total Recaudado</h2>
           <p className="text-5xl font-black">${totalRecaudado.toLocaleString('es-CL')}</p>
           <p className="text-sm opacity-75 mt-2">{payments.length} transacciones registradas</p>
         </div>
 
-        {/* Lista de Pagos */}
         {payments.length === 0 ? (
           <div className="text-center text-slate-300 py-12">
             <p className="text-xl">No hay pagos registrados</p>
@@ -80,7 +78,7 @@ export default function PagosPage() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Pasajero</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Email</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Tickets</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">MÈtodo</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Metodo</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">Monto</th>
                   </tr>
                 </thead>
