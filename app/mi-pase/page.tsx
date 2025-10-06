@@ -21,6 +21,9 @@ export default function MiPasePage() {
         const ticketsConVuelo = await Promise.all(
           inscritosTickets.map(async (ticket) => {
             try {
+              if (!ticket.flightId) {
+                return { ...ticket, flight: null };
+              }
               const { data: flight } = await flightsAPI.getFlightById(ticket.flightId);
               return { ...ticket, flight };
             } catch (error) {
