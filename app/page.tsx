@@ -250,6 +250,30 @@ export default function HomePage() {
                   <p className="text-sm text-green-100">Ver transacciones y total recaudado</p>
                 </div>
               </button>
+
+              <button
+                onClick={() => router.push('/staff/tandas')}
+                className="group relative bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-indigo-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">📅</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Gestión Tandas</h3>
+                  <p className="text-sm text-indigo-100">Crear y eliminar tandas de vuelo</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => router.push('/staff/aviones')}
+                className="group relative bg-gradient-to-br from-cyan-600 to-cyan-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-cyan-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">✈️</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Gestión Aviones</h3>
+                  <p className="text-sm text-cyan-100">Configurar capacidad de asientos</p>
+                </div>
+              </button>
             </>
           )}
         </div>

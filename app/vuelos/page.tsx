@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { flightsAPI } from '@/lib/api';
+import { flightsAPI, api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 
 export default function VuelosPage() {
@@ -38,6 +38,18 @@ export default function VuelosPage() {
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar vuelo');
+    }
+  };
+
+  const handleEliminarPasajero = async (ticketId: string, passengerName: string) => {
+    if (!confirm(`¿Eliminar a ${passengerName} del vuelo?`)) return;
+
+    try {
+      await api.delete(`/tickets/${ticketId}/flight`);
+      alert('Pasajero removido del vuelo exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al eliminar pasajero del vuelo');
     }
   };
 
@@ -209,16 +221,26 @@ export default function VuelosPage() {
                               {flight.pasajeros_inscritos && flight.pasajeros_inscritos.length > 0 ? (
                                 <div className="space-y-2">
                                   {flight.pasajeros_inscritos.map((inscrito: any, idx: number) => (
-                                    <div key={idx} className="bg-slate-600/50 rounded p-2">
-                                      <p className="text-xs font-medium text-white">
-                                        {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
-                                      </p>
-                                      <p className="text-xs text-slate-400">
-                                        {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
-                                      </p>
-                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
-                                        {inscrito.estado}
-                                      </span>
+                                    <div key={idx} className="bg-slate-600/50 rounded p-2 flex items-center justify-between gap-2">
+                                      <div className="flex-1">
+                                        <p className="text-xs font-medium text-white">
+                                          {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
+                                        </p>
+                                        <p className="text-xs text-slate-400">
+                                          {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
+                                        </p>
+                                        <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                                          {inscrito.estado}
+                                        </span>
+                                      </div>
+                                      {user?.rol === 'staff' && flight.estado === 'abierto' && (
+                                        <button
+                                          onClick={() => handleEliminarPasajero(inscrito.ticketId, inscrito.pasajeros[0]?.nombre)}
+                                          className="text-red-400 hover:text-red-300 text-xs px-2 py-1"
+                                        >
+                                          ✕
+                                        </button>
+                                      )}
                                     </div>
                                   ))}
                                 </div>

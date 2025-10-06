@@ -49,6 +49,18 @@ export default function InscribirPage() {
     }
   };
 
+  const handleEliminarPasajero = async (ticketId: string, passengerName: string) => {
+    if (!confirm(`¿Eliminar a ${passengerName} del vuelo?`)) return;
+
+    try {
+      await api.delete(`/tickets/${ticketId}/flight`);
+      alert('Pasajero removido del vuelo exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al eliminar pasajero del vuelo');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
