@@ -9,8 +9,17 @@ export default function VuelosPage() {
   const router = useRouter();
   const { user, tickets, isAuthenticated } = useAuthStore();
   const [flights, setFlights] = useState<any[]>([]);
+  const [aircrafts, setAircrafts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedFlight, setExpandedFlight] = useState<string | null>(null);
+  const [showCreateTanda, setShowCreateTanda] = useState(false);
+  const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
+  const [newCapacity, setNewCapacity] = useState<number>(0);
+
+  // Form state para nueva tanda
+  const [numeroTanda, setNumeroTanda] = useState<number>(1);
+  const [fecha, setFecha] = useState('');
+  const [selectedAircrafts, setSelectedAircrafts] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -23,8 +32,19 @@ export default function VuelosPage() {
 
   const fetchData = async () => {
     try {
-      const { data } = await flightsAPI.getFlights();
-      setFlights(data);
+      const [flightsRes, aircraftsRes] = await Promise.all([
+        flightsAPI.getFlights(),
+        api.get('/staff/aircrafts'),
+      ]);
+
+      setFlights(flightsRes.data);
+      setAircrafts(aircraftsRes.data);
+
+      // Calcular siguiente número de tanda
+      if (flightsRes.data.length > 0) {
+        const maxTanda = Math.max(...flightsRes.data.map((f: any) => f.numero_tanda));
+        setNumeroTanda(maxTanda + 1);
+      }
     } catch (error) {
       console.error('Error al cargar datos:', error);
     } finally {
@@ -50,6 +70,65 @@ export default function VuelosPage() {
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al eliminar pasajero del vuelo');
+    }
+  };
+
+  const handleUpdateFlightCapacity = async (flightId: string) => {
+    if (newCapacity < 1) {
+      alert('La capacidad debe ser mayor a 0');
+      return;
+    }
+
+    try {
+      await api.patch(`/flights/${flightId}/capacity`, { capacidad_total: newCapacity });
+      alert('Capacidad actualizada exitosamente');
+      setEditingCapacity(null);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar capacidad');
+    }
+  };
+
+  const handleToggleAircraft = (aircraftId: string) => {
+    setSelectedAircrafts((prev) =>
+      prev.includes(aircraftId)
+        ? prev.filter((id) => id !== aircraftId)
+        : [...prev, aircraftId]
+    );
+  };
+
+  const handleCreateTanda = async () => {
+    if (!numeroTanda || !fecha || selectedAircrafts.length === 0) {
+      alert('Completa todos los campos y selecciona al menos un avión');
+      return;
+    }
+
+    try {
+      await api.post('/staff/tandas', {
+        numero_tanda: numeroTanda,
+        fecha_hora: new Date(fecha).toISOString(),
+        aircraftIds: selectedAircrafts,
+      });
+
+      alert('Tanda creada exitosamente');
+      setShowCreateTanda(false);
+      setSelectedAircrafts([]);
+      setFecha('');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al crear tanda');
+    }
+  };
+
+  const handleDeleteTanda = async (numero_tanda: number) => {
+    if (!confirm(`¿Eliminar la Tanda #${numero_tanda}?`)) return;
+
+    try {
+      await api.delete(`/staff/tandas/${numero_tanda}`);
+      alert('Tanda eliminada exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al eliminar tanda');
     }
   };
 
@@ -92,6 +171,83 @@ export default function VuelosPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Botón para crear tanda (solo staff) */}
+        {user?.rol === 'staff' && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowCreateTanda(!showCreateTanda)}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+            >
+              {showCreateTanda ? 'Cancelar' : '+ Crear Nueva Tanda'}
+            </button>
+          </div>
+        )}
+
+        {/* Formulario crear tanda */}
+        {showCreateTanda && (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4">Nueva Tanda</h2>
+
+            <div className="grid gap-4 md:grid-cols-2 mb-4">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Número de Tanda:</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={numeroTanda}
+                  onChange={(e) => setNumeroTanda(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Fecha:</label>
+                <input
+                  type="date"
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm text-slate-400 mb-2">Seleccionar Aviones:</label>
+              <div className="grid gap-2 md:grid-cols-3">
+                {aircrafts.map((aircraft) => (
+                  <label
+                    key={aircraft._id}
+                    className={`flex items-center gap-2 p-3 rounded cursor-pointer transition ${
+                      selectedAircrafts.includes(aircraft._id)
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAircrafts.includes(aircraft._id)}
+                      onChange={() => handleToggleAircraft(aircraft._id)}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <p className="font-medium text-sm">{aircraft.matricula}</p>
+                      <p className="text-xs opacity-80">{aircraft.modelo} ({aircraft.capacidad} asientos)</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleCreateTanda}
+              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+            >
+              Crear Tanda
+            </button>
+          </div>
+        )}
+
+        {/* Listado de tandas */}
         {flights.length === 0 ? (
           <div className="text-center text-slate-300 py-12">
             <p className="text-xl">No hay tandas disponibles</p>
@@ -104,11 +260,21 @@ export default function VuelosPage() {
               return (
                 <div key={tandaNum} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
                   {/* Header de la Tanda */}
-                  <div className="mb-6 pb-4 border-b border-slate-700">
-                    <h2 className="text-3xl font-bold text-white">Tanda #{tandaNum}</h2>
-                    <p className="text-sm text-slate-400 mt-1">
-                      {new Date(vuelosTanda[0].fecha_hora).toLocaleString('es-ES')}
-                    </p>
+                  <div className="mb-6 pb-4 border-b border-slate-700 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-3xl font-bold text-white">Tanda #{tandaNum}</h2>
+                      <p className="text-sm text-slate-400 mt-1">
+                        {new Date(vuelosTanda[0].fecha_hora).toLocaleDateString('es-ES')}
+                      </p>
+                    </div>
+                    {user?.rol === 'staff' && (
+                      <button
+                        onClick={() => handleDeleteTanda(tandaNum)}
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium"
+                      >
+                        Eliminar Tanda
+                      </button>
+                    )}
                   </div>
 
                   {/* Fichas de Aviones */}
@@ -148,12 +314,50 @@ export default function VuelosPage() {
                           </div>
 
                           {/* Asientos */}
-                          <div className="flex items-center justify-center my-4 p-4 bg-slate-900/50 rounded-lg">
-                            <div className="text-center">
-                              <p className="text-3xl font-black text-primary">{asientosDisponibles}</p>
-                              <p className="text-xs text-slate-400">asientos libres</p>
+                          {editingCapacity === flight._id ? (
+                            <div className="my-4 p-4 bg-slate-900/50 rounded-lg">
+                              <label className="block text-xs text-slate-400 mb-1">Nueva capacidad:</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={newCapacity}
+                                onChange={(e) => setNewCapacity(Number(e.target.value))}
+                                className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-white text-sm"
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleUpdateFlightCapacity(flight._id)}
+                                  className="flex-1 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => setEditingCapacity(null)}
+                                  className="flex-1 px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="flex items-center justify-center my-4 p-4 bg-slate-900/50 rounded-lg">
+                              <div className="text-center flex-1">
+                                <p className="text-3xl font-black text-primary">{asientosDisponibles}</p>
+                                <p className="text-xs text-slate-400">asientos libres</p>
+                              </div>
+                              {user?.rol === 'staff' && flight.estado === 'abierto' && (
+                                <button
+                                  onClick={() => {
+                                    setEditingCapacity(flight._id);
+                                    setNewCapacity(capacidadTotal);
+                                  }}
+                                  className="text-xs text-blue-400 hover:text-blue-300"
+                                >
+                                  ✏️
+                                </button>
+                              )}
+                            </div>
+                          )}
 
                           {/* Acciones Pasajero */}
                           {user?.rol === 'passenger' && flight.estado === 'abierto' && asientosDisponibles > 0 && (
