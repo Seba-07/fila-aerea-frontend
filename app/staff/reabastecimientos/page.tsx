@@ -219,7 +219,7 @@ function ReabastecimientosContent() {
                     Avión * {lockedAircraftId && <span className="text-red-400 text-xs">(Preseleccionado por alerta de combustible)</span>}
                   </label>
                   <div className="text-xs text-yellow-300 mb-1">
-                    DEBUG: formData.aircraftId='{formData.aircraftId}' | locked='{lockedAircraftId}'
+                    DEBUG: formData.aircraftId={formData.aircraftId} | locked={lockedAircraftId}
                   </div>
                   <select
                     value={formData.aircraftId}
