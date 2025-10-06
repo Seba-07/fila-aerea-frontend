@@ -9,7 +9,9 @@ interface User {
 
 interface Pasajero {
   nombre: string;
+  apellido: string;
   rut: string;
+  esMenor?: boolean;
 }
 
 interface Ticket {

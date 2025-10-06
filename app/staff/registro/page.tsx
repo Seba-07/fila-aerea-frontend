@@ -14,12 +14,17 @@ export default function RegistroPage() {
   const [cantidadTickets, setCantidadTickets] = useState(1);
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
-  const [nombresPasajeros, setNombresPasajeros] = useState<string[]>([]);
+  const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Ajustar array de nombres cuando cambia la cantidad
-    setNombresPasajeros(Array(cantidadTickets).fill(''));
+    // Ajustar array de pasajeros cuando cambia la cantidad
+    setPasajeros(Array(cantidadTickets).fill(null).map(() => ({
+      nombre: '',
+      apellido: '',
+      rut: '',
+      esMenor: false
+    })));
   }, [cantidadTickets]);
 
   if (user?.rol !== 'staff') {
@@ -27,13 +32,40 @@ export default function RegistroPage() {
     return null;
   }
 
+  const copiarDatosUsuario = () => {
+    if (pasajeros.length > 0) {
+      const nuevosPasajeros = [...pasajeros];
+      // Extraer primer nombre y primer apellido del nombre completo del usuario
+      const partes = nombre.trim().split(' ');
+      nuevosPasajeros[0] = {
+        nombre: partes[0] || '',
+        apellido: partes.slice(1).join(' ') || '',
+        rut: '',
+        esMenor: false
+      };
+      setPasajeros(nuevosPasajeros);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      // Filtrar nombres vacíos
-      const nombresValidos = nombresPasajeros.filter(n => n.trim() !== '');
+      // Validar que si hay menores, haya al menos un adulto
+      const menores = pasajeros.filter(p => p.nombre.trim() && p.esMenor);
+      const adultos = pasajeros.filter(p => p.nombre.trim() && !p.esMenor);
+
+      if (menores.length > 0 && adultos.length === 0) {
+        alert('⚠️ Si hay menores de edad, debe haber al menos un adulto en la reserva');
+        setSubmitting(false);
+        return;
+      }
+
+      // Filtrar pasajeros con datos completos o vacíos completamente
+      const pasajerosValidos = pasajeros.filter(p =>
+        p.nombre.trim() !== '' || p.apellido.trim() !== '' || p.rut.trim() !== ''
+      );
 
       await staffAPI.registerPassenger({
         nombre,
@@ -41,7 +73,7 @@ export default function RegistroPage() {
         cantidad_tickets: cantidadTickets,
         metodo_pago: metodoPago,
         monto,
-        ...(nombresValidos.length > 0 && { nombres_pasajeros: nombresValidos }),
+        ...(pasajerosValidos.length > 0 && { pasajeros: pasajerosValidos }),
       });
 
       alert(`✓ Pasajero ${nombre} registrado con ${cantidadTickets} tickets`);
@@ -52,7 +84,7 @@ export default function RegistroPage() {
       setCantidadTickets(1);
       setMetodoPago('efectivo');
       setMonto(0);
-      setNombresPasajeros([]);
+      setPasajeros([]);
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al registrar pasajero');
     } finally {
@@ -169,32 +201,102 @@ export default function RegistroPage() {
               </div>
             </div>
 
-            {/* Nombres de pasajeros (opcional) */}
+            {/* Datos de pasajeros (opcional) */}
             {cantidadTickets > 0 && (
               <div className="pb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">
-                  Nombres de Pasajeros <span className="text-sm text-slate-400">(opcional)</span>
+                  Datos de Pasajeros <span className="text-sm text-slate-400">(opcional)</span>
                 </h2>
                 <p className="text-sm text-slate-400 mb-4">
-                  Puedes asignar los nombres de los pasajeros ahora o después
+                  Puedes asignar los datos de los pasajeros ahora o después. Si hay menores, debe haber al menos un adulto.
                 </p>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-6">
                   {Array.from({ length: cantidadTickets }).map((_, index) => (
-                    <div key={index}>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Ticket {index + 1}
-                      </label>
-                      <input
-                        type="text"
-                        value={nombresPasajeros[index] || ''}
-                        onChange={(e) => {
-                          const nuevos = [...nombresPasajeros];
-                          nuevos[index] = e.target.value;
-                          setNombresPasajeros(nuevos);
-                        }}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
-                        placeholder="Nombre del pasajero"
-                      />
+                    <div key={index} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold text-white">
+                          Ticket {index + 1}
+                        </label>
+                        {index === 0 && (
+                          <button
+                            type="button"
+                            onClick={copiarDatosUsuario}
+                            className="text-xs px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition"
+                          >
+                            📋 Copiar datos del comprador
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Nombre
+                          </label>
+                          <input
+                            type="text"
+                            value={pasajeros[index]?.nombre || ''}
+                            onChange={(e) => {
+                              const nuevos = [...pasajeros];
+                              nuevos[index] = { ...nuevos[index], nombre: e.target.value };
+                              setPasajeros(nuevos);
+                            }}
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            placeholder="Juan"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Apellido
+                          </label>
+                          <input
+                            type="text"
+                            value={pasajeros[index]?.apellido || ''}
+                            onChange={(e) => {
+                              const nuevos = [...pasajeros];
+                              nuevos[index] = { ...nuevos[index], apellido: e.target.value };
+                              setPasajeros(nuevos);
+                            }}
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            placeholder="Pérez"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            RUT
+                          </label>
+                          <input
+                            type="text"
+                            value={pasajeros[index]?.rut || ''}
+                            onChange={(e) => {
+                              const nuevos = [...pasajeros];
+                              nuevos[index] = { ...nuevos[index], rut: e.target.value };
+                              setPasajeros(nuevos);
+                            }}
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            placeholder="12.345.678-9"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Menor de edad
+                          </label>
+                          <div className="flex items-center h-10">
+                            <input
+                              type="checkbox"
+                              checked={pasajeros[index]?.esMenor || false}
+                              onChange={(e) => {
+                                const nuevos = [...pasajeros];
+                                nuevos[index] = { ...nuevos[index], esMenor: e.target.checked };
+                                setPasajeros(nuevos);
+                              }}
+                              className="w-5 h-5 bg-slate-700 border-slate-600 rounded focus:ring-2 focus:ring-primary"
+                            />
+                            <span className="ml-2 text-sm text-slate-300">
+                              Es menor de edad
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
