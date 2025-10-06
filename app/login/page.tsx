@@ -20,15 +20,19 @@ export default function LoginPage() {
 
     try {
       const { data } = await authAPI.login(email);
+      console.log('Login response:', data);
 
       // Cargar perfil completo con ticket
       const profileData = await userAPI.getMe();
+      console.log('Profile data:', profileData.data);
+
       setAuth(data.user, profileData.data.ticket || null, data.token);
 
       router.push('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
-    } finally {
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Error al iniciar sesión';
+      setError(errorMsg);
       setLoading(false);
     }
   };
