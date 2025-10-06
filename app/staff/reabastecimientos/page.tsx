@@ -37,17 +37,10 @@ function ReabastecimientosContent() {
   // Separar efecto para manejar el aircraftId de la URL después de cargar datos
   useEffect(() => {
     const aircraftIdFromUrl = searchParams.get('aircraftId');
-    console.log('🔍 Aircraft ID from URL:', aircraftIdFromUrl);
-    console.log('🔍 Aircrafts loaded:', aircrafts.length, aircrafts);
 
     if (aircraftIdFromUrl && aircrafts.length > 0) {
-      console.log('✅ Setting locked aircraft:', aircraftIdFromUrl);
       setLockedAircraftId(aircraftIdFromUrl);
-      setFormData(prev => {
-        const newData = { ...prev, aircraftId: aircraftIdFromUrl };
-        console.log('✅ Updated form data:', newData);
-        return newData;
-      });
+      setFormData(prev => ({ ...prev, aircraftId: aircraftIdFromUrl }));
       setShowForm(true);
     }
   }, [searchParams, aircrafts]);
@@ -217,10 +210,6 @@ function ReabastecimientosContent() {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Avión * {lockedAircraftId && <span className="text-red-400 text-xs">(Preseleccionado por alerta de combustible)</span>}
                   </label>
-                  {/* Debug info */}
-                  <div className="text-xs text-yellow-400 mb-1">
-                    DEBUG - formData.aircraftId: {formData.aircraftId || 'vacío'} | lockedAircraftId: {lockedAircraftId || 'vacío'} | aircrafts: {aircrafts.length}
-                  </div>
                   <select
                     value={formData.aircraftId}
                     onChange={(e) => setFormData({ ...formData, aircraftId: e.target.value })}

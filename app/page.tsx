@@ -213,7 +213,13 @@ export default function HomePage() {
                         </p>
                         <p className="text-white/80 text-sm mb-3">{notif.mensaje}</p>
                         <button
-                          onClick={() => router.push(`/staff/reabastecimientos?aircraftId=${notif.metadata?.aircraftId}`)}
+                          onClick={() => {
+                            // Extraer solo el _id si es un objeto, sino usar el valor directo
+                            const aircraftId = typeof notif.metadata?.aircraftId === 'object'
+                              ? notif.metadata?.aircraftId?._id
+                              : notif.metadata?.aircraftId;
+                            router.push(`/staff/reabastecimientos?aircraftId=${aircraftId}`);
+                          }}
                           className="w-full px-4 py-2 bg-white text-red-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
                         >
                           Registrar Reabastecimiento
