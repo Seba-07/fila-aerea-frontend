@@ -20,33 +20,70 @@ export const useNotifications = (userId?: string) => {
 
     const setupPushNotifications = async () => {
       try {
+        console.log('🔔 Iniciando configuración de push notifications...');
+
         // Solicitar permiso para notificaciones
-        if ('Notification' in window && Notification.permission === 'default') {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            console.log('Permiso de notificaciones denegado');
+        if ('Notification' in window) {
+          console.log('📱 Permiso actual:', Notification.permission);
+
+          if (Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            console.log('📱 Nuevo permiso:', permission);
+
+            if (permission !== 'granted') {
+              console.log('❌ Permiso de notificaciones denegado');
+              return;
+            }
+          } else if (Notification.permission === 'denied') {
+            console.log('❌ Permiso de notificaciones bloqueado por el usuario');
             return;
           }
-        }
-
-        // Verificar soporte para service worker y push
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-          console.log('Push notifications no soportadas');
+        } else {
+          console.log('❌ Notification API no disponible');
           return;
         }
 
+        // Verificar soporte para service worker y push
+        if (!('serviceWorker' in navigator)) {
+          console.log('❌ Service Worker no soportado');
+          return;
+        }
+
+        if (!('PushManager' in window)) {
+          console.log('❌ Push Manager no soportado');
+          return;
+        }
+
+        console.log('✅ Service Worker y Push Manager disponibles');
+
         // Registrar service worker
+        console.log('🔄 Registrando service worker...');
         const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('✅ Service worker registrado:', registration);
+
         await navigator.serviceWorker.ready;
+        console.log('✅ Service worker listo');
 
-        // Obtener VAPID public key del servidor
-        const { data: { publicKey } } = await api.get('/push/vapid-key');
+        // Verificar si ya existe una suscripción
+        let subscription = await registration.pushManager.getSubscription();
 
-        // Suscribirse a push notifications
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-        });
+        if (!subscription) {
+          console.log('🔄 No hay suscripción previa, creando nueva...');
+
+          // Obtener VAPID public key del servidor
+          console.log('🔑 Obteniendo VAPID key...');
+          const { data: { publicKey } } = await api.get('/push/vapid-key');
+          console.log('✅ VAPID key obtenida:', publicKey.substring(0, 20) + '...');
+
+          // Suscribirse a push notifications
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey),
+          });
+          console.log('✅ Suscripción creada:', subscription.endpoint.substring(0, 50) + '...');
+        } else {
+          console.log('✅ Suscripción existente encontrada:', subscription.endpoint.substring(0, 50) + '...');
+        }
 
         // Convertir keys a base64
         const p256dhKey = subscription.getKey('p256dh');
@@ -62,6 +99,7 @@ export const useNotifications = (userId?: string) => {
         };
 
         // Enviar suscripción al servidor
+        console.log('🔄 Enviando suscripción al servidor...');
         await api.post('/push/subscribe', {
           endpoint: subscription.endpoint,
           keys: {
@@ -70,9 +108,9 @@ export const useNotifications = (userId?: string) => {
           },
         });
 
-        console.log('Push notification suscripción exitosa');
+        console.log('✅ Push notification suscripción exitosa');
       } catch (error) {
-        console.error('Error configurando push notifications:', error);
+        console.error('❌ Error configurando push notifications:', error);
       }
     };
 
