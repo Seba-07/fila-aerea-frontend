@@ -80,11 +80,13 @@ export const boardingAPI = {
 export const staffAPI = {
   registerPassenger: (data: {
     nombre: string;
+    apellido: string;
+    rut?: string;
     email: string;
     cantidad_tickets: number;
     metodo_pago: 'transferencia' | 'tarjeta' | 'efectivo';
     monto: number;
-    nombres_pasajeros?: string[];
+    pasajeros?: Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>;
     flightId?: string;
   }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),

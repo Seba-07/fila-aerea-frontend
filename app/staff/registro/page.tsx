@@ -10,6 +10,8 @@ export default function RegistroPage() {
   const { user } = useAuthStore();
 
   const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [rut, setRut] = useState('');
   const [email, setEmail] = useState('');
   const [cantidadTickets, setCantidadTickets] = useState(1);
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
@@ -35,12 +37,10 @@ export default function RegistroPage() {
   const copiarDatosUsuario = () => {
     if (pasajeros.length > 0) {
       const nuevosPasajeros = [...pasajeros];
-      // Extraer primer nombre y primer apellido del nombre completo del usuario
-      const partes = nombre.trim().split(' ');
       nuevosPasajeros[0] = {
-        nombre: partes[0] || '',
-        apellido: partes.slice(1).join(' ') || '',
-        rut: '',
+        nombre: nombre,
+        apellido: apellido,
+        rut: rut,
         esMenor: false
       };
       setPasajeros(nuevosPasajeros);
@@ -69,6 +69,8 @@ export default function RegistroPage() {
 
       await staffAPI.registerPassenger({
         nombre,
+        apellido,
+        rut,
         email: email.toLowerCase(),
         cantidad_tickets: cantidadTickets,
         metodo_pago: metodoPago,
@@ -76,10 +78,12 @@ export default function RegistroPage() {
         ...(pasajerosValidos.length > 0 && { pasajeros: pasajerosValidos }),
       });
 
-      alert(`✓ Pasajero ${nombre} registrado con ${cantidadTickets} tickets`);
+      alert(`✓ Pasajero ${nombre} ${apellido} registrado con ${cantidadTickets} tickets`);
 
       // Reset form
       setNombre('');
+      setApellido('');
+      setRut('');
       setEmail('');
       setCantidadTickets(1);
       setMetodoPago('efectivo');
@@ -117,7 +121,7 @@ export default function RegistroPage() {
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Nombre Completo
+                    Nombre(s)
                   </label>
                   <input
                     type="text"
@@ -125,7 +129,32 @@ export default function RegistroPage() {
                     onChange={(e) => setNombre(e.target.value)}
                     required
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
-                    placeholder="Juan Pérez"
+                    placeholder="Juan"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Apellido(s)
+                  </label>
+                  <input
+                    type="text"
+                    value={apellido}
+                    onChange={(e) => setApellido(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    placeholder="Pérez"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">RUT</label>
+                  <input
+                    type="text"
+                    value={rut}
+                    onChange={(e) => setRut(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    placeholder="12.345.678-9"
                   />
                 </div>
 
@@ -157,6 +186,7 @@ export default function RegistroPage() {
                     onChange={(e) => setCantidadTickets(parseInt(e.target.value) || 1)}
                     min={1}
                     max={10}
+                    step={1}
                     required
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
                   />
@@ -168,11 +198,12 @@ export default function RegistroPage() {
                   </label>
                   <input
                     type="number"
-                    value={monto}
-                    onChange={(e) => setMonto(parseFloat(e.target.value) || 0)}
+                    value={monto === 0 ? '' : monto}
+                    onChange={(e) => setMonto(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                     min={0}
-                    step={0.01}
+                    step={1}
                     required
+                    placeholder="0"
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
                   />
                 </div>
