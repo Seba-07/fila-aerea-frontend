@@ -108,10 +108,10 @@ function MiPaseContent() {
               </div>
             </div>
 
-            {flight.estado === 'boarding' && (
+            {flight.estado === 'en_vuelo' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 font-medium">
-                  ✓ ¡Embarque abierto! Dirígete a la zona {flight.zona}
+                  ✓ ¡Vuelo en curso! Dirígete a la zona {flight.zona}
                 </p>
               </div>
             )}

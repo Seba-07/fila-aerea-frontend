@@ -15,6 +15,10 @@ export default function MisTicketsPage() {
   const [pasajeroNombre, setPasajeroNombre] = useState('');
   const [pasajeroRut, setPasajeroRut] = useState('');
   const [selectedFlight, setSelectedFlight] = useState('');
+  const [rescheduleModalTicket, setRescheduleModalTicket] = useState<any | null>(null);
+  const [selectedTanda, setSelectedTanda] = useState<number | ''>('');
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [refundMethod, setRefundMethod] = useState<string>('efectivo');
 
   useEffect(() => {
     if (user?.rol !== 'passenger') {
@@ -29,7 +33,7 @@ export default function MisTicketsPage() {
     try {
       const [profileRes, flightsRes] = await Promise.all([
         userAPI.getMe(),
-        flightsAPI.getFlights('programado')
+        flightsAPI.getFlights('abierto')
       ]);
 
       if (profileRes.data.tickets) {
@@ -83,6 +87,56 @@ export default function MisTicketsPage() {
     setSelectedFlight('');
   };
 
+  const handleAcceptReschedule = async (ticketId: string) => {
+    try {
+      await api.post(`/tickets/${ticketId}/accept-reschedule`);
+      alert('Reprogramación aceptada exitosamente');
+      setRescheduleModalTicket(null);
+      loadData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al aceptar reprogramación');
+    }
+  };
+
+  const handleRescheduleToTanda = async (ticketId: string) => {
+    if (!selectedTanda) {
+      alert('Debes seleccionar una tanda');
+      return;
+    }
+
+    try {
+      await api.post(`/tickets/${ticketId}/reschedule`, {
+        numero_tanda: selectedTanda,
+      });
+      alert('Ticket reprogramado exitosamente');
+      setRescheduleModalTicket(null);
+      setSelectedTanda('');
+      loadData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al reprogramar ticket');
+    }
+  };
+
+  const handleRejectReschedule = async (ticketId: string) => {
+    if (!refundAmount || refundAmount <= 0) {
+      alert('Debes ingresar el monto de devolución');
+      return;
+    }
+
+    try {
+      await api.post(`/tickets/${ticketId}/reject-reschedule`, {
+        monto_devolucion: refundAmount,
+        metodo_pago: refundMethod,
+      });
+      alert(`Reprogramación rechazada. Se registró una devolución de $${refundAmount}`);
+      setRescheduleModalTicket(null);
+      setRefundAmount(0);
+      loadData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al rechazar reprogramación');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
@@ -113,6 +167,30 @@ export default function MisTicketsPage() {
             Aquí puedes asignar nombres de pasajeros y seleccionar vuelos para tus tickets
           </h2>
         </div>
+
+        {/* Alerta de reprogramaciones pendientes */}
+        {tickets.filter(t => t.reprogramacion_pendiente).map((ticket) => (
+          <div key={ticket.id} className="mb-6 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl border border-orange-400/30 p-6 shadow-xl">
+            <div className="flex items-start gap-4">
+              <div className="text-4xl">⚠️</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">Reprogramación Pendiente - Ticket {ticket.codigo_ticket}</h3>
+                <p className="text-orange-100 text-sm mb-2">
+                  Tu vuelo de la <strong>Tanda {ticket.reprogramacion_pendiente.numero_tanda_anterior}</strong> ha sido reprogramado a la <strong>Tanda {ticket.reprogramacion_pendiente.numero_tanda_nueva}</strong>.
+                </p>
+                <p className="text-orange-100 text-xs mb-4">
+                  Fecha de reprogramación: {new Date(ticket.reprogramacion_pendiente.fecha_reprogramacion).toLocaleString('es-ES')}
+                </p>
+                <button
+                  onClick={() => setRescheduleModalTicket(ticket)}
+                  className="bg-white text-orange-700 px-6 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
+                >
+                  Gestionar Reprogramación
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
 
         {tickets.length === 0 ? (
           <div className="text-center text-slate-300 py-12">
@@ -228,6 +306,113 @@ export default function MisTicketsPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Modal de reprogramación */}
+        {rescheduleModalTicket && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+            <div className="bg-slate-800 rounded-2xl border border-slate-700 p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-white mb-4">Gestionar Reprogramación</h2>
+              <p className="text-slate-300 mb-6">
+                Ticket: <strong className="text-white">{rescheduleModalTicket.codigo_ticket}</strong>
+                <br />
+                Tanda Anterior: <strong className="text-orange-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_anterior}</strong>
+                <br />
+                Tanda Nueva Propuesta: <strong className="text-green-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_nueva}</strong>
+              </p>
+
+              <div className="space-y-4">
+                {/* Opción 1: Aceptar */}
+                <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+                  <h3 className="text-lg font-bold text-white mb-2">1. Aceptar Reprogramación</h3>
+                  <p className="text-sm text-slate-300 mb-3">
+                    Tu ticket será movido automáticamente a la Tanda #{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_nueva}.
+                  </p>
+                  <button
+                    onClick={() => handleAcceptReschedule(rescheduleModalTicket.id)}
+                    className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition"
+                  >
+                    Aceptar
+                  </button>
+                </div>
+
+                {/* Opción 2: Reprogramar a otra tanda */}
+                <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+                  <h3 className="text-lg font-bold text-white mb-2">2. Reprogramar a Otra Tanda</h3>
+                  <p className="text-sm text-slate-300 mb-3">
+                    Selecciona una tanda diferente para tu vuelo.
+                  </p>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">
+                    Número de Tanda:
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedTanda}
+                    onChange={(e) => setSelectedTanda(Number(e.target.value))}
+                    placeholder="Ej: 5"
+                    className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white mb-3"
+                  />
+                  <button
+                    onClick={() => handleRescheduleToTanda(rescheduleModalTicket.id)}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
+                  >
+                    Reprogramar
+                  </button>
+                </div>
+
+                {/* Opción 3: Rechazar con devolución */}
+                <div className="bg-slate-700/50 rounded-xl p-4 border border-red-600/50">
+                  <h3 className="text-lg font-bold text-white mb-2">3. Rechazar y Solicitar Devolución</h3>
+                  <p className="text-sm text-slate-300 mb-3">
+                    Tu ticket será cancelado y se registrará una devolución.
+                  </p>
+                  <div className="space-y-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Monto de Devolución:
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={refundAmount}
+                        onChange={(e) => setRefundAmount(Number(e.target.value))}
+                        placeholder="Ej: 50000"
+                        className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Método de Pago:
+                      </label>
+                      <select
+                        value={refundMethod}
+                        onChange={(e) => setRefundMethod(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
+                      >
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="tarjeta">Tarjeta</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRejectReschedule(rescheduleModalTicket.id)}
+                    className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition"
+                  >
+                    Rechazar y Devolver
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setRescheduleModalTicket(null)}
+                className="mt-6 w-full px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium transition"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         )}
       </main>

@@ -121,6 +121,29 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Notificaciones de reprogramación */}
+        {user?.rol === 'passenger' && tickets.some(t => t.reprogramacion_pendiente) && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl border border-orange-400/30 p-6 shadow-2xl">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">⚠️</div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">Reprogramaciones Pendientes</h3>
+                  <p className="text-orange-100 text-sm mb-4">
+                    Tienes {tickets.filter(t => t.reprogramacion_pendiente).length} ticket(s) con reprogramaciones pendientes que requieren tu atención.
+                  </p>
+                  <button
+                    onClick={() => router.push('/mis-tickets')}
+                    className="bg-white text-orange-700 px-6 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
+                  >
+                    Ver y Gestionar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Tickets del pasajero */}
         {user?.rol === 'passenger' && tickets.length > 0 && (
           <div className="mb-12">
@@ -260,6 +283,18 @@ export default function HomePage() {
                   <div className="text-5xl mb-4">✈️</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Gestión Aviones</h3>
                   <p className="text-sm text-cyan-100">Configurar capacidad de asientos</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => router.push('/staff/reabastecimientos')}
+                className="group relative bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-yellow-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">⛽</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Reabastecimientos</h3>
+                  <p className="text-sm text-yellow-100">Gestionar combustible de aviones</p>
                 </div>
               </button>
             </>

@@ -18,6 +18,12 @@ interface Ticket {
   pasajeros: Pasajero[];
   flightId?: string;
   estado: 'disponible' | 'asignado' | 'inscrito' | 'volado' | 'cancelado';
+  reprogramacion_pendiente?: {
+    nuevo_flightId: string;
+    numero_tanda_anterior: number;
+    numero_tanda_nueva: number;
+    fecha_reprogramacion: string;
+  };
 }
 
 interface AuthState {

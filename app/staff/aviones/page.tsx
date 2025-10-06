@@ -182,7 +182,7 @@ export default function AvionesPage() {
           </h2>
           <p className="text-sm text-blue-200 mb-2">
             • Al cambiar la capacidad de un avión, solo se actualizarán los vuelos en estado
-            <span className="font-semibold"> PROGRAMADO</span> o <span className="font-semibold">ABIERTO</span>.
+            <span className="font-semibold"> ABIERTO</span>.
           </p>
           <p className="text-sm text-blue-200">
             • Los aviones con vuelos realizados no se pueden eliminar, solo deshabilitar.
