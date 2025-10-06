@@ -177,8 +177,11 @@ export default function VuelosPage() {
         aircraftIds: [aircraftId],
       });
       alert('Avión agregado a la tanda exitosamente');
-      setEditingTanda(null);
-      setSelectedAircrafts([]);
+
+      // Actualizar selectedAircrafts para incluir el nuevo avión
+      setSelectedAircrafts([...selectedAircrafts, aircraftId]);
+
+      // Recargar datos
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al agregar avión');
