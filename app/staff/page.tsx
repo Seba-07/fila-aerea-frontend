@@ -74,11 +74,11 @@ export default function StaffPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-secondary text-white shadow">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/')} className="text-white hover:opacity-80">
+            <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
               ← Inicio
             </button>
             <img
@@ -86,7 +86,7 @@ export default function StaffPage() {
               alt="Cessna"
               className="h-8"
             />
-            <h1 className="text-2xl font-bold">Panel Staff</h1>
+            <h1 className="text-2xl font-bold text-white">Panel Staff</h1>
           </div>
         </div>
       </header>
@@ -94,35 +94,35 @@ export default function StaffPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Formulario de Registro */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Registrar Nuevo Pasajero</h2>
-            <form onSubmit={handleRegisterPassenger} className="space-y-4">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">Registrar Nuevo Pasajero</h2>
+            <form onSubmit={handleRegisterPassenger} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Nombre</label>
                 <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
                   placeholder="Juan Pérez"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
                   placeholder="juan@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Cantidad de Tickets (1-10)
                 </label>
                 <input
@@ -132,14 +132,14 @@ export default function StaffPage() {
                   min={1}
                   max={10}
                   required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-secondary text-white py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-secondary to-red-700 text-white py-3 rounded-lg font-bold hover:shadow-xl transition-all disabled:opacity-50"
               >
                 {submitting ? 'Registrando...' : 'Registrar Pasajero'}
               </button>
@@ -147,25 +147,25 @@ export default function StaffPage() {
           </div>
 
           {/* Lista de Pasajeros */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Pasajeros Registrados</h2>
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">Pasajeros Registrados</h2>
             <div className="space-y-3">
               {passengers.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">
+                <p className="text-slate-400 text-center py-8">
                   No hay pasajeros registrados
                 </p>
               ) : (
                 passengers.map((passenger) => (
                   <div
                     key={passenger.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50"
+                    className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-700 transition"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold">{passenger.nombre}</h3>
-                        <p className="text-sm text-gray-600">{passenger.email}</p>
+                        <h3 className="font-semibold text-white">{passenger.nombre}</h3>
+                        <p className="text-sm text-slate-400">{passenger.email}</p>
                       </div>
-                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold">
                         {passenger.tickets_count} {passenger.tickets_count === 1 ? 'ticket' : 'tickets'}
                       </span>
                     </div>

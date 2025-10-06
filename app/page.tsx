@@ -70,9 +70,9 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img
@@ -80,22 +80,22 @@ export default function HomePage() {
               alt="Cessna"
               className="h-10"
             />
-            <h1 className="text-2xl font-bold text-primary">Fila Aérea</h1>
+            <h1 className="text-2xl font-bold text-white">Fila Aérea</h1>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  connected ? 'bg-green-500' : 'bg-red-500'
+                  connected ? 'bg-green-400' : 'bg-red-400'
                 }`}
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-slate-300">
                 {connected ? 'Conectado' : 'Sin conexión'}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-gray-800"
+              className="text-sm text-slate-300 hover:text-white transition"
             >
               Salir
             </button>
@@ -104,51 +104,51 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Usuario Info */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2">
             Bienvenido, {user?.nombre}
           </h2>
-          <div className="space-y-2 text-sm text-gray-600">
+          <div className="flex gap-6 text-sm text-slate-300">
             <p>
-              <span className="font-medium">Email:</span> {user?.email}
+              <span className="text-slate-400">Email:</span> {user?.email}
             </p>
             <p>
-              <span className="font-medium">Rol:</span>{' '}
-              <span className="capitalize">{user?.rol}</span>
+              <span className="text-slate-400">Rol:</span>{' '}
+              <span className="capitalize text-primary font-medium">{user?.rol}</span>
             </p>
           </div>
         </div>
 
         {/* Tickets del pasajero */}
         {user?.rol === 'passenger' && tickets.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Mis Tickets</h3>
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-white mb-6">Mis Tickets</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {tickets.map((ticket) => (
                 <div
                   key={ticket.id}
-                  className="bg-gradient-to-r from-primary to-blue-700 rounded-lg shadow-lg p-6 text-white"
+                  className="bg-gradient-to-br from-primary via-blue-600 to-blue-700 rounded-2xl shadow-2xl p-6 text-white border border-blue-400/20"
                 >
                   <div className="text-center">
-                    <p className="text-sm uppercase tracking-wide opacity-90">Ticket</p>
-                    <p className="text-3xl font-bold my-2">{ticket.codigo_ticket}</p>
-                    <div className="mt-3">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm ${
-                        ticket.estado === 'disponible' ? 'bg-green-500' :
-                        ticket.estado === 'asignado' ? 'bg-yellow-500' :
-                        ticket.estado === 'inscrito' ? 'bg-blue-500' :
-                        ticket.estado === 'volado' ? 'bg-gray-500' :
-                        'bg-red-500'
+                    <p className="text-xs uppercase tracking-widest opacity-80 mb-2">Ticket</p>
+                    <p className="text-3xl font-black tracking-tight mb-4">{ticket.codigo_ticket}</p>
+                    <div className="mb-4">
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold ${
+                        ticket.estado === 'disponible' ? 'bg-green-400 text-green-900' :
+                        ticket.estado === 'asignado' ? 'bg-yellow-400 text-yellow-900' :
+                        ticket.estado === 'inscrito' ? 'bg-blue-300 text-blue-900' :
+                        ticket.estado === 'volado' ? 'bg-slate-400 text-slate-900' :
+                        'bg-red-400 text-red-900'
                       }`}>
                         {ticket.estado.toUpperCase()}
                       </span>
                     </div>
                     {ticket.pasajeros && ticket.pasajeros.length > 0 && (
-                      <div className="mt-3 text-sm opacity-90">
+                      <div className="mt-4 pt-4 border-t border-white/20 text-sm space-y-1">
                         {ticket.pasajeros.map((p, i) => (
-                          <p key={i}>{p.nombre} ({p.rut})</p>
+                          <p key={i} className="font-medium">{p.nombre} <span className="opacity-70">({p.rut})</span></p>
                         ))}
                       </div>
                     )}
@@ -159,36 +159,45 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Acciones */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Acciones - Botones Modernos */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <button
             onClick={() => router.push('/vuelos')}
-            className="bg-primary text-white rounded-lg p-6 hover:bg-blue-700 transition text-left"
+            className="group relative bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-blue-400/20"
           >
-            <div className="text-2xl mb-2">🛫</div>
-            <h3 className="text-xl font-semibold mb-1">Ver Vuelos</h3>
-            <p className="text-sm opacity-90">Explora vuelos disponibles y reserva tu asiento</p>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+            <div className="relative">
+              <div className="text-5xl mb-4">✈️</div>
+              <h3 className="text-2xl font-bold text-white mb-2">Tandas de Vuelo</h3>
+              <p className="text-sm text-blue-100">Explora y reserva en las tandas disponibles</p>
+            </div>
           </button>
 
           {user?.rol === 'passenger' && (
             <button
               onClick={() => router.push('/mi-pase')}
-              className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-left"
+              className="group relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-green-400/20"
             >
-              <div className="text-2xl mb-2">🎫</div>
-              <h3 className="text-xl font-semibold mb-1">Mi Pase</h3>
-              <p className="text-sm opacity-90">Ver pase de embarque y código QR</p>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+              <div className="relative">
+                <div className="text-5xl mb-4">🎫</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Mi Pase</h3>
+                <p className="text-sm text-green-100">Ver pase de embarque y código QR</p>
+              </div>
             </button>
           )}
 
           {user?.rol === 'staff' && (
             <button
               onClick={() => router.push('/staff')}
-              className="bg-secondary text-white rounded-lg p-6 hover:bg-red-700 transition text-left md:col-span-2"
+              className="group relative bg-gradient-to-br from-secondary to-red-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-red-400/20 md:col-span-2 lg:col-span-1"
             >
-              <div className="text-2xl mb-2">⚙️</div>
-              <h3 className="text-xl font-semibold mb-1">Panel Staff</h3>
-              <p className="text-sm opacity-90">Gestión de pasajeros y vuelos</p>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+              <div className="relative">
+                <div className="text-5xl mb-4">⚙️</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Panel Staff</h3>
+                <p className="text-sm text-red-100">Gestión de pasajeros y vuelos</p>
+              </div>
             </button>
           )}
         </div>
