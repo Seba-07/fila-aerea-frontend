@@ -22,6 +22,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [editingTicket, setEditingTicket] = useState<EditingTicket | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingRefuelings, setPendingRefuelings] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -35,6 +36,20 @@ export default function HomePage() {
         if (data.tickets) {
           updateTickets(data.tickets);
         }
+
+        // Si es staff, cargar notificaciones de reabastecimiento pendiente
+        if (user?.rol === 'staff') {
+          try {
+            const { api } = await import('@/lib/api');
+            const notificationsRes = await api.get('/notifications');
+            const refuelingNotifs = notificationsRes.data.filter(
+              (n: any) => n.tipo === 'reabastecimiento_pendiente' && !n.leido
+            );
+            setPendingRefuelings(refuelingNotifs);
+          } catch (error) {
+            console.error('Error al cargar notificaciones:', error);
+          }
+        }
       } catch (error) {
         console.error('Error al cargar perfil:', error);
       } finally {
@@ -43,7 +58,7 @@ export default function HomePage() {
     };
 
     fetchProfile();
-  }, [isAuthenticated, router, updateTickets]);
+  }, [isAuthenticated, router, updateTickets, user?.rol]);
 
   const handleLogout = () => {
     logout();
@@ -172,6 +187,45 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+
+        {/* Alerta de reabastecimientos pendientes para staff */}
+        {user?.rol === 'staff' && pendingRefuelings.length > 0 && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl border border-red-400/30 p-6 shadow-2xl">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">⚠️</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    ⛽ Reabastecimientos Pendientes
+                  </h3>
+                  <p className="text-white/90 text-sm mb-4">
+                    Hay {pendingRefuelings.length} avión(es) que requieren reabastecimiento por reprogramación por combustible.
+                  </p>
+                  <div className="space-y-2 mb-4">
+                    {pendingRefuelings.map((notif) => (
+                      <div key={notif._id} className="bg-white/10 rounded-lg p-3">
+                        <p className="text-white font-medium">
+                          Avión {notif.metadata?.matricula}
+                        </p>
+                        <p className="text-white/80 text-sm">{notif.mensaje}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => router.push('/staff/reabastecimientos')}
+                    className="px-6 py-2 bg-white text-red-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
+                  >
+                    Ir a Reabastecimientos
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Notificaciones de reprogramación */}
         {user?.rol === 'passenger' && tickets.some(t => t.reprogramacion_pendiente) && (

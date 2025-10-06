@@ -436,21 +436,21 @@ export default function VuelosPage() {
                           <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
                               <h3 className="font-bold text-lg text-white">{flight.aircraftId?.matricula}</h3>
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                                  flight.estado === 'abierto'
-                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                    : flight.estado === 'en_vuelo'
-                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                                    : flight.estado === 'finalizado'
-                                    ? 'bg-slate-500/20 text-slate-300 border-slate-500/40'
-                                    : flight.estado === 'reprogramado'
-                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                    : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
-                                }`}
-                              >
-                                {flight.estado.toUpperCase().replace('_', ' ')}
-                              </span>
+                              {/* Botón cancelar avión por el día */}
+                              {user?.rol === 'staff' && flight.estado === 'abierto' && (
+                                <button
+                                  onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
+                                  className="px-3 py-1 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
+                                  title="Cancelar avión por el día"
+                                >
+                                  Cancelar Día
+                                </button>
+                              )}
+                              {(!user || user?.rol !== 'staff' || flight.estado !== 'abierto') && (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium border bg-transparent">
+                                  {/* Placeholder vacío */}
+                                </span>
+                              )}
                             </div>
                             <p className="text-sm text-slate-400">{flight.aircraftId?.modelo}</p>
                           </div>
@@ -538,12 +538,24 @@ export default function VuelosPage() {
                                         En Vuelo
                                       </button>
                                     </div>
-                                    <button
-                                      onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
-                                      className="w-full px-3 py-1.5 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
-                                    >
-                                      Cancelar Avión por el Día
-                                    </button>
+                                    {/* Badge de estado */}
+                                    <div className="w-full flex justify-center">
+                                      <span
+                                        className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
+                                          flight.estado === 'abierto'
+                                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                            : flight.estado === 'en_vuelo'
+                                            ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                                            : flight.estado === 'finalizado'
+                                            ? 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                                            : flight.estado === 'reprogramado'
+                                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                            : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                                        }`}
+                                      >
+                                        {flight.estado.toUpperCase().replace('_', ' ')}
+                                      </span>
+                                    </div>
                                   </>
                                 )}
                                 {flight.estado === 'en_vuelo' && (
