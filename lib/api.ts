@@ -74,3 +74,10 @@ export const boardingAPI = {
   getBoardingPass: (id: string) => api.get(`/boarding_pass/${id}`),
   scanQR: (qr_token: string) => api.post('/boarding_pass/scan', { qr_token }),
 };
+
+// Staff
+export const staffAPI = {
+  registerPassenger: (data: { nombre: string; email: string; cantidad_tickets: number }) =>
+    api.post('/staff/passengers', data),
+  getPassengers: () => api.get('/staff/passengers'),
+};

@@ -8,7 +8,7 @@ import { useSocket } from '@/lib/hooks/useSocket';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, ticket, isAuthenticated, updateTicket, logout } = useAuthStore();
+  const { user, tickets, isAuthenticated, updateTickets, logout } = useAuthStore();
   const { connected } = useSocket();
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +21,8 @@ export default function HomePage() {
     const fetchProfile = async () => {
       try {
         const { data } = await userAPI.getMe();
-        if (data.ticket) {
-          updateTicket(data.ticket);
+        if (data.tickets) {
+          updateTickets(data.tickets);
         }
       } catch (error) {
         console.error('Error al cargar perfil:', error);
@@ -32,7 +32,7 @@ export default function HomePage() {
     };
 
     fetchProfile();
-  }, [isAuthenticated, router, updateTicket]);
+  }, [isAuthenticated, router, updateTickets]);
 
   const handleLogout = () => {
     logout();
@@ -50,13 +50,13 @@ export default function HomePage() {
     );
   }
 
-  if (!ticket && user?.rol === 'passenger') {
+  if (tickets.length === 0 && user?.rol === 'passenger') {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Sin Ticket</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Sin Tickets</h1>
           <p className="text-gray-600 mb-6">
-            No tienes un ticket activo. Contacta con el organizador.
+            No tienes tickets activos. Contacta con el organizador.
           </p>
           <button
             onClick={handleLogout}
@@ -74,7 +74,14 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">✈️ Fila Aérea</h1>
+          <div className="flex items-center gap-3">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
+              alt="Cessna"
+              className="h-10"
+            />
+            <h1 className="text-2xl font-bold text-primary">Fila Aérea</h1>
+          </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div
@@ -98,22 +105,6 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Banner Ticket */}
-        {ticket && (
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-8 mb-8 text-white">
-            <div className="text-center">
-              <p className="text-sm uppercase tracking-wide opacity-90">Tu Ticket</p>
-              <p className="text-4xl font-bold my-2">{ticket.codigo_ticket}</p>
-              <p className="text-lg opacity-90">
-                {ticket.cantidad_pasajeros} {ticket.cantidad_pasajeros === 1 ? 'Pasajero' : 'Pasajeros'}
-              </p>
-              {ticket.estado === 'pendiente' && (
-                <p className="text-sm mt-2 opacity-75">Debes inscribirte en una tanda</p>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Usuario Info */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
@@ -127,14 +118,46 @@ export default function HomePage() {
               <span className="font-medium">Rol:</span>{' '}
               <span className="capitalize">{user?.rol}</span>
             </p>
-            {ticket && (
-              <p>
-                <span className="font-medium">Estado:</span>{' '}
-                <span className="capitalize">{ticket.estado}</span>
-              </p>
-            )}
           </div>
         </div>
+
+        {/* Tickets del pasajero */}
+        {user?.rol === 'passenger' && tickets.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Mis Tickets</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              {tickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="bg-gradient-to-r from-primary to-blue-700 rounded-lg shadow-lg p-6 text-white"
+                >
+                  <div className="text-center">
+                    <p className="text-sm uppercase tracking-wide opacity-90">Ticket</p>
+                    <p className="text-3xl font-bold my-2">{ticket.codigo_ticket}</p>
+                    <div className="mt-3">
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm ${
+                        ticket.estado === 'disponible' ? 'bg-green-500' :
+                        ticket.estado === 'asignado' ? 'bg-yellow-500' :
+                        ticket.estado === 'inscrito' ? 'bg-blue-500' :
+                        ticket.estado === 'volado' ? 'bg-gray-500' :
+                        'bg-red-500'
+                      }`}>
+                        {ticket.estado.toUpperCase()}
+                      </span>
+                    </div>
+                    {ticket.pasajeros && ticket.pasajeros.length > 0 && (
+                      <div className="mt-3 text-sm opacity-90">
+                        {ticket.pasajeros.map((p, i) => (
+                          <p key={i}>{p.nombre} ({p.rut})</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Acciones */}
         <div className="grid gap-4 md:grid-cols-2">
@@ -147,23 +170,25 @@ export default function HomePage() {
             <p className="text-sm opacity-90">Explora vuelos disponibles y reserva tu asiento</p>
           </button>
 
-          <button
-            onClick={() => router.push('/mi-pase')}
-            className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-left"
-          >
-            <div className="text-2xl mb-2">🎫</div>
-            <h3 className="text-xl font-semibold mb-1">Mi Pase</h3>
-            <p className="text-sm opacity-90">Ver pase de embarque y código QR</p>
-          </button>
+          {user?.rol === 'passenger' && (
+            <button
+              onClick={() => router.push('/mi-pase')}
+              className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-left"
+            >
+              <div className="text-2xl mb-2">🎫</div>
+              <h3 className="text-xl font-semibold mb-1">Mi Pase</h3>
+              <p className="text-sm opacity-90">Ver pase de embarque y código QR</p>
+            </button>
+          )}
 
-          {user?.rol !== 'passenger' && (
+          {user?.rol === 'staff' && (
             <button
               onClick={() => router.push('/staff')}
-              className="bg-purple-600 text-white rounded-lg p-6 hover:bg-purple-700 transition text-left md:col-span-2"
+              className="bg-secondary text-white rounded-lg p-6 hover:bg-red-700 transition text-left md:col-span-2"
             >
               <div className="text-2xl mb-2">⚙️</div>
               <h3 className="text-xl font-semibold mb-1">Panel Staff</h3>
-              <p className="text-sm opacity-90">Gestión de vuelos y embarques</p>
+              <p className="text-sm opacity-90">Gestión de pasajeros y vuelos</p>
             </button>
           )}
         </div>

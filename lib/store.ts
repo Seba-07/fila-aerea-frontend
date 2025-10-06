@@ -16,68 +16,65 @@ interface Ticket {
   id: string;
   codigo_ticket: string;
   pasajeros: Pasajero[];
-  cantidad_pasajeros: number;
   flightId?: string;
-  estado: 'pendiente' | 'inscrito' | 'volado' | 'cancelado';
+  estado: 'disponible' | 'asignado' | 'inscrito' | 'volado' | 'cancelado';
 }
 
 interface AuthState {
   user: User | null;
-  ticket: Ticket | null;
+  tickets: Ticket[];
   token: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, ticket: Ticket | null, token: string) => void;
+  setAuth: (user: User, tickets: Ticket[], token: string) => void;
   logout: () => void;
-  updateTicket: (ticket: Ticket) => void;
+  updateTickets: (tickets: Ticket[]) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => {
   // Cargar estado inicial del localStorage (solo en cliente)
   let initialUser = null;
-  let initialTicket = null;
+  let initialTickets: Ticket[] = [];
   let initialToken = null;
 
   if (typeof window !== 'undefined') {
     const storedUser = localStorage.getItem('user');
-    const storedTicket = localStorage.getItem('ticket');
+    const storedTickets = localStorage.getItem('tickets');
     const storedToken = localStorage.getItem('token');
 
     if (storedUser) initialUser = JSON.parse(storedUser);
-    if (storedTicket) initialTicket = JSON.parse(storedTicket);
+    if (storedTickets) initialTickets = JSON.parse(storedTickets);
     if (storedToken) initialToken = storedToken;
   }
 
   return {
     user: initialUser,
-    ticket: initialTicket,
+    tickets: initialTickets,
     token: initialToken,
     isAuthenticated: !!initialToken,
 
-    setAuth: (user, ticket, token) => {
+    setAuth: (user, tickets, token) => {
       if (typeof window !== 'undefined') {
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);
-        if (ticket) {
-          localStorage.setItem('ticket', JSON.stringify(ticket));
-        }
+        localStorage.setItem('tickets', JSON.stringify(tickets));
       }
-      set({ user, ticket, token, isAuthenticated: true });
+      set({ user, tickets, token, isAuthenticated: true });
     },
 
     logout: () => {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('user');
-        localStorage.removeItem('ticket');
+        localStorage.removeItem('tickets');
         localStorage.removeItem('token');
       }
-      set({ user: null, ticket: null, token: null, isAuthenticated: false });
+      set({ user: null, tickets: [], token: null, isAuthenticated: false });
     },
 
-    updateTicket: (ticket) => {
+    updateTickets: (tickets) => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ticket', JSON.stringify(ticket));
+        localStorage.setItem('tickets', JSON.stringify(tickets));
       }
-      set({ ticket });
+      set({ tickets });
     },
   };
 });

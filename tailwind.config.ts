@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#2563eb',
-        secondary: '#64748b',
+        primary: '#0066CC', // Cessna blue
+        secondary: '#CC0000', // Cessna red
         success: '#10b981',
         danger: '#ef4444',
         warning: '#f59e0b',

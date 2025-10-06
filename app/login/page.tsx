@@ -27,11 +27,11 @@ export default function LoginPage() {
         localStorage.setItem('token', data.token);
       }
 
-      // Cargar perfil completo con ticket (ahora el interceptor tendrá el token)
+      // Cargar perfil completo con tickets (ahora el interceptor tendrá el token)
       const profileData = await userAPI.getMe();
       console.log('Profile data:', profileData.data);
 
-      setAuth(data.user, profileData.data.ticket || null, data.token);
+      setAuth(data.user, profileData.data.tickets || [], data.token);
 
       router.push('/');
     } catch (err: any) {
@@ -43,10 +43,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-500 to-blue-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-primary to-blue-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">✈️ Fila Aérea</h1>
+          <div className="mb-4">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
+              alt="Cessna Logo"
+              className="h-20 mx-auto"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">Fila Aérea</h1>
           <p className="text-gray-600 mt-2">Inicia sesión con tu email</p>
         </div>
 

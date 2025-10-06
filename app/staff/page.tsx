@@ -3,54 +3,65 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { flightsAPI, boardingAPI } from '@/lib/api';
+import { staffAPI } from '@/lib/api';
 
 export default function StaffPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [flights, setFlights] = useState<any[]>([]);
-  const [scanMode, setScanMode] = useState(false);
-  const [qrInput, setQrInput] = useState('');
+  const [passengers, setPassengers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Form state
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [cantidadTickets, setCantidadTickets] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
-    if (!isAuthenticated || (user?.rol !== 'staff' && user?.rol !== 'admin')) {
+    if (!isAuthenticated || user?.rol !== 'staff') {
       router.push('/');
       return;
     }
 
-    const fetchFlights = async () => {
+    const fetchPassengers = async () => {
       try {
-        const { data } = await flightsAPI.getFlights();
-        setFlights(data);
+        const { data } = await staffAPI.getPassengers();
+        setPassengers(data);
       } catch (error) {
-        console.error('Error al cargar vuelos:', error);
+        console.error('Error al cargar pasajeros:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFlights();
+    fetchPassengers();
   }, [isAuthenticated, user, router]);
 
-  const handleUpdateFlight = async (id: string, updates: any) => {
-    try {
-      await flightsAPI.updateFlight(id, updates);
-      alert('Vuelo actualizado');
-      const { data } = await flightsAPI.getFlights();
-      setFlights(data);
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al actualizar vuelo');
-    }
-  };
+  const handleRegisterPassenger = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
 
-  const handleScanQR = async () => {
     try {
-      const { data } = await boardingAPI.scanQR(qrInput);
-      alert(`✓ Embarque exitoso\nAsiento: ${data.boardingPass.seatNumber}`);
-      setQrInput('');
+      await staffAPI.registerPassenger({
+        nombre,
+        email: email.toLowerCase(),
+        cantidad_tickets: cantidadTickets,
+      });
+
+      alert(`✓ Pasajero ${nombre} registrado con ${cantidadTickets} tickets`);
+
+      // Reset form
+      setNombre('');
+      setEmail('');
+      setCantidadTickets(1);
+
+      // Refresh list
+      const { data } = await staffAPI.getPassengers();
+      setPassengers(data);
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al escanear QR');
+      alert(error.response?.data?.error || 'Error al registrar pasajero');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -64,130 +75,106 @@ export default function StaffPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-purple-600 text-white shadow">
+      <header className="bg-secondary text-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/')} className="text-white">
+            <button onClick={() => router.push('/')} className="text-white hover:opacity-80">
               ← Inicio
             </button>
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
+              alt="Cessna"
+              className="h-8"
+            />
             <h1 className="text-2xl font-bold">Panel Staff</h1>
           </div>
-          <button
-            onClick={() => setScanMode(!scanMode)}
-            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100"
-          >
-            {scanMode ? 'Ver Vuelos' : 'Escanear QR'}
-          </button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {scanMode ? (
-          <div className="max-w-md mx-auto bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Escanear QR</h2>
-            <div className="space-y-4">
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Formulario de Registro */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Registrar Nuevo Pasajero</h2>
+            <form onSubmit={handleRegisterPassenger} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Token QR</label>
+                <label className="block text-sm font-medium mb-1">Nombre</label>
                 <input
                   type="text"
-                  value={qrInput}
-                  onChange={(e) => setQrInput(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  placeholder="Pega el token del QR"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                  placeholder="Juan Pérez"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                  placeholder="juan@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Cantidad de Tickets (1-10)
+                </label>
+                <input
+                  type="number"
+                  value={cantidadTickets}
+                  onChange={(e) => setCantidadTickets(parseInt(e.target.value))}
+                  min={1}
+                  max={10}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary"
+                />
+              </div>
+
               <button
-                onClick={handleScanQR}
-                disabled={!qrInput}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50"
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-secondary text-white py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
               >
-                Escanear
+                {submitting ? 'Registrando...' : 'Registrar Pasajero'}
               </button>
-              <p className="text-xs text-gray-500">
-                Nota: En producción, usar cámara con librería de escaneo QR
-              </p>
+            </form>
+          </div>
+
+          {/* Lista de Pasajeros */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Pasajeros Registrados</h2>
+            <div className="space-y-3">
+              {passengers.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">
+                  No hay pasajeros registrados
+                </p>
+              ) : (
+                passengers.map((passenger) => (
+                  <div
+                    key={passenger.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold">{passenger.nombre}</h3>
+                        <p className="text-sm text-gray-600">{passenger.email}</p>
+                      </div>
+                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {passenger.tickets_count} {passenger.tickets_count === 1 ? 'ticket' : 'tickets'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Gestión de Vuelos</h2>
-            {flights.map((flight) => (
-              <div key={flight._id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold">{flight.aircraftId?.alias}</h3>
-                    <p className="text-sm text-gray-500">
-                      {new Date(flight.fechaHoraProg).toLocaleString('es-ES')}
-                    </p>
-                  </div>
-                  <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium capitalize">
-                    {flight.estado}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-                  <div>
-                    <p className="text-gray-500">Zona</p>
-                    <p className="font-medium">{flight.zona}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Asientos libres</p>
-                    <p className="font-medium">{flight.asientosLibres}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Turno máx</p>
-                    <p className="font-medium">{flight.turno_max_permitido}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {flight.estado === 'draft' && (
-                    <button
-                      onClick={() => handleUpdateFlight(flight._id, { estado: 'abierto' })}
-                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                    >
-                      Abrir Vuelo
-                    </button>
-                  )}
-                  {flight.estado === 'abierto' && (
-                    <>
-                      <button
-                        onClick={() => handleUpdateFlight(flight._id, { estado: 'boarding' })}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      >
-                        Iniciar Boarding
-                      </button>
-                      <button
-                        onClick={() => {
-                          const newTurno = prompt('Nuevo turno_max_permitido:', flight.turno_max_permitido);
-                          if (newTurno) handleUpdateFlight(flight._id, { turno_max_permitido: parseInt(newTurno) });
-                        }}
-                        className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-sm"
-                      >
-                        Cambiar Turno Máx
-                      </button>
-                    </>
-                  )}
-                  {flight.estado === 'boarding' && (
-                    <button
-                      onClick={() => flightsAPI.closeFlight(flight._id).then(() => {
-                        alert('Vuelo cerrado');
-                        const fetch = async () => {
-                          const { data } = await flightsAPI.getFlights();
-                          setFlights(data);
-                        };
-                        fetch();
-                      })}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                    >
-                      Cerrar Vuelo
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );
