@@ -15,6 +15,7 @@ export default function VuelosPage() {
   const [showCreateTanda, setShowCreateTanda] = useState(false);
   const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
   const [newCapacity, setNewCapacity] = useState<number>(0);
+  const [editingTanda, setEditingTanda] = useState<number | null>(null);
 
   // Form state para nueva tanda
   const [numeroTanda, setNumeroTanda] = useState<number>(1);
@@ -27,14 +28,19 @@ export default function VuelosPage() {
       return;
     }
 
-    fetchData();
-  }, [isAuthenticated, router]);
+    if (user) {
+      fetchData();
+    }
+  }, [isAuthenticated, user, router]);
 
   const fetchData = async () => {
     try {
+      // Para pasajeros, mostrar solo vuelos abiertos. Para staff, mostrar todos los estados activos.
+      const estadosFilter = user?.rol === 'staff' ? undefined : 'abierto';
+
       const [flightsRes, aircraftsRes] = await Promise.all([
-        flightsAPI.getFlights(),
-        api.get('/staff/aircrafts'),
+        flightsAPI.getFlights(estadosFilter),
+        api.get('/staff/aircrafts').catch(() => ({ data: [] })), // Ignorar error si no es staff
       ]);
 
       setFlights(flightsRes.data);
@@ -129,6 +135,41 @@ export default function VuelosPage() {
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al crear tanda');
+    }
+  };
+
+  const handleEditTanda = (numero_tanda: number) => {
+    const tandaFlights = flights.filter(f => f.numero_tanda === numero_tanda);
+    setSelectedAircrafts(tandaFlights.map(f => f.aircraftId._id || f.aircraftId));
+    setEditingTanda(numero_tanda);
+  };
+
+  const handleAddAircraftToTanda = async (numero_tanda: number, aircraftId: string) => {
+    try {
+      const tanda = flights.find(f => f.numero_tanda === numero_tanda);
+      await api.post('/staff/tandas', {
+        numero_tanda,
+        fecha_hora: tanda.fecha_hora,
+        aircraftIds: [aircraftId],
+      });
+      alert('Avión agregado a la tanda exitosamente');
+      setEditingTanda(null);
+      setSelectedAircrafts([]);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al agregar avión');
+    }
+  };
+
+  const handleRemoveAircraftFromTanda = async (flightId: string) => {
+    if (!confirm('¿Eliminar este avión de la tanda?')) return;
+
+    try {
+      await api.delete(`/flights/${flightId}`);
+      alert('Avión eliminado de la tanda exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al eliminar avión de la tanda');
     }
   };
 
@@ -280,14 +321,60 @@ export default function VuelosPage() {
                       </p>
                     </div>
                     {user?.rol === 'staff' && (
-                      <button
-                        onClick={() => handleDeleteTanda(tandaNum)}
-                        className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
-                      >
-                        Eliminar Tanda
-                      </button>
+                      <div className="flex gap-2">
+                        {editingTanda === tandaNum ? (
+                          <button
+                            onClick={() => {
+                              setEditingTanda(null);
+                              setSelectedAircrafts([]);
+                            }}
+                            className="px-4 py-2 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-sm font-medium transition-colors"
+                          >
+                            Cancelar Edición
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEditTanda(tandaNum)}
+                            className="px-4 py-2 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors"
+                          >
+                            Editar Tanda
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteTanda(tandaNum)}
+                          className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
+                        >
+                          Eliminar Tanda
+                        </button>
+                      </div>
                     )}
                   </div>
+
+                  {/* Sección de agregar avión */}
+                  {user?.rol === 'staff' && editingTanda === tandaNum && (
+                    <div className="mb-4 p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                      <h3 className="text-white font-medium mb-3">Agregar Avión a la Tanda</h3>
+                      <div className="grid gap-2 md:grid-cols-3">
+                        {aircrafts
+                          .filter(a => a.habilitado && !selectedAircrafts.includes(a._id))
+                          .map((aircraft) => (
+                            <button
+                              key={aircraft._id}
+                              onClick={() => handleAddAircraftToTanda(tandaNum, aircraft._id)}
+                              className="flex items-center gap-2 p-3 rounded bg-slate-600 text-slate-300 hover:bg-slate-500 transition text-left"
+                            >
+                              <div>
+                                <p className="font-medium text-sm">{aircraft.matricula}</p>
+                                <p className="text-xs opacity-80">{aircraft.modelo} ({aircraft.capacidad} asientos)</p>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                      {aircrafts.filter(a => a.habilitado && !selectedAircrafts.includes(a._id)).length === 0 && (
+                        <p className="text-slate-400 text-sm">No hay más aviones disponibles para agregar</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Fichas de Aviones */}
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -300,8 +387,19 @@ export default function VuelosPage() {
                       return (
                         <div
                           key={flight._id}
-                          className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border border-slate-600 p-5 hover:shadow-xl hover:scale-105 transition-all"
+                          className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border border-slate-600 p-5 hover:shadow-xl hover:scale-105 transition-all relative"
                         >
+                          {/* Botón eliminar avión de tanda */}
+                          {user?.rol === 'staff' && editingTanda === tandaNum && flight.asientos_ocupados === 0 && (
+                            <button
+                              onClick={() => handleRemoveAircraftFromTanda(flight._id)}
+                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 text-white rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
+                              title="Eliminar avión de la tanda"
+                            >
+                              ✕
+                            </button>
+                          )}
+
                           {/* Info del Avión */}
                           <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
