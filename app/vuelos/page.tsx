@@ -188,7 +188,7 @@ export default function VuelosPage() {
           <div className="mb-6">
             <button
               onClick={() => setShowCreateTanda(!showCreateTanda)}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              className="px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               {showCreateTanda ? 'Cancelar' : '+ Crear Nueva Tanda'}
             </button>
@@ -252,7 +252,7 @@ export default function VuelosPage() {
 
             <button
               onClick={handleCreateTanda}
-              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              className="w-full px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               Crear Tanda
             </button>
@@ -282,7 +282,7 @@ export default function VuelosPage() {
                     {user?.rol === 'staff' && (
                       <button
                         onClick={() => handleDeleteTanda(tandaNum)}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium"
+                        className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
                       >
                         Eliminar Tanda
                       </button>
@@ -307,16 +307,16 @@ export default function VuelosPage() {
                             <div className="flex items-center justify-between mb-2">
                               <h3 className="font-bold text-lg text-white">{flight.aircraftId?.matricula}</h3>
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                className={`px-3 py-1 rounded-full text-xs font-medium border ${
                                   flight.estado === 'abierto'
-                                    ? 'bg-green-400 text-green-900'
+                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                                     : flight.estado === 'en_vuelo'
-                                    ? 'bg-purple-400 text-purple-900'
+                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
                                     : flight.estado === 'finalizado'
-                                    ? 'bg-gray-400 text-gray-900'
+                                    ? 'bg-slate-500/20 text-slate-300 border-slate-500/40'
                                     : flight.estado === 'reprogramado'
-                                    ? 'bg-orange-400 text-orange-900'
-                                    : 'bg-gray-400 text-gray-900'
+                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                    : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
                                 }`}
                               >
                                 {flight.estado.toUpperCase().replace('_', ' ')}
@@ -339,13 +339,13 @@ export default function VuelosPage() {
                               <div className="flex gap-2 mt-2">
                                 <button
                                   onClick={() => handleUpdateFlightCapacity(flight._id)}
-                                  className="flex-1 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                                  className="flex-1 px-2 py-1 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs transition-colors"
                                 >
                                   Guardar
                                 </button>
                                 <button
                                   onClick={() => setEditingCapacity(null)}
-                                  className="flex-1 px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs"
+                                  className="flex-1 px-2 py-1 bg-slate-700/80 text-white rounded hover:bg-slate-700 text-xs transition-colors"
                                 >
                                   Cancelar
                                 </button>
@@ -396,13 +396,13 @@ export default function VuelosPage() {
                                   <>
                                     <button
                                       onClick={() => handleRescheduleFlight(flight._id)}
-                                      className="flex-1 px-3 py-1.5 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs font-medium"
+                                      className="flex-1 px-3 py-1.5 bg-amber-600/80 text-white rounded hover:bg-amber-600 text-xs font-medium transition-colors"
                                     >
                                       Reprogramar
                                     </button>
                                     <button
                                       onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                      className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
+                                      className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
                                     >
                                       En Vuelo
                                     </button>
@@ -411,7 +411,7 @@ export default function VuelosPage() {
                                 {flight.estado === 'en_vuelo' && (
                                   <button
                                     onClick={() => handleChangeState(flight._id, 'finalizado')}
-                                    className="flex-1 px-3 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-xs font-medium"
+                                    className="flex-1 px-3 py-1.5 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-xs font-medium transition-colors"
                                   >
                                     Finalizado
                                   </button>

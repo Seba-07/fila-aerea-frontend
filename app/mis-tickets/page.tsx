@@ -206,12 +206,12 @@ export default function MisTicketsPage() {
                 <div className="text-center mb-4">
                   <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Ticket</p>
                   <p className="text-2xl font-black text-white tracking-tight mb-3">{ticket.codigo_ticket}</p>
-                  <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold ${
-                    ticket.estado === 'disponible' ? 'bg-green-400 text-green-900' :
-                    ticket.estado === 'asignado' ? 'bg-yellow-400 text-yellow-900' :
-                    ticket.estado === 'inscrito' ? 'bg-blue-300 text-blue-900' :
-                    ticket.estado === 'volado' ? 'bg-slate-400 text-slate-900' :
-                    'bg-red-400 text-red-900'
+                  <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium border ${
+                    ticket.estado === 'disponible' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                    ticket.estado === 'asignado' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                    ticket.estado === 'inscrito' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                    ticket.estado === 'volado' ? 'bg-slate-500/20 text-slate-300 border-slate-500/30' :
+                    'bg-red-500/20 text-red-300 border-red-500/30'
                   }`}>
                     {ticket.estado.toUpperCase()}
                   </span>
@@ -266,13 +266,13 @@ export default function MisTicketsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(ticket.id)}
-                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                        className="flex-1 px-4 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                       >
                         Guardar
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium"
+                        className="flex-1 px-4 py-2 bg-slate-700/80 text-white rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium"
                       >
                         Cancelar
                       </button>
@@ -297,7 +297,7 @@ export default function MisTicketsPage() {
                     {ticket.estado !== 'volado' && ticket.estado !== 'cancelado' && (
                       <button
                         onClick={() => handleEdit(ticket)}
-                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                        className="w-full px-4 py-2 bg-indigo-600/80 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm font-medium"
                       >
                         {ticket.pasajeros && ticket.pasajeros.length > 0 ? 'Editar' : 'Asignar Pasajero'}
                       </button>
@@ -331,7 +331,7 @@ export default function MisTicketsPage() {
                   </p>
                   <button
                     onClick={() => handleAcceptReschedule(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition"
+                    className="w-full px-6 py-3 bg-emerald-600/80 text-white rounded-lg hover:bg-emerald-600 font-medium transition-colors"
                   >
                     Aceptar
                   </button>
@@ -356,7 +356,7 @@ export default function MisTicketsPage() {
                   />
                   <button
                     onClick={() => handleRescheduleToTanda(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
+                    className="w-full px-6 py-3 bg-blue-600/80 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
                   >
                     Reprogramar
                   </button>
@@ -399,7 +399,7 @@ export default function MisTicketsPage() {
                   </div>
                   <button
                     onClick={() => handleRejectReschedule(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition"
+                    className="w-full px-6 py-3 bg-red-600/80 text-white rounded-lg hover:bg-red-600 font-medium transition-colors"
                   >
                     Rechazar y Devolver
                   </button>

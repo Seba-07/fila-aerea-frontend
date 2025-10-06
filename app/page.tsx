@@ -158,12 +158,12 @@ export default function HomePage() {
                     <p className="text-xs uppercase tracking-widest opacity-80 mb-2">Ticket</p>
                     <p className="text-3xl font-black tracking-tight mb-4">{ticket.codigo_ticket}</p>
                     <div className="mb-4">
-                      <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold ${
-                        ticket.estado === 'disponible' ? 'bg-green-400 text-green-900' :
-                        ticket.estado === 'asignado' ? 'bg-yellow-400 text-yellow-900' :
-                        ticket.estado === 'inscrito' ? 'bg-blue-300 text-blue-900' :
-                        ticket.estado === 'volado' ? 'bg-slate-400 text-slate-900' :
-                        'bg-red-400 text-red-900'
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium ${
+                        ticket.estado === 'disponible' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                        ticket.estado === 'asignado' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                        ticket.estado === 'inscrito' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                        ticket.estado === 'volado' ? 'bg-slate-500/20 text-slate-300 border border-slate-500/30' :
+                        'bg-red-500/20 text-red-300 border border-red-500/30'
                       }`}>
                         {ticket.estado.toUpperCase()}
                       </span>
@@ -186,13 +186,13 @@ export default function HomePage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <button
             onClick={() => router.push('/vuelos')}
-            className="group relative bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-blue-400/20"
+            className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-blue-500/50"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors"></div>
             <div className="relative">
               <div className="text-5xl mb-4">✈️</div>
               <h3 className="text-2xl font-bold text-white mb-2">Tandas de Vuelo</h3>
-              <p className="text-sm text-blue-100">Explora y reserva en las tandas disponibles</p>
+              <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Explora y reserva en las tandas disponibles</p>
             </div>
           </button>
 
@@ -200,25 +200,25 @@ export default function HomePage() {
             <>
               <button
                 onClick={() => router.push('/mis-tickets')}
-                className="group relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-purple-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-indigo-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">✏️</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Mis Tickets</h3>
-                  <p className="text-sm text-purple-100">Editar pasajeros y asignar vuelos</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Editar pasajeros y asignar vuelos</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/mi-pase')}
-                className="group relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-green-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-emerald-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">🎫</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Mi Pase</h3>
-                  <p className="text-sm text-green-100">Ver pase de embarque y código QR</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pase de embarque y código QR</p>
                 </div>
               </button>
             </>
@@ -228,73 +228,73 @@ export default function HomePage() {
             <>
               <button
                 onClick={() => router.push('/staff/registro')}
-                className="group relative bg-gradient-to-br from-secondary to-red-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-red-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-blue-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">➕</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Registrar Pasajero</h3>
-                  <p className="text-sm text-red-100">Crear nuevo pasajero con tickets</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Crear nuevo pasajero con tickets</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/pasajeros')}
-                className="group relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-purple-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-violet-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-violet-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">👥</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Ver Pasajeros</h3>
-                  <p className="text-sm text-purple-100">Gestionar tickets de pasajeros</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Gestionar tickets de pasajeros</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/inscribir')}
-                className="group relative bg-gradient-to-br from-orange-600 to-orange-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-orange-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-sky-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-sky-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">📝</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Inscribir Pasajeros</h3>
-                  <p className="text-sm text-orange-100">Asignar pasajeros a vuelos</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Asignar pasajeros a vuelos</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/pagos')}
-                className="group relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-green-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-teal-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">💰</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Historial Pagos</h3>
-                  <p className="text-sm text-green-100">Ver transacciones y total recaudado</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver transacciones y total recaudado</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/aviones')}
-                className="group relative bg-gradient-to-br from-cyan-600 to-cyan-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-cyan-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-cyan-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-cyan-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">✈️</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Gestión Aviones</h3>
-                  <p className="text-sm text-cyan-100">Configurar capacidad de asientos</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Configurar capacidad de asientos</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/reabastecimientos')}
-                className="group relative bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-yellow-400/20"
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-amber-500/50"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-amber-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">⛽</div>
                   <h3 className="text-2xl font-bold text-white mb-2">Reabastecimientos</h3>
-                  <p className="text-sm text-yellow-100">Gestionar combustible de aviones</p>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Gestionar combustible de aviones</p>
                 </div>
               </button>
             </>
