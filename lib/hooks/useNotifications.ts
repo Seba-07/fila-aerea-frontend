@@ -48,12 +48,25 @@ export const useNotifications = (userId?: string) => {
           applicationServerKey: urlBase64ToUint8Array(publicKey),
         });
 
+        // Convertir keys a base64
+        const p256dhKey = subscription.getKey('p256dh');
+        const authKey = subscription.getKey('auth');
+
+        const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+          const bytes = new Uint8Array(buffer);
+          let binary = '';
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          return btoa(binary);
+        };
+
         // Enviar suscripción al servidor
         await api.post('/push/subscribe', {
           endpoint: subscription.endpoint,
           keys: {
-            p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))),
-            auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!))),
+            p256dh: arrayBufferToBase64(p256dhKey!),
+            auth: arrayBufferToBase64(authKey!),
           },
         });
 
