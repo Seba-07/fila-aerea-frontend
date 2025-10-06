@@ -61,6 +61,18 @@ export default function VuelosPage() {
     }
   };
 
+  const handleRescheduleFlight = async (flightId: string) => {
+    if (!confirm('¿Reprogramar este vuelo a la siguiente tanda?\n\nSe notificará a todos los pasajeros inscritos.')) return;
+
+    try {
+      const { data } = await api.post(`/flights/${flightId}/reschedule`);
+      alert(`Vuelo reprogramado exitosamente a Tanda ${data.tanda_nueva}.\n${data.pasajeros_afectados} pasajero(s) notificado(s).`);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al reprogramar vuelo');
+    }
+  };
+
   const handleEliminarPasajero = async (ticketId: string, passengerName: string) => {
     if (!confirm(`¿Eliminar a ${passengerName} del vuelo?`)) return;
 
@@ -214,7 +226,7 @@ export default function VuelosPage() {
             <div className="mb-4">
               <label className="block text-sm text-slate-400 mb-2">Seleccionar Aviones:</label>
               <div className="grid gap-2 md:grid-cols-3">
-                {aircrafts.map((aircraft) => (
+                {aircrafts.filter(a => a.habilitado).map((aircraft) => (
                   <label
                     key={aircraft._id}
                     className={`flex items-center gap-2 p-3 rounded cursor-pointer transition ${
@@ -298,12 +310,12 @@ export default function VuelosPage() {
                                 className={`px-3 py-1 rounded-full text-xs font-bold ${
                                   flight.estado === 'abierto'
                                     ? 'bg-green-400 text-green-900'
-                                    : flight.estado === 'programado'
-                                    ? 'bg-blue-400 text-blue-900'
-                                    : flight.estado === 'boarding'
-                                    ? 'bg-yellow-400 text-yellow-900'
                                     : flight.estado === 'en_vuelo'
                                     ? 'bg-purple-400 text-purple-900'
+                                    : flight.estado === 'finalizado'
+                                    ? 'bg-gray-400 text-gray-900'
+                                    : flight.estado === 'reprogramado'
+                                    ? 'bg-orange-400 text-orange-900'
                                     : 'bg-gray-400 text-gray-900'
                                 }`}
                               >
@@ -380,29 +392,21 @@ export default function VuelosPage() {
                               </button>
 
                               <div className="flex gap-2 flex-wrap">
-                                {flight.estado === 'programado' && (
-                                  <button
-                                    onClick={() => handleChangeState(flight._id, 'abierto')}
-                                    className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
-                                  >
-                                    Abrir
-                                  </button>
-                                )}
                                 {flight.estado === 'abierto' && (
-                                  <button
-                                    onClick={() => handleChangeState(flight._id, 'boarding')}
-                                    className="flex-1 px-3 py-1.5 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-xs font-medium"
-                                  >
-                                    Boarding
-                                  </button>
-                                )}
-                                {flight.estado === 'boarding' && (
-                                  <button
-                                    onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                    className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
-                                  >
-                                    En Vuelo
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => handleRescheduleFlight(flight._id)}
+                                      className="flex-1 px-3 py-1.5 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs font-medium"
+                                    >
+                                      Reprogramar
+                                    </button>
+                                    <button
+                                      onClick={() => handleChangeState(flight._id, 'en_vuelo')}
+                                      className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
+                                    >
+                                      En Vuelo
+                                    </button>
+                                  </>
                                 )}
                                 {flight.estado === 'en_vuelo' && (
                                   <button
