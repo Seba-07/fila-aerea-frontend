@@ -444,8 +444,8 @@ export default function HomePage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
               <div className="relative">
                 <div className="text-5xl mb-4">🎫</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Mi Pase</h3>
-                <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pase de embarque y código QR</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Mis Pases</h3>
+                <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pases de embarque de tus vuelos</p>
               </div>
             </button>
           )}
