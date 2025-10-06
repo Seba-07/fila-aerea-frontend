@@ -92,9 +92,22 @@ export default function MiPasePage() {
           {ticketsWithFlights.map((ticket) => {
             const pasajero = ticket.pasajeros?.[0];
             const flight = ticket.flight;
+            const hasReprogramacion = ticket.reprogramacion_pendiente;
 
             return (
               <div key={ticket.id} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
+                {/* Alerta de reprogramación */}
+                {hasReprogramacion && (
+                  <div className="bg-amber-600 p-4 text-center">
+                    <p className="text-white font-medium">
+                      ⚠️ Vuelo reprogramado de tanda {hasReprogramacion.numero_tanda_anterior} a tanda {hasReprogramacion.numero_tanda_nueva}
+                    </p>
+                    <p className="text-amber-100 text-sm mt-1">
+                      Por favor acepta o rechaza la reprogramación desde el home
+                    </p>
+                  </div>
+                )}
+
                 {/* Header con info del pasajero */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6">
                   <div className="flex items-center justify-between">
@@ -116,6 +129,7 @@ export default function MiPasePage() {
                         flight.estado === 'abierto' ? 'bg-emerald-500/20 text-emerald-300' :
                         flight.estado === 'boarding' ? 'bg-blue-500/20 text-blue-300' :
                         flight.estado === 'volando' ? 'bg-purple-500/20 text-purple-300' :
+                        flight.estado === 'reprogramado' ? 'bg-amber-500/20 text-amber-300' :
                         'bg-slate-500/20 text-slate-300'
                       }`}>
                         <div className="w-2 h-2 rounded-full bg-current"></div>
@@ -135,7 +149,14 @@ export default function MiPasePage() {
                     </div>
                     <div>
                       <p className="text-sm text-slate-400 mb-1">Tanda</p>
-                      <p className="text-3xl font-bold text-blue-400">#{flight.numero_tanda}</p>
+                      {hasReprogramacion ? (
+                        <div>
+                          <p className="text-3xl font-bold text-amber-400">#{hasReprogramacion.numero_tanda_nueva}</p>
+                          <p className="text-xs text-slate-400 line-through">#{hasReprogramacion.numero_tanda_anterior}</p>
+                        </div>
+                      ) : (
+                        <p className="text-3xl font-bold text-blue-400">#{flight.numero_tanda}</p>
+                      )}
                     </div>
                     <div>
                       <p className="text-sm text-slate-400 mb-1">Fecha y Hora</p>
@@ -145,6 +166,11 @@ export default function MiPasePage() {
                       <p className="text-sm text-slate-400">
                         {new Date(flight.fecha_hora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                       </p>
+                      {hasReprogramacion && (
+                        <p className="text-xs text-amber-400 mt-1">
+                          ⚠️ Pendiente de confirmación
+                        </p>
+                      )}
                     </div>
                   </div>
 
