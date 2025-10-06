@@ -37,10 +37,18 @@ function ReabastecimientosContent() {
   // Separar efecto para manejar el aircraftId de la URL después de cargar datos
   useEffect(() => {
     const aircraftIdFromUrl = searchParams.get('aircraftId');
+    console.log('🔍 DEBUG - aircraftId from URL:', aircraftIdFromUrl);
+    console.log('🔍 DEBUG - aircrafts:', aircrafts);
+    console.log('🔍 DEBUG - aircrafts IDs:', aircrafts.map(a => a._id));
 
     if (aircraftIdFromUrl && aircrafts.length > 0) {
+      console.log('✅ Setting values...');
       setLockedAircraftId(aircraftIdFromUrl);
-      setFormData(prev => ({ ...prev, aircraftId: aircraftIdFromUrl }));
+      setFormData(prev => {
+        const newData = { ...prev, aircraftId: aircraftIdFromUrl };
+        console.log('✅ New formData:', newData);
+        return newData;
+      });
       setShowForm(true);
     }
   }, [searchParams, aircrafts]);
@@ -210,6 +218,9 @@ function ReabastecimientosContent() {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Avión * {lockedAircraftId && <span className="text-red-400 text-xs">(Preseleccionado por alerta de combustible)</span>}
                   </label>
+                  <div className="text-xs text-yellow-300 mb-1">
+                    DEBUG: formData.aircraftId='{formData.aircraftId}' | locked='{lockedAircraftId}'
+                  </div>
                   <select
                     value={formData.aircraftId}
                     onChange={(e) => setFormData({ ...formData, aircraftId: e.target.value })}
@@ -224,7 +235,7 @@ function ReabastecimientosContent() {
                     <option value="">Seleccionar avión</option>
                     {aircrafts.map((aircraft) => (
                       <option key={aircraft._id} value={aircraft._id}>
-                        {aircraft.matricula} - {aircraft.modelo}
+                        {aircraft.matricula} - {aircraft.modelo} [ID: {aircraft._id}]
                       </option>
                     ))}
                   </select>
