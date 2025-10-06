@@ -205,22 +205,22 @@ export default function HomePage() {
                   <p className="text-white/90 text-sm mb-4">
                     Hay {pendingRefuelings.length} avión(es) que requieren reabastecimiento por reprogramación por combustible.
                   </p>
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-3">
                     {pendingRefuelings.map((notif) => (
-                      <div key={notif._id} className="bg-white/10 rounded-lg p-3">
-                        <p className="text-white font-medium">
+                      <div key={notif._id} className="bg-white/10 rounded-lg p-4">
+                        <p className="text-white font-medium mb-1">
                           Avión {notif.metadata?.matricula}
                         </p>
-                        <p className="text-white/80 text-sm">{notif.mensaje}</p>
+                        <p className="text-white/80 text-sm mb-3">{notif.mensaje}</p>
+                        <button
+                          onClick={() => router.push(`/staff/reabastecimientos?aircraftId=${notif.metadata?.aircraftId}`)}
+                          className="w-full px-4 py-2 bg-white text-red-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
+                        >
+                          Registrar Reabastecimiento
+                        </button>
                       </div>
                     ))}
                   </div>
-                  <button
-                    onClick={() => router.push('/staff/reabastecimientos')}
-                    className="px-6 py-2 bg-white text-red-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
-                  >
-                    Ir a Reabastecimientos
-                  </button>
                 </div>
               </div>
             </div>

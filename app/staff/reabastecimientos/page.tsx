@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/api';
 
 export default function ReabastecimientosPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const [aircrafts, setAircrafts] = useState<any[]>([]);
   const [refuelings, setRefuelings] = useState<any[]>([]);
@@ -14,6 +15,7 @@ export default function ReabastecimientosPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [statistics, setStatistics] = useState<any>(null);
+  const [lockedAircraftId, setLockedAircraftId] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -29,8 +31,16 @@ export default function ReabastecimientosPage() {
       return;
     }
 
+    // Verificar si hay un aircraftId en los parámetros de la URL
+    const aircraftIdFromUrl = searchParams.get('aircraftId');
+    if (aircraftIdFromUrl) {
+      setLockedAircraftId(aircraftIdFromUrl);
+      setFormData(prev => ({ ...prev, aircraftId: aircraftIdFromUrl }));
+      setShowForm(true);
+    }
+
     fetchData();
-  }, [user, router]);
+  }, [user, router, searchParams]);
 
   const fetchData = async () => {
     try {
@@ -83,6 +93,13 @@ export default function ReabastecimientosPage() {
       });
 
       alert('Reabastecimiento registrado exitosamente');
+
+      // Si venía de una alerta, redirigir al home
+      if (lockedAircraftId) {
+        router.push('/');
+        return;
+      }
+
       setShowForm(false);
       setFormData({
         aircraftId: '',
@@ -186,13 +203,18 @@ export default function ReabastecimientosPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Avión *
+                    Avión * {lockedAircraftId && <span className="text-red-400 text-xs">(Preseleccionado por alerta de combustible)</span>}
                   </label>
                   <select
                     value={formData.aircraftId}
                     onChange={(e) => setFormData({ ...formData, aircraftId: e.target.value })}
                     required
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    disabled={!!lockedAircraftId}
+                    className={`w-full px-3 py-2 border rounded-lg text-white ${
+                      lockedAircraftId
+                        ? 'bg-slate-600 border-slate-500 cursor-not-allowed opacity-75'
+                        : 'bg-slate-700 border-slate-600'
+                    }`}
                   >
                     <option value="">Seleccionar avión</option>
                     {aircrafts.map((aircraft) => (
@@ -201,6 +223,11 @@ export default function ReabastecimientosPage() {
                       </option>
                     ))}
                   </select>
+                  {lockedAircraftId && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      Este avión fue reprogramado por falta de combustible y requiere reabastecimiento inmediato.
+                    </p>
+                  )}
                 </div>
 
                 <div>
