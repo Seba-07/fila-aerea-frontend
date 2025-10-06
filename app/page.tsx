@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { userAPI, flightsAPI } from '@/lib/api';
 import { useSocket } from '@/lib/hooks/useSocket';
+import { useNotifications } from '@/lib/hooks/useNotifications';
 
 interface EditingTicket {
   id: string;
@@ -19,10 +20,12 @@ export default function HomePage() {
   const router = useRouter();
   const { user, tickets, isAuthenticated, updateTickets, logout } = useAuthStore();
   const { connected } = useSocket();
+  useNotifications(user?.id); // Solicitar permisos de notificaciones
   const [loading, setLoading] = useState(true);
   const [editingTicket, setEditingTicket] = useState<EditingTicket | null>(null);
   const [saving, setSaving] = useState(false);
   const [pendingRefuelings, setPendingRefuelings] = useState<any[]>([]);
+  const [reschedulingNotifications, setReschedulingNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -37,18 +40,28 @@ export default function HomePage() {
           updateTickets(data.tickets);
         }
 
-        // Si es staff, cargar notificaciones de reabastecimiento pendiente
-        if (user?.rol === 'staff') {
-          try {
-            const { api } = await import('@/lib/api');
-            const notificationsRes = await api.get('/notifications');
+        // Cargar notificaciones
+        try {
+          const { api } = await import('@/lib/api');
+          const notificationsRes = await api.get('/notifications');
+
+          // Si es staff, cargar notificaciones de reabastecimiento pendiente
+          if (user?.rol === 'staff') {
             const refuelingNotifs = notificationsRes.data.filter(
               (n: any) => n.tipo === 'reabastecimiento_pendiente' && !n.leido
             );
             setPendingRefuelings(refuelingNotifs);
-          } catch (error) {
-            console.error('Error al cargar notificaciones:', error);
           }
+
+          // Si es passenger, cargar notificaciones de reprogramación
+          if (user?.rol === 'passenger') {
+            const reschedulingNotifs = notificationsRes.data.filter(
+              (n: any) => n.tipo === 'reprogramacion' && !n.leido
+            );
+            setReschedulingNotifications(reschedulingNotifs);
+          }
+        } catch (error) {
+          console.error('Error al cargar notificaciones:', error);
         }
       } catch (error) {
         console.error('Error al cargar perfil:', error);
@@ -63,23 +76,31 @@ export default function HomePage() {
   // Recargar notificaciones cuando el usuario regresa a la página
   useEffect(() => {
     const loadNotifications = async () => {
-      if (user?.rol === 'staff') {
-        try {
-          const { api } = await import('@/lib/api');
-          const notificationsRes = await api.get('/notifications');
+      try {
+        const { api } = await import('@/lib/api');
+        const notificationsRes = await api.get('/notifications');
+
+        if (user?.rol === 'staff') {
           const refuelingNotifs = notificationsRes.data.filter(
             (n: any) => n.tipo === 'reabastecimiento_pendiente' && !n.leido
           );
           setPendingRefuelings(refuelingNotifs);
-        } catch (error) {
-          console.error('Error al cargar notificaciones:', error);
         }
+
+        if (user?.rol === 'passenger') {
+          const reschedulingNotifs = notificationsRes.data.filter(
+            (n: any) => n.tipo === 'reprogramacion' && !n.leido
+          );
+          setReschedulingNotifications(reschedulingNotifs);
+        }
+      } catch (error) {
+        console.error('Error al cargar notificaciones:', error);
       }
     };
 
     // Recargar cuando la página vuelve a ser visible
     const handleVisibilityChange = () => {
-      if (!document.hidden && user?.rol === 'staff') {
+      if (!document.hidden && user?.rol) {
         loadNotifications();
       }
     };
@@ -218,6 +239,66 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+
+        {/* Alerta de reprogramaciones para pasajeros */}
+        {user?.rol === 'passenger' && reschedulingNotifications.length > 0 && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl border border-amber-400/30 p-6 shadow-2xl">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">✈️</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    🔄 Vuelos Reprogramados
+                  </h3>
+                  <p className="text-white/90 text-sm mb-4">
+                    {reschedulingNotifications.length === 1
+                      ? 'Tu vuelo ha sido reprogramado'
+                      : `Tienes ${reschedulingNotifications.length} vuelos reprogramados`
+                    }
+                  </p>
+                  <div className="space-y-3">
+                    {reschedulingNotifications.map((notif) => (
+                      <div key={notif._id} className="bg-white/10 rounded-lg p-4">
+                        <p className="text-white font-medium mb-1">
+                          Tanda {notif.metadata?.tanda_anterior} → Tanda {notif.metadata?.tanda_nueva}
+                        </p>
+                        <p className="text-white/80 text-sm mb-3">{notif.mensaje}</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const { api } = await import('@/lib/api');
+                                await api.patch(`/notifications/${notif._id}/read`);
+                                setReschedulingNotifications(prev =>
+                                  prev.filter(n => n._id !== notif._id)
+                                );
+                              } catch (error) {
+                                console.error('Error:', error);
+                              }
+                            }}
+                            className="flex-1 px-4 py-2 bg-white text-amber-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
+                          >
+                            Entendido
+                          </button>
+                          <button
+                            onClick={() => router.push('/mi-pase')}
+                            className="flex-1 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 font-medium transition-colors border border-white/30"
+                          >
+                            Ver Mis Pases
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Alerta de reabastecimientos pendientes para staff */}
         {user?.rol === 'staff' && pendingRefuelings.length > 0 && (

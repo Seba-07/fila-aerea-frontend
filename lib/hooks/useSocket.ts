@@ -45,6 +45,22 @@ export const useSocket = () => {
         globalConnected = false;
         setConnected(false);
       });
+
+      // Escuchar notificaciones de reprogramación
+      socket.on('flightRescheduled', (data: any) => {
+        console.log('🔔 Vuelo reprogramado:', data);
+
+        // Mostrar notificación del navegador si tiene permisos
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('✈️ Vuelo Reprogramado', {
+            body: `Tu vuelo de la tanda ${data.tanda_anterior} fue reprogramado a la tanda ${data.tanda_nueva}`,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: 'flight-rescheduling',
+            requireInteraction: true,
+          });
+        }
+      });
     } else {
       // Si el socket ya existe, usar su estado actual
       setConnected(socket.connected);
