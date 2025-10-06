@@ -46,6 +46,7 @@ export const authAPI = {
 // Usuario
 export const userAPI = {
   getMe: () => api.get('/me'),
+  updateTicket: (ticketId: string, data: any) => api.patch(`/tickets/${ticketId}`, data),
 };
 
 // Vuelos
