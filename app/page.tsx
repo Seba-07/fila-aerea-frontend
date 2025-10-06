@@ -60,6 +60,37 @@ export default function HomePage() {
     fetchProfile();
   }, [isAuthenticated, router, updateTickets, user?.rol]);
 
+  // Recargar notificaciones cuando el usuario regresa a la página
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (user?.rol === 'staff') {
+        try {
+          const { api } = await import('@/lib/api');
+          const notificationsRes = await api.get('/notifications');
+          const refuelingNotifs = notificationsRes.data.filter(
+            (n: any) => n.tipo === 'reabastecimiento_pendiente' && !n.leido
+          );
+          setPendingRefuelings(refuelingNotifs);
+        } catch (error) {
+          console.error('Error al cargar notificaciones:', error);
+        }
+      }
+    };
+
+    // Recargar cuando la página vuelve a ser visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user?.rol === 'staff') {
+        loadNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user?.rol]);
+
   const handleLogout = () => {
     logout();
     router.push('/login');
