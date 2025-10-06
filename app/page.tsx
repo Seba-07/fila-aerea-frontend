@@ -228,6 +228,18 @@ export default function HomePage() {
               </button>
 
               <button
+                onClick={() => router.push('/staff/inscribir')}
+                className="group relative bg-gradient-to-br from-orange-600 to-orange-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-orange-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">📝</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Inscribir Pasajeros</h3>
+                  <p className="text-sm text-orange-100">Asignar pasajeros a vuelos</p>
+                </div>
+              </button>
+
+              <button
                 onClick={() => router.push('/staff/pagos')}
                 className="group relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-green-400/20"
               >
