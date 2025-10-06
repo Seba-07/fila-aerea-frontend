@@ -102,7 +102,7 @@ export default function VuelosPage() {
 
                   {/* Fichas de Aviones */}
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {vuelosTanda.map((flight) => {
+                    {vuelosTanda.map((flight: any) => {
                       const asientosOcupados = flight.asientos_ocupados || 0;
                       const capacidadTotal = flight.capacidad_total || 0;
                       const asientosDisponibles = capacidadTotal - asientosOcupados;
