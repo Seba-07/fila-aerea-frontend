@@ -10,6 +10,8 @@ export default function PagosPage() {
   const { user } = useAuthStore();
   const [payments, setPayments] = useState<any[]>([]);
   const [totalRecaudado, setTotalRecaudado] = useState(0);
+  const [totalConfirmado, setTotalConfirmado] = useState(0);
+  const [pendienteDevolucion, setPendienteDevolucion] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,10 +28,42 @@ export default function PagosPage() {
       const { data } = await staffAPI.getPayments();
       setPayments(data.payments);
       setTotalRecaudado(data.total_recaudado);
+      setTotalConfirmado(data.total_confirmado);
+      setPendienteDevolucion(data.pendiente_devolucion);
     } catch (error) {
       console.error('Error al cargar pagos:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTipoLabel = (tipo: string) => {
+    switch (tipo) {
+      case 'compra':
+        return 'Compra';
+      case 'ajuste_positivo':
+        return 'Ajuste +';
+      case 'ajuste_negativo':
+        return 'Ajuste -';
+      case 'devolucion':
+        return 'Devolución';
+      default:
+        return tipo;
+    }
+  };
+
+  const getTipoColor = (tipo: string) => {
+    switch (tipo) {
+      case 'compra':
+        return 'bg-green-500 text-white';
+      case 'ajuste_positivo':
+        return 'bg-blue-500 text-white';
+      case 'ajuste_negativo':
+        return 'bg-orange-500 text-white';
+      case 'devolucion':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-gray-500 text-white';
     }
   };
 
@@ -58,12 +92,31 @@ export default function PagosPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-8 mb-8 text-white shadow-2xl">
-          <h2 className="text-lg opacity-90 mb-2">Total Recaudado</h2>
-          <p className="text-5xl font-black">${totalRecaudado.toLocaleString('es-CL')}</p>
-          <p className="text-sm opacity-75 mt-2">{payments.length} transacciones registradas</p>
+        {/* Totales */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          {/* Total recaudado */}
+          <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-2xl">
+            <h2 className="text-sm opacity-90 mb-1">Total Recaudado</h2>
+            <p className="text-4xl font-black">${totalRecaudado.toLocaleString('es-CL')}</p>
+            <p className="text-xs opacity-75 mt-2">Dinero total ingresado</p>
+          </div>
+
+          {/* Total confirmado */}
+          <div className="bg-gradient-to-r from-blue-600 to-cyan-700 rounded-2xl p-6 text-white shadow-2xl">
+            <h2 className="text-sm opacity-90 mb-1">Total Confirmado</h2>
+            <p className="text-4xl font-black">${totalConfirmado.toLocaleString('es-CL')}</p>
+            <p className="text-xs opacity-75 mt-2">De pasajeros que volaron</p>
+          </div>
+
+          {/* Pendiente devolución */}
+          <div className="bg-gradient-to-r from-orange-600 to-red-700 rounded-2xl p-6 text-white shadow-2xl">
+            <h2 className="text-sm opacity-90 mb-1">Pendiente Devolución</h2>
+            <p className="text-4xl font-black">${pendienteDevolucion.toLocaleString('es-CL')}</p>
+            <p className="text-xs opacity-75 mt-2">Posibles reembolsos</p>
+          </div>
         </div>
 
+        {/* Tabla de transacciones */}
         {payments.length === 0 ? (
           <div className="text-center text-slate-300 py-12">
             <p className="text-xl">No hay pagos registrados</p>
@@ -77,8 +130,9 @@ export default function PagosPage() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Fecha</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Pasajero</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Email</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Tipo</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Tickets</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Metodo</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300">Método</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">Monto</th>
                   </tr>
                 </thead>
@@ -102,6 +156,11 @@ export default function PagosPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-400">{payment.usuario.email}</td>
                       <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getTipoColor(payment.tipo)}`}>
+                          {getTipoLabel(payment.tipo)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <span className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                           {payment.cantidad_tickets}
                         </span>
@@ -119,13 +178,28 @@ export default function PagosPage() {
                           {payment.metodo_pago.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right text-lg font-bold text-white">
-                        ${payment.monto.toLocaleString('es-CL')}
+                      <td className={`px-6 py-4 text-right text-lg font-bold ${payment.monto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {payment.monto >= 0 ? '+' : ''}${payment.monto.toLocaleString('es-CL')}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Descripción de transacciones */}
+            <div className="p-6 border-t border-slate-700">
+              <h3 className="text-sm font-semibold text-slate-300 mb-3">Últimas transacciones con descripción:</h3>
+              <div className="space-y-2">
+                {payments
+                  .filter(p => p.descripcion)
+                  .slice(0, 5)
+                  .map(payment => (
+                    <div key={payment.id} className="text-sm text-slate-400">
+                      <span className="text-white font-medium">{payment.usuario.nombre}:</span> {payment.descripcion}
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
         )}

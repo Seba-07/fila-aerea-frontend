@@ -83,9 +83,20 @@ export const staffAPI = {
     cantidad_tickets: number;
     metodo_pago: 'transferencia' | 'tarjeta' | 'efectivo';
     monto: number;
+    nombres_pasajeros?: string[];
+    flightId?: string;
   }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),
-  updatePassengerTickets: (passengerId: string, cantidad_tickets: number) =>
-    api.patch(`/staff/passengers/${passengerId}/tickets`, { cantidad_tickets }),
+  updatePassenger: (passengerId: string, data: { nombre?: string; email?: string }) =>
+    api.patch(`/staff/passengers/${passengerId}`, data),
+  updatePassengerTickets: (passengerId: string, data: {
+    cantidad_tickets: number;
+    monto_ajuste?: number;
+    metodo_pago?: 'transferencia' | 'tarjeta' | 'efectivo';
+  }) => api.patch(`/staff/passengers/${passengerId}/tickets`, data),
+  deletePassenger: (passengerId: string, data: {
+    monto_devolucion?: number;
+    metodo_pago?: 'transferencia' | 'tarjeta' | 'efectivo';
+  }) => api.delete(`/staff/passengers/${passengerId}`, { data }),
   getPayments: () => api.get('/staff/payments'),
 };

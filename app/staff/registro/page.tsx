@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { staffAPI } from '@/lib/api';
+import { staffAPI, flightsAPI } from '@/lib/api';
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -14,7 +14,28 @@ export default function RegistroPage() {
   const [cantidadTickets, setCantidadTickets] = useState(1);
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
+  const [nombresPasajeros, setNombresPasajeros] = useState<string[]>([]);
+  const [flightId, setFlightId] = useState('');
+  const [flights, setFlights] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Cargar vuelos disponibles
+    const loadFlights = async () => {
+      try {
+        const { data } = await flightsAPI.getFlights('programado');
+        setFlights(data);
+      } catch (error) {
+        console.error('Error al cargar vuelos:', error);
+      }
+    };
+    loadFlights();
+  }, []);
+
+  useEffect(() => {
+    // Ajustar array de nombres cuando cambia la cantidad
+    setNombresPasajeros(Array(cantidadTickets).fill(''));
+  }, [cantidadTickets]);
 
   if (user?.rol !== 'staff') {
     router.push('/');
@@ -26,12 +47,17 @@ export default function RegistroPage() {
     setSubmitting(true);
 
     try {
+      // Filtrar nombres vacíos
+      const nombresValidos = nombresPasajeros.filter(n => n.trim() !== '');
+
       await staffAPI.registerPassenger({
         nombre,
         email: email.toLowerCase(),
         cantidad_tickets: cantidadTickets,
         metodo_pago: metodoPago,
         monto,
+        ...(nombresValidos.length > 0 && { nombres_pasajeros: nombresValidos }),
+        ...(flightId && nombresValidos.length > 0 && { flightId }),
       });
 
       alert(`✓ Pasajero ${nombre} registrado con ${cantidadTickets} tickets`);
@@ -42,6 +68,8 @@ export default function RegistroPage() {
       setCantidadTickets(1);
       setMetodoPago('efectivo');
       setMonto(0);
+      setNombresPasajeros([]);
+      setFlightId('');
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al registrar pasajero');
     } finally {
@@ -65,90 +93,154 @@ export default function RegistroPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
-                  placeholder="Juan Pérez"
-                />
-              </div>
+            {/* Información del comprador */}
+            <div className="border-b border-slate-700 pb-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Información del Comprador</h2>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    placeholder="Juan Pérez"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
-                  placeholder="juan@example.com"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    placeholder="juan@example.com"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Cantidad de Tickets (1-10)
+            {/* Información de pago */}
+            <div className="border-b border-slate-700 pb-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Información de Pago</h2>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Cantidad de Tickets (1-10)
+                  </label>
+                  <input
+                    type="number"
+                    value={cantidadTickets}
+                    onChange={(e) => setCantidadTickets(parseInt(e.target.value) || 1)}
+                    min={1}
+                    max={10}
+                    required
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Monto Pagado ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={monto}
+                    onChange={(e) => setMonto(parseFloat(e.target.value) || 0)}
+                    min={0}
+                    step={0.01}
+                    required
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-slate-300 mb-3">
+                  Método de Pago
                 </label>
-                <input
-                  type="number"
-                  value={cantidadTickets}
-                  onChange={(e) => setCantidadTickets(parseInt(e.target.value))}
-                  min={1}
-                  max={10}
-                  required
+                <div className="grid grid-cols-3 gap-3">
+                  {(['efectivo', 'transferencia', 'tarjeta'] as const).map((metodo) => (
+                    <button
+                      key={metodo}
+                      type="button"
+                      onClick={() => setMetodoPago(metodo)}
+                      className={`py-3 px-4 rounded-lg font-medium transition ${
+                        metodoPago === metodo
+                          ? 'bg-primary text-white'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                    >
+                      {metodo.charAt(0).toUpperCase() + metodo.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Nombres de pasajeros (opcional) */}
+            {cantidadTickets > 0 && (
+              <div className="border-b border-slate-700 pb-6">
+                <h2 className="text-lg font-semibold text-white mb-2">
+                  Nombres de Pasajeros <span className="text-sm text-slate-400">(opcional)</span>
+                </h2>
+                <p className="text-sm text-slate-400 mb-4">
+                  Puedes asignar los nombres de los pasajeros ahora o después
+                </p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {Array.from({ length: cantidadTickets }).map((_, index) => (
+                    <div key={index}>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Ticket {index + 1}
+                      </label>
+                      <input
+                        type="text"
+                        value={nombresPasajeros[index] || ''}
+                        onChange={(e) => {
+                          const nuevos = [...nombresPasajeros];
+                          nuevos[index] = e.target.value;
+                          setNombresPasajeros(nuevos);
+                        }}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                        placeholder="Nombre del pasajero"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Asignar vuelo (opcional, solo si hay nombres) */}
+            {nombresPasajeros.some(n => n.trim() !== '') && (
+              <div className="pb-6">
+                <h2 className="text-lg font-semibold text-white mb-2">
+                  Asignar a Vuelo <span className="text-sm text-slate-400">(opcional)</span>
+                </h2>
+                <p className="text-sm text-slate-400 mb-4">
+                  Si asignas nombres, puedes inscribir los tickets directamente a un vuelo
+                </p>
+                <select
+                  value={flightId}
+                  onChange={(e) => setFlightId(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
-                />
+                >
+                  <option value="">No asignar a vuelo aún</option>
+                  {flights.map((flight) => (
+                    <option key={flight._id} value={flight._id}>
+                      {flight.nombre} - {new Date(flight.fecha_hora).toLocaleDateString('es-CL')} {new Date(flight.fecha_hora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                    </option>
+                  ))}
+                </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Monto Pagado ($)
-                </label>
-                <input
-                  type="number"
-                  value={monto}
-                  onChange={(e) => setMonto(parseFloat(e.target.value))}
-                  min={0}
-                  step={0.01}
-                  required
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">
-                Método de Pago
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {(['efectivo', 'transferencia', 'tarjeta'] as const).map((metodo) => (
-                  <button
-                    key={metodo}
-                    type="button"
-                    onClick={() => setMetodoPago(metodo)}
-                    className={`py-3 px-4 rounded-lg font-medium transition ${
-                      metodoPago === metodo
-                        ? 'bg-primary text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    }`}
-                  >
-                    {metodo.charAt(0).toUpperCase() + metodo.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             <button
               type="submit"
