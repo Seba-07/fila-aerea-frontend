@@ -16,6 +16,9 @@ export default function VuelosPage() {
   const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
   const [newCapacity, setNewCapacity] = useState<number>(0);
   const [editingTanda, setEditingTanda] = useState<number | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [rescheduleFlightId, setRescheduleFlightId] = useState<string | null>(null);
+  const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
 
   // Form state para nueva tanda
   const [numeroTanda, setNumeroTanda] = useState<number>(1);
@@ -67,15 +70,36 @@ export default function VuelosPage() {
     }
   };
 
-  const handleRescheduleFlight = async (flightId: string) => {
-    if (!confirm('¿Reprogramar este vuelo a la siguiente tanda?\n\nSe notificará a todos los pasajeros inscritos.')) return;
+  const handleOpenRescheduleModal = (flightId: string) => {
+    setRescheduleFlightId(flightId);
+    setShowRescheduleModal(true);
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!rescheduleFlightId) return;
 
     try {
-      const { data } = await api.post(`/flights/${flightId}/reschedule`);
+      const { data } = await api.post(`/flights/${rescheduleFlightId}/reschedule`, {
+        razon: rescheduleReason,
+      });
       alert(`Vuelo reprogramado exitosamente a Tanda ${data.tanda_nueva}.\n${data.pasajeros_afectados} pasajero(s) notificado(s).`);
+      setShowRescheduleModal(false);
+      setRescheduleFlightId(null);
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al reprogramar vuelo');
+    }
+  };
+
+  const handleCancelAircraftForDay = async (flightId: string, matricula: string) => {
+    if (!confirm(`¿Cancelar el avión ${matricula} por el resto del día?\n\nTodos los vuelos futuros de este avión serán cancelados y los pasajeros serán notificados.`)) return;
+
+    try {
+      const { data } = await api.post(`/flights/${flightId}/cancel-aircraft-day`);
+      alert(`Avión cancelado por el día.\n${data.vuelos_cancelados} vuelo(s) cancelado(s).\n${data.pasajeros_afectados} pasajero(s) notificado(s).`);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al cancelar avión');
     }
   };
 
@@ -489,27 +513,35 @@ export default function VuelosPage() {
                                 {isExpanded ? '▲ Ocultar' : '▼ Ver pasajeros'}
                               </button>
 
-                              <div className="flex gap-2 flex-wrap">
+                              <div className="space-y-2">
                                 {flight.estado === 'abierto' && (
                                   <>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleOpenRescheduleModal(flight._id)}
+                                        className="flex-1 px-3 py-1.5 bg-amber-600/80 text-white rounded hover:bg-amber-600 text-xs font-medium transition-colors"
+                                      >
+                                        Reprogramar
+                                      </button>
+                                      <button
+                                        onClick={() => handleChangeState(flight._id, 'en_vuelo')}
+                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
+                                      >
+                                        En Vuelo
+                                      </button>
+                                    </div>
                                     <button
-                                      onClick={() => handleRescheduleFlight(flight._id)}
-                                      className="flex-1 px-3 py-1.5 bg-amber-600/80 text-white rounded hover:bg-amber-600 text-xs font-medium transition-colors"
+                                      onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
+                                      className="w-full px-3 py-1.5 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
                                     >
-                                      Reprogramar
-                                    </button>
-                                    <button
-                                      onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                      className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
-                                    >
-                                      En Vuelo
+                                      Cancelar Avión por el Día
                                     </button>
                                   </>
                                 )}
                                 {flight.estado === 'en_vuelo' && (
                                   <button
                                     onClick={() => handleChangeState(flight._id, 'finalizado')}
-                                    className="flex-1 px-3 py-1.5 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-xs font-medium transition-colors"
+                                    className="w-full px-3 py-1.5 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-xs font-medium transition-colors"
                                   >
                                     Finalizado
                                   </button>
@@ -562,6 +594,83 @@ export default function VuelosPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Modal de Reprogramación */}
+        {showRescheduleModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-md w-full">
+              <h2 className="text-2xl font-bold text-white mb-4">Reprogramar Vuelo</h2>
+              <p className="text-slate-300 text-sm mb-4">
+                Selecciona la razón de la reprogramación:
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                  <input
+                    type="radio"
+                    name="razon"
+                    value="combustible"
+                    checked={rescheduleReason === 'combustible'}
+                    onChange={(e) => setRescheduleReason(e.target.value as any)}
+                    className="w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-white font-medium">Combustible</p>
+                    <p className="text-slate-400 text-xs">Falta de combustible</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                  <input
+                    type="radio"
+                    name="razon"
+                    value="meteorologia"
+                    checked={rescheduleReason === 'meteorologia'}
+                    onChange={(e) => setRescheduleReason(e.target.value as any)}
+                    className="w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-white font-medium">Meteorología</p>
+                    <p className="text-slate-400 text-xs">Condiciones climáticas adversas</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                  <input
+                    type="radio"
+                    name="razon"
+                    value="mantenimiento"
+                    checked={rescheduleReason === 'mantenimiento'}
+                    onChange={(e) => setRescheduleReason(e.target.value as any)}
+                    className="w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-white font-medium">Mantenimiento</p>
+                    <p className="text-slate-400 text-xs">Problemas técnicos o mantenimiento requerido</p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleConfirmReschedule}
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-medium transition"
+                >
+                  Confirmar Reprogramación
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRescheduleModal(false);
+                    setRescheduleFlightId(null);
+                  }}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-medium transition"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>
