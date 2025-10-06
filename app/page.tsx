@@ -214,19 +214,21 @@ export default function HomePage() {
                         <p className="text-white/80 text-sm mb-3">{notif.mensaje}</p>
                         <button
                           onClick={() => {
-                            console.log('🔍 Notification metadata:', notif.metadata);
-                            console.log('🔍 aircraftId from metadata:', notif.metadata?.aircraftId);
-                            console.log('🔍 typeof:', typeof notif.metadata?.aircraftId);
-
-                            // Extraer solo el _id si es un objeto, sino usar el valor directo
                             let aircraftId = notif.metadata?.aircraftId;
 
+                            // Si es un objeto, extraer el _id
                             if (typeof aircraftId === 'object' && aircraftId !== null) {
                               aircraftId = aircraftId._id;
-                              console.log('🔍 Extracted _id:', aircraftId);
+                            }
+                            // Si es un string que contiene "ObjectId('...')", parsearlo
+                            else if (typeof aircraftId === 'string' && aircraftId.includes('ObjectId')) {
+                              // Extraer el ID del formato: "{ _id: new ObjectId('68e3ee67fbdb0a2fbcf92e5f'), ... }"
+                              const match = aircraftId.match(/ObjectId\('([a-f0-9]+)'\)/);
+                              if (match && match[1]) {
+                                aircraftId = match[1];
+                              }
                             }
 
-                            console.log('🔍 Final aircraftId to send:', aircraftId);
                             router.push(`/staff/reabastecimientos?aircraftId=${aircraftId}`);
                           }}
                           className="w-full px-4 py-2 bg-white text-red-600 rounded-lg hover:bg-white/90 font-medium transition-colors"
