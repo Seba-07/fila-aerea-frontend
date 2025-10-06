@@ -77,7 +77,15 @@ export const boardingAPI = {
 
 // Staff
 export const staffAPI = {
-  registerPassenger: (data: { nombre: string; email: string; cantidad_tickets: number }) =>
-    api.post('/staff/passengers', data),
+  registerPassenger: (data: {
+    nombre: string;
+    email: string;
+    cantidad_tickets: number;
+    metodo_pago: 'transferencia' | 'tarjeta' | 'efectivo';
+    monto: number;
+  }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),
+  updatePassengerTickets: (passengerId: string, cantidad_tickets: number) =>
+    api.patch(`/staff/passengers/${passengerId}/tickets`, { cantidad_tickets }),
+  getPayments: () => api.get('/staff/payments'),
 };

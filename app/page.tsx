@@ -188,17 +188,43 @@ export default function HomePage() {
           )}
 
           {user?.rol === 'staff' && (
-            <button
-              onClick={() => router.push('/staff')}
-              className="group relative bg-gradient-to-br from-secondary to-red-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-red-400/20 md:col-span-2 lg:col-span-1"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-              <div className="relative">
-                <div className="text-5xl mb-4">⚙️</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Panel Staff</h3>
-                <p className="text-sm text-red-100">Gestión de pasajeros y vuelos</p>
-              </div>
-            </button>
+            <>
+              <button
+                onClick={() => router.push('/staff/registro')}
+                className="group relative bg-gradient-to-br from-secondary to-red-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-red-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">➕</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Registrar Pasajero</h3>
+                  <p className="text-sm text-red-100">Crear nuevo pasajero con tickets</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => router.push('/staff/pasajeros')}
+                className="group relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-purple-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">👥</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Ver Pasajeros</h3>
+                  <p className="text-sm text-purple-100">Gestionar tickets de pasajeros</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => router.push('/staff/pagos')}
+                className="group relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-left overflow-hidden border border-green-400/20"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">💰</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Historial Pagos</h3>
+                  <p className="text-sm text-green-100">Ver transacciones y total recaudado</p>
+                </div>
+              </button>
+            </>
           )}
         </div>
       </main>
