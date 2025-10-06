@@ -25,7 +25,7 @@ export default function InscribirPage() {
     try {
       const [passengersRes, flightsRes] = await Promise.all([
         staffAPI.getPassengersWithoutFlight(),
-        flightsAPI.getFlights('programado')
+        flightsAPI.getFlights() // Sin filtro para obtener todos los vuelos disponibles
       ]);
 
       setPassengersWithoutFlight(passengersRes.data);

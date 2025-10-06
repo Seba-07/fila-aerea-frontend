@@ -203,12 +203,28 @@ export default function VuelosPage() {
                           {/* Panel expandido */}
                           {isExpanded && (
                             <div className="mt-3 pt-3 border-t border-slate-600">
-                              <p className="text-xs font-semibold text-slate-300 mb-1">Pasajeros:</p>
-                              <p className="text-xs text-slate-400">
-                                {asientosOcupados > 0
-                                  ? `${asientosOcupados} inscrito(s)`
-                                  : 'Sin pasajeros'}
+                              <p className="text-xs font-semibold text-slate-300 mb-2">
+                                Pasajeros: {flight.pasajeros_inscritos?.length || 0}
                               </p>
+                              {flight.pasajeros_inscritos && flight.pasajeros_inscritos.length > 0 ? (
+                                <div className="space-y-2">
+                                  {flight.pasajeros_inscritos.map((inscrito: any, idx: number) => (
+                                    <div key={idx} className="bg-slate-600/50 rounded p-2">
+                                      <p className="text-xs font-medium text-white">
+                                        {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
+                                      </p>
+                                      <p className="text-xs text-slate-400">
+                                        {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
+                                      </p>
+                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                                        {inscrito.estado}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400">Sin pasajeros inscritos</p>
+                              )}
                             </div>
                           )}
                         </div>
