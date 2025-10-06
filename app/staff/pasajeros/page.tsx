@@ -82,17 +82,16 @@ export default function PasajerosPage() {
       return;
     }
 
-    if (diferencia !== 0 && !montoAjuste) {
-      if (!confirm(`¿Confirmar cambio de ${currentCount} a ${editTicketCount} tickets sin registrar pago?`)) {
-        return;
-      }
+    if (!montoAjuste || Number(montoAjuste) <= 0) {
+      alert('Debes ingresar el monto del ajuste');
+      return;
     }
 
     try {
       await staffAPI.updatePassengerTickets(passengerId, {
         cantidad_tickets: editTicketCount,
-        monto_ajuste: montoAjuste ? Number(montoAjuste) : undefined,
-        metodo_pago: montoAjuste ? metodoPago : undefined,
+        monto_ajuste: Number(montoAjuste),
+        metodo_pago: metodoPago,
       });
 
       const accion = diferencia > 0 ? 'agregados' : 'eliminados';
@@ -158,37 +157,37 @@ export default function PasajerosPage() {
             {passengers.map((passenger) => (
               <div
                 key={passenger.id}
-                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6"
+                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4"
               >
-                {/* Info básica */}
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                  <div className="flex-1">
+                {/* Info básica - Más compacta */}
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
                     {editingInfoId === passenger.id ? (
                       <div className="space-y-2">
                         <input
                           type="text"
                           value={editNombre}
                           onChange={(e) => setEditNombre(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                          className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
                           placeholder="Nombre"
                         />
                         <input
                           type="email"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                          className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
                           placeholder="Email"
                         />
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSaveInfo(passenger.id)}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-xs font-medium"
                           >
                             Guardar
                           </button>
                           <button
                             onClick={() => setEditingInfoId(null)}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium"
+                            className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition text-xs font-medium"
                           >
                             Cancelar
                           </button>
@@ -196,20 +195,20 @@ export default function PasajerosPage() {
                       </div>
                     ) : (
                       <>
-                        <h3 className="font-bold text-xl text-white">{passenger.nombre}</h3>
-                        <p className="text-sm text-slate-400">{passenger.email}</p>
+                        <h3 className="font-bold text-lg text-white truncate">{passenger.nombre}</h3>
+                        <p className="text-xs text-slate-400 truncate">{passenger.email}</p>
                         <button
                           onClick={() => handleEditInfo(passenger)}
-                          className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+                          className="mt-1 text-blue-400 hover:text-blue-300 text-xs"
                         >
-                          Editar información
+                          Editar
                         </button>
                       </>
                     )}
                   </div>
 
-                  {/* Tickets */}
-                  <div className="flex items-center gap-4">
+                  {/* Tickets - Más compacto */}
+                  <div className="flex items-center gap-2">
                     {editingTicketsId === passenger.id ? (
                       <div className="bg-slate-700/50 p-4 rounded-lg space-y-3">
                         <div>
@@ -225,31 +224,30 @@ export default function PasajerosPage() {
                         </div>
                         <div>
                           <label className="text-xs text-slate-300 block mb-1">
-                            Monto ajuste {editTicketCount > passenger.tickets_count ? '(pago extra)' : editTicketCount < passenger.tickets_count ? '(devolución)' : ''}
+                            Monto ajuste * {editTicketCount > passenger.tickets_count ? '(pago extra)' : editTicketCount < passenger.tickets_count ? '(devolución)' : ''}
                           </label>
                           <input
                             type="number"
                             value={montoAjuste}
                             onChange={(e) => setMontoAjuste(e.target.value ? Number(e.target.value) : '')}
                             min={0}
+                            required
                             className="w-32 px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
-                            placeholder="$ (opcional)"
+                            placeholder="$"
                           />
                         </div>
-                        {montoAjuste && (
-                          <div>
-                            <label className="text-xs text-slate-300 block mb-1">Método de pago</label>
-                            <select
-                              value={metodoPago}
-                              onChange={(e) => setMetodoPago(e.target.value as any)}
-                              className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
-                            >
-                              <option value="efectivo">Efectivo</option>
-                              <option value="transferencia">Transferencia</option>
-                              <option value="tarjeta">Tarjeta</option>
-                            </select>
-                          </div>
-                        )}
+                        <div>
+                          <label className="text-xs text-slate-300 block mb-1">Método de pago</label>
+                          <select
+                            value={metodoPago}
+                            onChange={(e) => setMetodoPago(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
+                          >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="tarjeta">Tarjeta</option>
+                          </select>
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSaveTickets(passenger.id, passenger.tickets_count)}
@@ -338,17 +336,16 @@ export default function PasajerosPage() {
 
                 {/* Lista de tickets */}
                 {passenger.tickets && passenger.tickets.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-700">
-                    <p className="text-sm font-semibold text-slate-300 mb-3">Tickets:</p>
+                  <div className="mt-3 pt-3 border-t border-slate-700">
+                    <p className="text-xs font-semibold text-slate-300 mb-2">Tickets:</p>
                     <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       {passenger.tickets.map((ticket: any) => (
                         <div
                           key={ticket.id}
-                          className="bg-slate-700/50 rounded-lg p-3 border border-slate-600"
+                          className="bg-slate-700/50 rounded-lg p-2 border border-slate-600"
                         >
-                          <p className="text-xs font-mono text-white font-bold">{ticket.codigo_ticket}</p>
                           <span
-                            className={`inline-block mt-2 px-2 py-1 rounded text-xs font-bold ${
+                            className={`inline-block px-2 py-1 rounded text-xs font-bold ${
                               ticket.estado === 'disponible'
                                 ? 'bg-green-400 text-green-900'
                                 : ticket.estado === 'asignado'
@@ -364,9 +361,9 @@ export default function PasajerosPage() {
                           </span>
                           {ticket.pasajeros && ticket.pasajeros.length > 0 && (
                             <div className="mt-2">
-                              <p className="text-xs text-slate-400">Pasajeros:</p>
+                              <p className="text-xs text-slate-400">Pasajero:</p>
                               {ticket.pasajeros.map((p: any, idx: number) => (
-                                <p key={idx} className="text-xs text-white">{p.nombre}</p>
+                                <p key={idx} className="text-xs text-white font-medium">{p.nombre}</p>
                               ))}
                             </div>
                           )}

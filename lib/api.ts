@@ -87,6 +87,7 @@ export const staffAPI = {
     flightId?: string;
   }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),
+  getPassengersWithoutFlight: () => api.get('/staff/passengers-without-flight'),
   updatePassenger: (passengerId: string, data: { nombre?: string; email?: string }) =>
     api.patch(`/staff/passengers/${passengerId}`, data),
   updatePassengerTickets: (passengerId: string, data: {

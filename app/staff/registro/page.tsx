@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { staffAPI, flightsAPI } from '@/lib/api';
+import { staffAPI } from '@/lib/api';
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -15,22 +15,7 @@ export default function RegistroPage() {
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
   const [nombresPasajeros, setNombresPasajeros] = useState<string[]>([]);
-  const [flightId, setFlightId] = useState('');
-  const [flights, setFlights] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Cargar vuelos disponibles
-    const loadFlights = async () => {
-      try {
-        const { data } = await flightsAPI.getFlights('programado');
-        setFlights(data);
-      } catch (error) {
-        console.error('Error al cargar vuelos:', error);
-      }
-    };
-    loadFlights();
-  }, []);
 
   useEffect(() => {
     // Ajustar array de nombres cuando cambia la cantidad
@@ -57,7 +42,6 @@ export default function RegistroPage() {
         metodo_pago: metodoPago,
         monto,
         ...(nombresValidos.length > 0 && { nombres_pasajeros: nombresValidos }),
-        ...(flightId && nombresValidos.length > 0 && { flightId }),
       });
 
       alert(`✓ Pasajero ${nombre} registrado con ${cantidadTickets} tickets`);
@@ -69,7 +53,6 @@ export default function RegistroPage() {
       setMetodoPago('efectivo');
       setMonto(0);
       setNombresPasajeros([]);
-      setFlightId('');
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al registrar pasajero');
     } finally {
@@ -188,7 +171,7 @@ export default function RegistroPage() {
 
             {/* Nombres de pasajeros (opcional) */}
             {cantidadTickets > 0 && (
-              <div className="border-b border-slate-700 pb-6">
+              <div className="pb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">
                   Nombres de Pasajeros <span className="text-sm text-slate-400">(opcional)</span>
                 </h2>
@@ -215,30 +198,6 @@ export default function RegistroPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Asignar vuelo (opcional, solo si hay nombres) */}
-            {nombresPasajeros.some(n => n.trim() !== '') && (
-              <div className="pb-6">
-                <h2 className="text-lg font-semibold text-white mb-2">
-                  Asignar a Vuelo <span className="text-sm text-slate-400">(opcional)</span>
-                </h2>
-                <p className="text-sm text-slate-400 mb-4">
-                  Si asignas nombres, puedes inscribir los tickets directamente a un vuelo
-                </p>
-                <select
-                  value={flightId}
-                  onChange={(e) => setFlightId(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
-                >
-                  <option value="">No asignar a vuelo aún</option>
-                  {flights.map((flight) => (
-                    <option key={flight._id} value={flight._id}>
-                      {flight.nombre} - {new Date(flight.fecha_hora).toLocaleDateString('es-CL')} {new Date(flight.fecha_hora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                    </option>
-                  ))}
-                </select>
               </div>
             )}
 
