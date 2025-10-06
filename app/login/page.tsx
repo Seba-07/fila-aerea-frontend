@@ -22,7 +22,12 @@ export default function LoginPage() {
       const { data } = await authAPI.login(email);
       console.log('Login response:', data);
 
-      // Cargar perfil completo con ticket
+      // Guardar el token primero para que esté disponible en el interceptor
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', data.token);
+      }
+
+      // Cargar perfil completo con ticket (ahora el interceptor tendrá el token)
       const profileData = await userAPI.getMe();
       console.log('Profile data:', profileData.data);
 
