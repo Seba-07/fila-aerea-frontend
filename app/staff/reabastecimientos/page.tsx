@@ -21,7 +21,7 @@ function ReabastecimientosContent() {
   const [formData, setFormData] = useState({
     aircraftId: '',
     fecha: new Date().toISOString().split('T')[0],
-    litros: 0,
+    litros: '',
     notas: '',
   });
 
@@ -31,16 +31,18 @@ function ReabastecimientosContent() {
       return;
     }
 
-    // Verificar si hay un aircraftId en los parámetros de la URL
+    fetchData();
+  }, [user, router]);
+
+  // Separar efecto para manejar el aircraftId de la URL después de cargar datos
+  useEffect(() => {
     const aircraftIdFromUrl = searchParams.get('aircraftId');
-    if (aircraftIdFromUrl) {
+    if (aircraftIdFromUrl && aircrafts.length > 0) {
       setLockedAircraftId(aircraftIdFromUrl);
       setFormData(prev => ({ ...prev, aircraftId: aircraftIdFromUrl }));
       setShowForm(true);
     }
-
-    fetchData();
-  }, [user, router, searchParams]);
+  }, [searchParams, aircrafts]);
 
   const fetchData = async () => {
     try {
@@ -81,14 +83,16 @@ function ReabastecimientosContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.aircraftId || formData.litros <= 0) {
-      alert('Debes seleccionar un avión e ingresar litros');
+    const litrosNum = Number(formData.litros);
+    if (!formData.aircraftId || !formData.litros || litrosNum <= 0) {
+      alert('Debes seleccionar un avión e ingresar litros válidos');
       return;
     }
 
     try {
       await api.post('/staff/refuelings', {
         ...formData,
+        litros: litrosNum,
         fecha: new Date(formData.fecha).toISOString(),
       });
 
@@ -104,7 +108,7 @@ function ReabastecimientosContent() {
       setFormData({
         aircraftId: '',
         fecha: new Date().toISOString().split('T')[0],
-        litros: 0,
+        litros: '',
         notas: '',
       });
 
@@ -252,7 +256,7 @@ function ReabastecimientosContent() {
                     min="0"
                     step="0.01"
                     value={formData.litros}
-                    onChange={(e) => setFormData({ ...formData, litros: Number(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, litros: e.target.value })}
                     required
                     placeholder="Ej: 150.5"
                     className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
