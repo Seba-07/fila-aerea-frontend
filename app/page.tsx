@@ -3,14 +3,25 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { userAPI } from '@/lib/api';
+import { userAPI, flightsAPI } from '@/lib/api';
 import { useSocket } from '@/lib/hooks/useSocket';
+
+interface EditingTicket {
+  id: string;
+  nombre: string;
+  apellido: string;
+  rut: string;
+  esMenor: boolean;
+  flightId?: string;
+}
 
 export default function HomePage() {
   const router = useRouter();
   const { user, tickets, isAuthenticated, updateTickets, logout } = useAuthStore();
   const { connected } = useSocket();
   const [loading, setLoading] = useState(true);
+  const [editingTicket, setEditingTicket] = useState<EditingTicket | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -37,6 +48,47 @@ export default function HomePage() {
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const handleEditTicket = (ticket: any) => {
+    const pasajero = ticket.pasajeros?.[0];
+    setEditingTicket({
+      id: ticket.id,
+      nombre: pasajero?.nombre || '',
+      apellido: pasajero?.apellido || '',
+      rut: pasajero?.rut || '',
+      esMenor: pasajero?.esMenor || false,
+      flightId: ticket.flightId,
+    });
+  };
+
+  const handleSaveTicket = async () => {
+    if (!editingTicket) return;
+
+    setSaving(true);
+    try {
+      await userAPI.updateTicket(editingTicket.id, {
+        pasajeros: [{
+          nombre: editingTicket.nombre,
+          apellido: editingTicket.apellido,
+          rut: editingTicket.rut,
+          esMenor: editingTicket.esMenor,
+        }],
+      });
+
+      // Refresh tickets
+      const { data } = await userAPI.getMe();
+      if (data.tickets) {
+        updateTickets(data.tickets);
+      }
+
+      setEditingTicket(null);
+      alert('✓ Ticket actualizado exitosamente');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar ticket');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -148,36 +200,122 @@ export default function HomePage() {
         {user?.rol === 'passenger' && tickets.length > 0 && (
           <div className="mb-12">
             <h3 className="text-2xl font-bold text-white mb-6">Mis Tickets</h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {tickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  className="bg-gradient-to-br from-primary via-blue-600 to-blue-700 rounded-2xl shadow-2xl p-6 text-white border border-blue-400/20"
-                >
-                  <div className="text-center">
-                    <p className="text-xs uppercase tracking-widest opacity-80 mb-2">Ticket</p>
-                    <p className="text-3xl font-black tracking-tight mb-4">{ticket.codigo_ticket}</p>
-                    <div className="mb-4">
-                      <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium ${
-                        ticket.estado === 'disponible' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                        ticket.estado === 'asignado' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                        ticket.estado === 'inscrito' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                        ticket.estado === 'volado' ? 'bg-slate-500/20 text-slate-300 border border-slate-500/30' :
-                        'bg-red-500/20 text-red-300 border border-red-500/30'
-                      }`}>
-                        {ticket.estado.toUpperCase()}
-                      </span>
-                    </div>
-                    {ticket.pasajeros && ticket.pasajeros.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-white/20 text-sm space-y-1">
-                        {ticket.pasajeros.map((p, i) => (
-                          <p key={i} className="font-medium">{p.nombre} <span className="opacity-70">({p.rut})</span></p>
-                        ))}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {tickets.map((ticket) => {
+                const pasajero = ticket.pasajeros?.[0];
+                const isEditing = editingTicket?.id === ticket.id;
+                const nombreCompleto = pasajero
+                  ? `${pasajero.nombre} ${pasajero.apellido}`.trim() || 'Sin asignar'
+                  : 'Sin asignar';
+
+                return (
+                  <div
+                    key={ticket.id}
+                    className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 text-white"
+                  >
+                    {isEditing ? (
+                      // Modo edición
+                      <div className="space-y-4">
+                        <div className="text-center mb-4">
+                          <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Editando Ticket</p>
+                          <p className="text-sm text-slate-300">{ticket.codigo_ticket}</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">Nombre</label>
+                          <input
+                            type="text"
+                            value={editingTicket.nombre}
+                            onChange={(e) => setEditingTicket({ ...editingTicket, nombre: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            placeholder="Juan"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">Apellido</label>
+                          <input
+                            type="text"
+                            value={editingTicket.apellido}
+                            onChange={(e) => setEditingTicket({ ...editingTicket, apellido: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            placeholder="Pérez"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">RUT</label>
+                          <input
+                            type="text"
+                            value={editingTicket.rut}
+                            onChange={(e) => setEditingTicket({ ...editingTicket, rut: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            placeholder="12.345.678-9"
+                          />
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={editingTicket.esMenor}
+                            onChange={(e) => setEditingTicket({ ...editingTicket, esMenor: e.target.checked })}
+                            className="w-4 h-4 bg-slate-700 border-slate-600 rounded"
+                          />
+                          <label className="ml-2 text-sm text-slate-300">Es menor de edad</label>
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={handleSaveTicket}
+                            disabled={saving}
+                            className="flex-1 bg-blue-600/90 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                          >
+                            {saving ? 'Guardando...' : 'Guardar'}
+                          </button>
+                          <button
+                            onClick={() => setEditingTicket(null)}
+                            disabled={saving}
+                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm font-medium transition"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Modo vista
+                      <div>
+                        <div className="text-center mb-4">
+                          <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Ticket</p>
+                          <p className="text-3xl font-black tracking-tight mb-1">{nombreCompleto}</p>
+                          <p className="text-xs text-slate-400">{ticket.codigo_ticket}</p>
+                        </div>
+                        <div className="mb-4 text-center">
+                          <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium ${
+                            ticket.estado === 'disponible' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                            ticket.estado === 'asignado' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                            ticket.estado === 'inscrito' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                            ticket.estado === 'volado' ? 'bg-slate-500/20 text-slate-300 border border-slate-500/30' :
+                            'bg-red-500/20 text-red-300 border border-red-500/30'
+                          }`}>
+                            {ticket.estado.toUpperCase()}
+                          </span>
+                        </div>
+                        {pasajero && (
+                          <div className="mt-4 pt-4 border-t border-slate-700 text-sm space-y-1 text-center">
+                            <p className="text-slate-400">RUT: <span className="text-white">{pasajero.rut || 'No especificado'}</span></p>
+                            {pasajero.esMenor && (
+                              <p className="text-amber-400 text-xs">⚠️ Menor de edad</p>
+                            )}
+                          </div>
+                        )}
+                        {ticket.estado === 'disponible' && (
+                          <button
+                            onClick={() => handleEditTicket(ticket)}
+                            className="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm font-medium transition"
+                          >
+                            ✏️ Editar Datos
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -197,31 +335,17 @@ export default function HomePage() {
           </button>
 
           {user?.rol === 'passenger' && (
-            <>
-              <button
-                onClick={() => router.push('/mis-tickets')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-indigo-500/50"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
-                <div className="relative">
-                  <div className="text-5xl mb-4">✏️</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Mis Tickets</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Editar pasajeros y asignar vuelos</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => router.push('/mi-pase')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-emerald-500/50"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
-                <div className="relative">
-                  <div className="text-5xl mb-4">🎫</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Mi Pase</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pase de embarque y código QR</p>
-                </div>
-              </button>
-            </>
+            <button
+              onClick={() => router.push('/mi-pase')}
+              className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-emerald-500/50"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
+              <div className="relative">
+                <div className="text-5xl mb-4">🎫</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Mi Pase</h3>
+                <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pase de embarque y código QR</p>
+              </div>
+            </button>
           )}
 
           {user?.rol === 'staff' && (
