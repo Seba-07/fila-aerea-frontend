@@ -104,3 +104,9 @@ export const staffAPI = {
   }) => api.delete(`/staff/passengers/${passengerId}`, { data }),
   getPayments: () => api.get('/staff/payments'),
 };
+
+// Manifiestos
+export const manifestsAPI = {
+  getAll: () => api.get('/manifests'),
+  getByTanda: (numeroTanda: number) => api.get(`/manifests/tanda/${numeroTanda}`),
+};
