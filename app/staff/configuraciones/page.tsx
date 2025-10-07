@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/api';
 
 export default function ConfiguracionesPage() {
