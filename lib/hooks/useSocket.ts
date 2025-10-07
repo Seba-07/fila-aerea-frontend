@@ -61,6 +61,37 @@ export const useSocket = () => {
           });
         }
       });
+
+      // Escuchar notificaciones de cambio de hora
+      socket.on('timeChanged', (data: any) => {
+        console.log('🔔 Hora de vuelo cambiada:', data);
+
+        // Mostrar notificación del navegador si tiene permisos
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('⏰ Cambio de Hora de Vuelo', {
+            body: `Tu vuelo de la tanda ${data.numero_tanda} cambió de hora: ${data.hora_anterior} → ${data.hora_nueva}`,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: 'time-change',
+            requireInteraction: true,
+          });
+        }
+
+        // Recargar datos del usuario para actualizar tickets
+        const { updateTickets } = useAuthStore.getState();
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`
+          }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.tickets) {
+              updateTickets(data.tickets);
+            }
+          })
+          .catch(err => console.error('Error recargando tickets:', err));
+      });
     } else {
       // Si el socket ya existe, usar su estado actual
       setConnected(socket.connected);
