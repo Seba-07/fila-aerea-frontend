@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { manifestsAPI } from '@/lib/api';
 
-export default function ManifinestosPage() {
+export default function ManifiestosPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [manifests, setManifests] = useState<any[]>([]);
@@ -83,7 +83,7 @@ export default function ManifinestosPage() {
         {manifests.length === 0 ? (
           <div className="text-center text-slate-300 py-12">
             <p className="text-xl">No hay manifiestos generados</p>
-            <p className="text-sm text-slate-400 mt-2">Los manifiestos se generan automáticamente al iniciar los vuelos</p>
+            <p className="text-sm text-slate-400 mt-2">Los manifiestos se generan automaticamente al iniciar los vuelos</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -156,11 +156,9 @@ export default function ManifinestosPage() {
           </div>
         )}
 
-        {/* Modal de detalle */}
         {selectedManifest && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 print:static print:bg-white">
             <div className="bg-slate-800 rounded-2xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto print:max-h-full print:bg-white print:border-0">
-              {/* Header imprimible */}
               <div className="p-8 border-b border-slate-700 print:border-black">
                 <div className="flex items-start justify-between mb-6 print:block">
                   <div>
@@ -181,7 +179,7 @@ export default function ManifinestosPage() {
                       onClick={handlePrint}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
                     >
-                      =¨ Imprimir
+                      Imprimir
                     </button>
                     <button
                       onClick={() => setSelectedManifest(null)}
@@ -216,7 +214,6 @@ export default function ManifinestosPage() {
                 </div>
               </div>
 
-              {/* Lista de vuelos con pasajeros */}
               <div className="p-8 print:p-4">
                 {selectedManifest.vuelos && selectedManifest.vuelos.length > 0 ? (
                   <div className="space-y-6 print:space-y-4">
@@ -253,11 +250,10 @@ export default function ManifinestosPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-400 text-center print:text-gray-600">No hay información de vuelos</p>
+                  <p className="text-slate-400 text-center print:text-gray-600">No hay informacion de vuelos</p>
                 )}
               </div>
 
-              {/* Footer */}
               <div className="p-6 border-t border-slate-700 text-center print:border-black">
                 <p className="text-sm text-slate-400 print:text-gray-600">
                   Generado el {new Date(selectedManifest.createdAt).toLocaleString('es-ES')}
