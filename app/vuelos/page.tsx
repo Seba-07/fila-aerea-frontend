@@ -54,7 +54,7 @@ export default function VuelosPage() {
       // Calcular siguiente número de tanda
       if (flightsRes.data.length > 0) {
         const maxTanda = Math.max(...flightsRes.data.map((f: any) => f.numero_tanda));
-        setNumeroTanda(maxTanda + 1);
+        setNumeroTanda(String(maxTanda + 1));
       }
     } catch (error) {
       console.error('Error al cargar datos:', error);
