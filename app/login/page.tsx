@@ -85,13 +85,6 @@ export default function LoginPage() {
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
-
-          <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
-            <p className="font-medium mb-1">Usuarios de prueba:</p>
-            <p>• pasajero1@test.com</p>
-            <p>• pasajero2@test.com</p>
-            <p>• staff@test.com</p>
-          </div>
         </form>
       </div>
     </div>
