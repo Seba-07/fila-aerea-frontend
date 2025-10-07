@@ -26,6 +26,11 @@ interface Ticket {
     numero_tanda_nueva: number;
     fecha_reprogramacion: string;
   };
+  cambio_hora_pendiente?: {
+    hora_anterior: string;
+    hora_nueva: string;
+    fecha_cambio: string;
+  };
 }
 
 interface AuthState {
