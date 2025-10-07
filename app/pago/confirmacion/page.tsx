@@ -26,7 +26,7 @@ function ConfirmacionContent() {
   const confirmarPago = async (token_ws: string) => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/payment/confirmar`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/confirmar`,
         { token_ws }
       );
 

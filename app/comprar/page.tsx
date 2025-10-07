@@ -26,7 +26,7 @@ export default function ComprarPage() {
     const fetchPrecio = async () => {
       try {
         // Agregar timestamp para evitar cache
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/settings/precio-ticket?t=${Date.now()}`;
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/settings/precio-ticket?t=${Date.now()}`;
         console.log('🔍 Fetching precio from:', url);
         const response = await axios.get(url);
         console.log('📦 Response data:', response.data);

@@ -79,7 +79,7 @@ export const useSocket = () => {
 
         // Recargar datos del usuario para actualizar tickets
         const { updateTickets } = useAuthStore.getState();
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/me`, {
           headers: {
             'Authorization': `Bearer ${useAuthStore.getState().token}`
           }
