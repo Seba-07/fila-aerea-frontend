@@ -11,11 +11,12 @@ export default function VuelosPage() {
   const [flights, setFlights] = useState<any[]>([]);
   const [aircrafts, setAircrafts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedFlight, setExpandedFlight] = useState<string | null>(null);
   const [showCreateTanda, setShowCreateTanda] = useState(false);
   const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
   const [newCapacity, setNewCapacity] = useState<number>(0);
   const [editingTanda, setEditingTanda] = useState<number | null>(null);
+  const [editingHoraTanda, setEditingHoraTanda] = useState<number | null>(null);
+  const [newHoraPrevista, setNewHoraPrevista] = useState<string>('');
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [rescheduleFlightId, setRescheduleFlightId] = useState<string | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
@@ -228,6 +229,33 @@ export default function VuelosPage() {
     }
   };
 
+  const handleEditHoraPrevista = (numero_tanda: number, hora_actual: string) => {
+    setEditingHoraTanda(numero_tanda);
+    // Convertir a formato HH:MM para el input
+    const fecha = new Date(hora_actual);
+    const horas = String(fecha.getHours()).padStart(2, '0');
+    const minutos = String(fecha.getMinutes()).padStart(2, '0');
+    setNewHoraPrevista(`${horas}:${minutos}`);
+  };
+
+  const handleSaveHoraPrevista = async (numero_tanda: number) => {
+    if (!newHoraPrevista) {
+      alert('Debes ingresar una hora válida');
+      return;
+    }
+
+    try {
+      await api.patch(`/settings/flights/tanda/${numero_tanda}/hora-prevista`, {
+        nueva_hora: newHoraPrevista,
+      });
+      alert('Hora prevista actualizada. Las siguientes tandas han sido recalculadas.');
+      setEditingHoraTanda(null);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar hora prevista');
+    }
+  };
+
   // Agrupar vuelos por número de tanda
   const flightsByTanda = flights.reduce((acc, flight) => {
     const tandaNum = flight.numero_tanda;
@@ -361,44 +389,86 @@ export default function VuelosPage() {
               return (
                 <div key={tandaNum} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
                   {/* Header de la Tanda */}
-                  <div className="mb-6 pb-4 border-b border-slate-700 flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-bold text-white">Tanda #{tandaNum}</h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {new Date(vuelosTanda[0].fecha_hora).toLocaleDateString('es-ES')}
-                      </p>
-                      {vuelosTanda[0].hora_prevista_salida && (
-                        <p className="text-sm text-blue-400 mt-1">
-                          🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                  <div className="mb-6 pb-4 border-b border-slate-700">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h2 className="text-3xl font-bold text-white">Tanda #{tandaNum}</h2>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {new Date(vuelosTanda[0].fecha_hora).toLocaleDateString('es-ES')}
                         </p>
+                      </div>
+                      {user?.rol === 'staff' && (
+                        <div className="flex gap-2">
+                          {editingTanda === tandaNum ? (
+                            <button
+                              onClick={() => {
+                                setEditingTanda(null);
+                                setSelectedAircrafts([]);
+                              }}
+                              className="px-4 py-2 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-sm font-medium transition-colors"
+                            >
+                              Cancelar Edición
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEditTanda(tandaNum)}
+                              className="px-4 py-2 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors"
+                            >
+                              Editar Tanda
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteTanda(tandaNum)}
+                            className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
+                          >
+                            Eliminar Tanda
+                          </button>
+                        </div>
                       )}
                     </div>
-                    {user?.rol === 'staff' && (
-                      <div className="flex gap-2">
-                        {editingTanda === tandaNum ? (
-                          <button
-                            onClick={() => {
-                              setEditingTanda(null);
-                              setSelectedAircrafts([]);
-                            }}
-                            className="px-4 py-2 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-sm font-medium transition-colors"
-                          >
-                            Cancelar Edición
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditTanda(tandaNum)}
-                            className="px-4 py-2 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors"
-                          >
-                            Editar Tanda
-                          </button>
-                        )}
+
+                    {/* Hora prevista - Editable para staff */}
+                    {editingHoraTanda === tandaNum ? (
+                      <div className="flex items-center gap-3 mt-3">
+                        <label className="text-sm text-slate-400">🕐 Hora prevista:</label>
+                        <input
+                          type="time"
+                          value={newHoraPrevista}
+                          onChange={(e) => setNewHoraPrevista(e.target.value)}
+                          className="px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                        />
                         <button
-                          onClick={() => handleDeleteTanda(tandaNum)}
-                          className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
+                          onClick={() => handleSaveHoraPrevista(tandaNum)}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
                         >
-                          Eliminar Tanda
+                          Guardar
                         </button>
+                        <button
+                          onClick={() => setEditingHoraTanda(null)}
+                          className="px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-3">
+                        {vuelosTanda[0].hora_prevista_salida ? (
+                          <>
+                            <p className="text-lg text-blue-400 font-semibold">
+                              🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            {user?.rol === 'staff' && vuelosTanda[0].estado === 'abierto' && (
+                              <button
+                                onClick={() => handleEditHoraPrevista(tandaNum, vuelosTanda[0].hora_prevista_salida)}
+                                className="text-xs text-blue-400 hover:text-blue-300 ml-2"
+                              >
+                                ✏️ Editar
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-sm text-slate-400">🕐 Sin hora prevista configurada</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -435,7 +505,6 @@ export default function VuelosPage() {
                       const asientosOcupados = flight.asientos_ocupados || 0;
                       const capacidadTotal = flight.capacidad_total || 0;
                       const asientosDisponibles = capacidadTotal - asientosOcupados;
-                      const isExpanded = expandedFlight === flight._id;
 
                       return (
                         <div
@@ -535,14 +604,6 @@ export default function VuelosPage() {
                           {/* Controles Staff */}
                           {user?.rol === 'staff' && (
                             <div className="space-y-2">
-                              <button
-                                onClick={() => setExpandedFlight(isExpanded ? null : flight._id)}
-                                className="w-full text-sm text-slate-300 hover:text-white transition"
-                              >
-                                {isExpanded ? '▲ Ocultar' : '▼ Ver pasajeros'}
-                              </button>
-
-                              <div className="space-y-2">
                                 {flight.estado === 'abierto' && (
                                   <>
                                     <div className="flex gap-2">
@@ -587,47 +648,44 @@ export default function VuelosPage() {
                                     Finalizado
                                   </button>
                                 )}
-                              </div>
                             </div>
                           )}
 
-                          {/* Panel expandido */}
-                          {isExpanded && (
-                            <div className="mt-3 pt-3 border-t border-slate-600">
-                              <p className="text-xs font-semibold text-slate-300 mb-2">
-                                Pasajeros: {flight.pasajeros_inscritos?.length || 0}
-                              </p>
-                              {flight.pasajeros_inscritos && flight.pasajeros_inscritos.length > 0 ? (
-                                <div className="space-y-2">
-                                  {flight.pasajeros_inscritos.map((inscrito: any, idx: number) => (
-                                    <div key={idx} className="bg-slate-600/50 rounded p-2 flex items-center justify-between gap-2">
-                                      <div className="flex-1">
-                                        <p className="text-xs font-medium text-white">
-                                          {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
-                                        </p>
-                                        <p className="text-xs text-slate-400">
-                                          {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
-                                        </p>
-                                        <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
-                                          {inscrito.estado}
-                                        </span>
-                                      </div>
-                                      {user?.rol === 'staff' && flight.estado === 'abierto' && (
-                                        <button
-                                          onClick={() => handleEliminarPasajero(inscrito.ticketId, inscrito.pasajeros[0]?.nombre)}
-                                          className="text-red-400 hover:text-red-300 text-xs px-2 py-1"
-                                        >
-                                          ✕
-                                        </button>
-                                      )}
+                          {/* Lista de Pasajeros - Siempre visible */}
+                          <div className="mt-3 pt-3 border-t border-slate-600">
+                            <p className="text-xs font-semibold text-slate-300 mb-2">
+                              Pasajeros: {flight.pasajeros_inscritos?.length || 0}
+                            </p>
+                            {flight.pasajeros_inscritos && flight.pasajeros_inscritos.length > 0 ? (
+                              <div className="space-y-2">
+                                {flight.pasajeros_inscritos.map((inscrito: any, idx: number) => (
+                                  <div key={idx} className="bg-slate-600/50 rounded p-2 flex items-center justify-between gap-2">
+                                    <div className="flex-1">
+                                      <p className="text-xs font-medium text-white">
+                                        {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
+                                      </p>
+                                      <p className="text-xs text-slate-400">
+                                        {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
+                                      </p>
+                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                                        {inscrito.estado}
+                                      </span>
                                     </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-slate-400">Sin pasajeros inscritos</p>
-                              )}
-                            </div>
-                          )}
+                                    {user?.rol === 'staff' && flight.estado === 'abierto' && (
+                                      <button
+                                        onClick={() => handleEliminarPasajero(inscrito.ticketId, inscrito.pasajeros[0]?.nombre)}
+                                        className="text-red-400 hover:text-red-300 text-xs px-2 py-1"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-400">Sin pasajeros inscritos</p>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
