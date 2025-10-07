@@ -68,7 +68,7 @@ export default function ManifiestosPage() {
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 print:hidden">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
-            Back
+            Volver
           </button>
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
@@ -181,13 +181,13 @@ export default function ManifiestosPage() {
                       onClick={handlePrint}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
                     >
-                      Print
+                      Imprimir
                     </button>
                     <button
                       onClick={() => setSelectedManifest(null)}
                       className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium"
                     >
-                      Close
+                      Cerrar
                     </button>
                   </div>
                 </div>
