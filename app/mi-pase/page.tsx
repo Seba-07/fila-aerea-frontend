@@ -163,9 +163,15 @@ export default function MiPasePage() {
                       <p className="text-lg font-medium text-white">
                         {new Date(flight.fecha_hora).toLocaleDateString('es-ES')}
                       </p>
-                      <p className="text-sm text-slate-400">
-                        {new Date(flight.fecha_hora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      {flight.hora_prevista_salida ? (
+                        <p className="text-sm text-blue-400 font-semibold">
+                          🕐 {new Date(flight.hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-slate-400">
+                          {new Date(flight.fecha_hora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
                       {hasReprogramacion && (
                         <p className="text-xs text-amber-400 mt-1">
                           ⚠️ Pendiente de confirmación

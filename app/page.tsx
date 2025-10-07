@@ -604,6 +604,18 @@ export default function HomePage() {
                   <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Gestionar combustible de aviones</p>
                 </div>
               </button>
+
+              <button
+                onClick={() => router.push('/staff/configuraciones')}
+                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-purple-500/50"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-purple-500/10 transition-colors"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">⚙️</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Configuraciones</h3>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ajustes del sistema</p>
+                </div>
+              </button>
             </>
           )}
         </div>

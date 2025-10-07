@@ -351,6 +351,11 @@ export default function VuelosPage() {
                       <p className="text-sm text-slate-400 mt-1">
                         {new Date(vuelosTanda[0].fecha_hora).toLocaleDateString('es-ES')}
                       </p>
+                      {vuelosTanda[0].hora_prevista_salida && (
+                        <p className="text-sm text-blue-400 mt-1">
+                          🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
                     </div>
                     {user?.rol === 'staff' && (
                       <div className="flex gap-2">
