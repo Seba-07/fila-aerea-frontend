@@ -25,7 +25,7 @@ export default function ComprarPage() {
   useEffect(() => {
     const fetchPrecio = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/settings`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/settings/precio-ticket`);
         setPrecioTicket(response.data.precio_ticket || 15000);
       } catch (error) {
         console.error('Error al cargar precio:', error);
