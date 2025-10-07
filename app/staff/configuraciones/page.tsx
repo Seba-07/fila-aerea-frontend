@@ -16,6 +16,7 @@ export default function ConfiguracionesPage() {
   const [duracionTanda, setDuracionTanda] = useState(20);
   const [maxTandasDefault, setMaxTandasDefault] = useState(4);
   const [precioTicket, setPrecioTicket] = useState(15000);
+  const [timezoneOffset, setTimezoneOffset] = useState(3);
 
   useEffect(() => {
     if (!user) {
@@ -40,6 +41,7 @@ export default function ConfiguracionesPage() {
       setDuracionTanda(data.duracion_tanda_minutos || 20);
       setMaxTandasDefault(data.max_tandas_sin_reabastecimiento_default || 4);
       setPrecioTicket(data.precio_ticket || 15000);
+      setTimezoneOffset(data.timezone_offset_hours || 3);
     } catch (error) {
       console.error('Error cargando configuración:', error);
     } finally {
@@ -55,6 +57,7 @@ export default function ConfiguracionesPage() {
         duracion_tanda_minutos: duracionTanda,
         max_tandas_sin_reabastecimiento_default: maxTandasDefault,
         precio_ticket: precioTicket,
+        timezone_offset_hours: timezoneOffset,
       });
 
       alert('✅ Configuración guardada exitosamente');
@@ -157,6 +160,31 @@ export default function ConfiguracionesPage() {
             <p className="text-slate-400 text-xs mt-2">
               💡 El precio se mostrará en la página de compra y se aplicará automáticamente en los pagos.
             </p>
+          </div>
+
+          {/* Offset de zona horaria */}
+          <div className="border-t border-slate-700 pt-6">
+            <label className="block text-slate-300 font-semibold mb-2">
+              🌍 Offset de Zona Horaria (horas)
+            </label>
+            <p className="text-slate-400 text-sm mb-3">
+              Diferencia horaria con UTC. Chile: <strong>3 horas en verano (UTC-3)</strong>, <strong>4 horas en invierno (UTC-4)</strong>.
+            </p>
+            <div className="flex items-center gap-4">
+              <select
+                value={timezoneOffset}
+                onChange={(e) => setTimezoneOffset(parseInt(e.target.value))}
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="3">UTC-3 (Horario de Verano)</option>
+                <option value="4">UTC-4 (Horario de Invierno)</option>
+              </select>
+            </div>
+            <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
+              <p className="text-yellow-300 text-xs">
+                ⚠️ <strong>Importante:</strong> Cambia este valor cuando Chile cambie entre horario de verano e invierno para mantener las horas correctas.
+              </p>
+            </div>
           </div>
 
           {/* Botones */}
