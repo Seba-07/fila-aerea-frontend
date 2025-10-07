@@ -381,6 +381,29 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Notificaciones de cambio de hora */}
+        {user?.rol === 'passenger' && tickets.some(t => t.cambio_hora_pendiente) && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl border border-blue-400/30 p-6 shadow-2xl">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">⏰</div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">Cambios de Hora Pendientes</h3>
+                  <p className="text-blue-100 text-sm mb-4">
+                    Tienes {tickets.filter(t => t.cambio_hora_pendiente).length} ticket(s) con cambios de hora pendientes que requieren tu confirmación.
+                  </p>
+                  <button
+                    onClick={() => router.push('/mis-tickets')}
+                    className="bg-white text-blue-700 px-6 py-2 rounded-lg font-medium hover:bg-blue-50 transition"
+                  >
+                    Ver y Gestionar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Tickets del pasajero */}
         {user?.rol === 'passenger' && tickets.length > 0 && (
           <div className="mb-12">
