@@ -63,7 +63,18 @@ export default function VuelosPage() {
 
   const handleChangeState = async (flightId: string, newState: string) => {
     try {
-      await flightsAPI.updateFlight(flightId, { estado: newState });
+      if (newState === 'en_vuelo') {
+        // Usar endpoint especializado para iniciar vuelo
+        await api.patch(`/settings/flights/${flightId}/iniciar`);
+        alert('✈️ Vuelo iniciado');
+      } else if (newState === 'finalizado') {
+        // Usar endpoint especializado para finalizar vuelo (recalcula horas)
+        await api.patch(`/settings/flights/${flightId}/finalizar`);
+        alert('✅ Vuelo finalizado. Las horas previstas de las siguientes tandas se han recalculado.');
+      } else {
+        // Para otros estados, usar endpoint genérico
+        await flightsAPI.updateFlight(flightId, { estado: newState });
+      }
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar vuelo');
