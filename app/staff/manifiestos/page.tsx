@@ -119,6 +119,7 @@ export default function ManifiestosPage() {
                       {new Date(manifest.hora_despegue).toLocaleTimeString('es-CL', {
                         hour: '2-digit',
                         minute: '2-digit',
+                        hour12: false,
                       })}
                     </p>
                   </div>
@@ -129,6 +130,7 @@ export default function ManifiestosPage() {
                         ? new Date(manifest.hora_aterrizaje).toLocaleTimeString('es-CL', {
                             hour: '2-digit',
                             minute: '2-digit',
+                            hour12: false,
                           })
                         : 'Pendiente'}
                     </p>
@@ -197,6 +199,7 @@ export default function ManifiestosPage() {
                       {new Date(selectedManifest.hora_despegue).toLocaleTimeString('es-CL', {
                         hour: '2-digit',
                         minute: '2-digit',
+                        hour12: false,
                       })}
                     </p>
                   </div>
@@ -207,6 +210,7 @@ export default function ManifiestosPage() {
                         ? new Date(selectedManifest.hora_aterrizaje).toLocaleTimeString('es-CL', {
                             hour: '2-digit',
                             minute: '2-digit',
+                            hour12: false,
                           })
                         : 'Pendiente'}
                     </p>

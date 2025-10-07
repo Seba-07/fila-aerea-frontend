@@ -455,7 +455,7 @@ export default function VuelosPage() {
                         {vuelosTanda[0].hora_prevista_salida ? (
                           <>
                             <p className="text-lg text-blue-400 font-semibold">
-                              🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                              🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })}
                             </p>
                             {user?.rol === 'staff' && vuelosTanda[0].estado === 'abierto' && (
                               <button
