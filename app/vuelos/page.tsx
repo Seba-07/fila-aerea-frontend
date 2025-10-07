@@ -249,10 +249,10 @@ export default function VuelosPage() {
 
   const handleEditHoraPrevista = (numero_tanda: number, hora_actual: string) => {
     setEditingHoraTanda(numero_tanda);
-    // Convertir a formato HH:MM para el input
+    // Convertir a formato HH:MM para el input usando UTC
     const fecha = new Date(hora_actual);
-    const horas = String(fecha.getHours()).padStart(2, '0');
-    const minutos = String(fecha.getMinutes()).padStart(2, '0');
+    const horas = String(fecha.getUTCHours()).padStart(2, '0');
+    const minutos = String(fecha.getUTCMinutes()).padStart(2, '0');
     setNewHoraPrevista(`${horas}:${minutos}`);
   };
 
@@ -484,7 +484,12 @@ export default function VuelosPage() {
                         {vuelosTanda[0].hora_prevista_salida ? (
                           <>
                             <p className="text-lg text-blue-400 font-semibold">
-                              🕐 Hora prevista: {new Date(vuelosTanda[0].hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                              🕐 Hora prevista: {(() => {
+                              const date = new Date(vuelosTanda[0].hora_prevista_salida);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })()}
                             </p>
                             {user?.rol === 'staff' && vuelosTanda[0].estado === 'abierto' && (
                               <button
