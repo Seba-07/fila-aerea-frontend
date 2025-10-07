@@ -116,23 +116,23 @@ export default function ManifiestosPage() {
                   <div>
                     <p className="text-xs text-slate-400">Hora Despegue</p>
                     <p className="text-lg text-white font-medium">
-                      {new Date(manifest.hora_despegue).toLocaleTimeString('es-CL', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })}
+                      {(() => {
+                        const date = new Date(manifest.hora_despegue);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })()}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-400">Hora Aterrizaje</p>
                     <p className="text-lg text-white font-medium">
-                      {manifest.hora_aterrizaje
-                        ? new Date(manifest.hora_aterrizaje).toLocaleTimeString('es-CL', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                          })
-                        : 'Pendiente'}
+                      {manifest.hora_aterrizaje ? (() => {
+                        const date = new Date(manifest.hora_aterrizaje);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })() : 'Pendiente'}
                     </p>
                   </div>
                   <div>
@@ -196,23 +196,23 @@ export default function ManifiestosPage() {
                   <div>
                     <p className="text-sm text-slate-400 print:text-gray-600">Hora de Despegue</p>
                     <p className="text-2xl text-white font-bold print:text-black">
-                      {new Date(selectedManifest.hora_despegue).toLocaleTimeString('es-CL', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })}
+                      {(() => {
+                        const date = new Date(selectedManifest.hora_despegue);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })()}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-400 print:text-gray-600">Hora de Aterrizaje</p>
                     <p className="text-2xl text-white font-bold print:text-black">
-                      {selectedManifest.hora_aterrizaje
-                        ? new Date(selectedManifest.hora_aterrizaje).toLocaleTimeString('es-CL', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                          })
-                        : 'Pendiente'}
+                      {selectedManifest.hora_aterrizaje ? (() => {
+                        const date = new Date(selectedManifest.hora_aterrizaje);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })() : 'Pendiente'}
                     </p>
                   </div>
                 </div>
