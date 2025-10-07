@@ -204,6 +204,12 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold text-white">Fila Aérea</h1>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/comprar')}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
+            >
+              🎫 Comprar Tickets
+            </button>
             <div className="flex items-center gap-2">
               <div
                 className={`w-2 h-2 rounded-full ${

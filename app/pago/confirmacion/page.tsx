@@ -1,0 +1,169 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios from 'axios';
+
+export default function ConfirmacionPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [resultado, setResultado] = useState<any>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const token_ws = searchParams.get('token_ws');
+
+    if (!token_ws) {
+      setError('Token no encontrado');
+      setLoading(false);
+      return;
+    }
+
+    confirmarPago(token_ws);
+  }, [searchParams]);
+
+  const confirmarPago = async (token_ws: string) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/payment/confirmar`,
+        { token_ws }
+      );
+
+      setResultado(response.data);
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError(err.response?.data?.error || 'Error al confirmar el pago');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          </div>
+          <p className="text-white text-xl font-medium">Confirmando pago...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-red-900/30 backdrop-blur-sm rounded-2xl border border-red-600 p-8 text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-white mb-4">Error en el Pago</h1>
+          <p className="text-red-200 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/comprar')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            Intentar de Nuevo
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { success, transaction } = resultado;
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 overflow-hidden">
+          <div className="bg-green-600 p-6 text-center">
+            <div className="text-6xl mb-2">✅</div>
+            <h1 className="text-3xl font-bold text-white">¡Pago Exitoso!</h1>
+          </div>
+
+          <div className="p-8">
+            <div className="bg-slate-900/50 rounded-lg p-6 mb-6">
+              <h2 className="text-xl font-bold text-white mb-4">Detalles del Pago</h2>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Orden de Compra:</span>
+                  <span className="text-white font-mono">{transaction.buy_order}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Monto:</span>
+                  <span className="text-white font-bold">${transaction.amount?.toLocaleString('es-CL')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Código de Autorización:</span>
+                  <span className="text-white font-mono">{transaction.authorization_code}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Tipo de Pago:</span>
+                  <span className="text-white">{transaction.payment_type === 'VD' ? 'Débito' : transaction.payment_type === 'VN' ? 'Crédito' : transaction.payment_type}</span>
+                </div>
+                {transaction.installments > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Cuotas:</span>
+                    <span className="text-white">{transaction.installments}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Tickets Generados:</span>
+                  <span className="text-green-400 font-bold">{transaction.tickets_generados}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
+              <p className="text-blue-300 text-sm text-center">
+                📧 Revisa tu correo electrónico para ver tu contraseña temporal y acceder a tus tickets
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/login')}
+                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
+              >
+                Ir al Login
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+              >
+                Volver al Inicio
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Pago rechazado
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-amber-900/30 backdrop-blur-sm rounded-2xl border border-amber-600 p-8 text-center">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h1 className="text-2xl font-bold text-white mb-4">Pago Rechazado</h1>
+        <p className="text-amber-200 mb-6">
+          Tu pago no pudo ser procesado. Por favor verifica tus datos e intenta nuevamente.
+        </p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => router.push('/comprar')}
+            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            Intentar de Nuevo
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="flex-1 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 font-medium"
+          >
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
