@@ -170,7 +170,12 @@ export default function MiPasePage() {
                       </p>
                       {flight.hora_prevista_salida ? (
                         <p className="text-sm text-blue-400 font-semibold">
-                          🕐 {new Date(flight.hora_prevista_salida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                          🕐 {(() => {
+                            const date = new Date(flight.hora_prevista_salida);
+                            const hours = String(date.getUTCHours()).padStart(2, '0');
+                            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                            return `${hours}:${minutes}`;
+                          })()}
                         </p>
                       ) : (
                         <p className="text-sm text-slate-400">
