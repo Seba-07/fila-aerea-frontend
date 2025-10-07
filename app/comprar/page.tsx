@@ -78,7 +78,7 @@ export default function ComprarPage() {
     try {
       setLoading(true);
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/payment/iniciar`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/iniciar`, {
         email,
         nombre_comprador: nombreComprador,
         telefono,
