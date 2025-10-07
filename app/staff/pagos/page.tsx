@@ -171,17 +171,31 @@ export default function PagosPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                            payment.metodo_pago === 'efectivo'
-                              ? 'bg-green-400 text-green-900'
-                              : payment.metodo_pago === 'transferencia'
-                              ? 'bg-blue-400 text-blue-900'
-                              : 'bg-purple-400 text-purple-900'
-                          }`}
-                        >
-                          {payment.metodo_pago.toUpperCase()}
-                        </span>
+                        <div className="flex flex-col items-center gap-1">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                              payment.metodo_pago === 'efectivo'
+                                ? 'bg-green-400 text-green-900'
+                                : payment.metodo_pago === 'transferencia'
+                                ? 'bg-blue-400 text-blue-900'
+                                : payment.metodo_pago === 'webpay'
+                                ? 'bg-indigo-400 text-indigo-900'
+                                : 'bg-purple-400 text-purple-900'
+                            }`}
+                          >
+                            {payment.metodo_pago === 'webpay' ? 'WEBPAY' : payment.metodo_pago.toUpperCase()}
+                          </span>
+                          {payment.metodo_pago === 'webpay' && (
+                            <div className="text-xs text-slate-400">
+                              {payment.tipo_tarjeta && (
+                                <span className="capitalize">{payment.tipo_tarjeta}</span>
+                              )}
+                              {payment.cuotas > 0 && (
+                                <span> • {payment.cuotas}x</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className={`px-6 py-4 text-right text-lg font-bold ${payment.monto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {payment.monto >= 0 ? '+' : ''}${payment.monto.toLocaleString('es-CL')}
