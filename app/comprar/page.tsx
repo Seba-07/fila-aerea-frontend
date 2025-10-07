@@ -25,10 +25,15 @@ export default function ComprarPage() {
   useEffect(() => {
     const fetchPrecio = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/settings/precio-ticket`);
+        // Agregar timestamp para evitar cache
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/settings/precio-ticket?t=${Date.now()}`;
+        console.log('🔍 Fetching precio from:', url);
+        const response = await axios.get(url);
+        console.log('📦 Response data:', response.data);
+        console.log('💰 Precio recibido:', response.data.precio_ticket);
         setPrecioTicket(response.data.precio_ticket || 15000);
       } catch (error) {
-        console.error('Error al cargar precio:', error);
+        console.error('❌ Error al cargar precio:', error);
         setPrecioTicket(15000); // Fallback al precio por defecto
       } finally {
         setLoadingPrice(false);
