@@ -98,6 +98,7 @@ export default function MiPasePage() {
             const pasajero = ticket.pasajeros?.[0];
             const flight = ticket.flight;
             const hasReprogramacion = ticket.reprogramacion_pendiente;
+            const hasCambioHora = ticket.cambio_hora_pendiente;
 
             return (
               <div key={ticket.id} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
@@ -109,6 +110,28 @@ export default function MiPasePage() {
                     </p>
                     <p className="text-amber-100 text-sm mt-1">
                       Por favor acepta o rechaza la reprogramación desde el home
+                    </p>
+                  </div>
+                )}
+
+                {/* Alerta de cambio de hora */}
+                {hasCambioHora && (
+                  <div className="bg-blue-600 p-4 text-center">
+                    <p className="text-white font-medium">
+                      ⏰ Cambio de hora de vuelo: {(() => {
+                        const date = new Date(hasCambioHora.hora_anterior);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })()} → {(() => {
+                        const date = new Date(hasCambioHora.hora_nueva);
+                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                      })()}
+                    </p>
+                    <p className="text-blue-100 text-sm mt-1">
+                      Por favor acepta o rechaza el cambio de hora desde el home
                     </p>
                   </div>
                 )}
