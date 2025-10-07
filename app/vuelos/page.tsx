@@ -22,7 +22,7 @@ export default function VuelosPage() {
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
 
   // Form state para nueva tanda
-  const [numeroTanda, setNumeroTanda] = useState<number>(1);
+  const [numeroTanda, setNumeroTanda] = useState<string>('');
   const [fecha, setFecha] = useState('');
   const [horaPrevista, setHoraPrevista] = useState('');
   const [selectedAircrafts, setSelectedAircrafts] = useState<string[]>([]);
@@ -174,7 +174,7 @@ export default function VuelosPage() {
       );
 
       await api.post('/staff/tandas', {
-        numero_tanda: numeroTanda,
+        numero_tanda: parseInt(numeroTanda),
         fecha_hora: fechaHora.toISOString(),
         hora_prevista: horaPrevista,
         aircraftIds: selectedAircrafts,
@@ -185,6 +185,7 @@ export default function VuelosPage() {
       setSelectedAircrafts([]);
       setFecha('');
       setHoraPrevista('');
+      setNumeroTanda('');
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al crear tanda');
@@ -338,12 +339,10 @@ export default function VuelosPage() {
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Número de Tanda:</label>
                 <input
-                  type="text"
+                  type="number"
+                  min="1"
                   value={numeroTanda}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    setNumeroTanda(val ? Number(val) : 1);
-                  }}
+                  onChange={(e) => setNumeroTanda(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
                   placeholder="1"
                 />
