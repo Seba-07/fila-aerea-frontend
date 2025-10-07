@@ -15,6 +15,7 @@ export default function ConfiguracionesPage() {
 
   const [duracionTanda, setDuracionTanda] = useState(20);
   const [maxTandasDefault, setMaxTandasDefault] = useState(4);
+  const [precioTicket, setPrecioTicket] = useState(15000);
 
   useEffect(() => {
     if (!user) {
@@ -38,6 +39,7 @@ export default function ConfiguracionesPage() {
 
       setDuracionTanda(data.duracion_tanda_minutos || 20);
       setMaxTandasDefault(data.max_tandas_sin_reabastecimiento_default || 4);
+      setPrecioTicket(data.precio_ticket || 15000);
     } catch (error) {
       console.error('Error cargando configuración:', error);
     } finally {
@@ -52,6 +54,7 @@ export default function ConfiguracionesPage() {
       await api.patch('/settings', {
         duracion_tanda_minutos: duracionTanda,
         max_tandas_sin_reabastecimiento_default: maxTandasDefault,
+        precio_ticket: precioTicket,
       });
 
       alert('✅ Configuración guardada exitosamente');
@@ -132,6 +135,27 @@ export default function ConfiguracionesPage() {
             />
             <p className="text-slate-400 text-xs mt-2">
               💡 Este es el valor por defecto. Puedes configurar un valor específico para cada avión en la sección de Aviones.
+            </p>
+          </div>
+
+          {/* Precio del ticket */}
+          <div>
+            <label className="block text-slate-300 font-semibold mb-2">
+              💰 Precio del Ticket (CLP)
+            </label>
+            <p className="text-slate-400 text-sm mb-3">
+              Precio que se cobrará por cada ticket en la pasarela de pago.
+            </p>
+            <input
+              type="number"
+              min="0"
+              step="1000"
+              value={precioTicket}
+              onChange={(e) => setPrecioTicket(parseInt(e.target.value))}
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-slate-400 text-xs mt-2">
+              💡 El precio se mostrará en la página de compra y se aplicará automáticamente en los pagos.
             </p>
           </div>
 

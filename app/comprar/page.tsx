@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-
-const PRECIO_TICKET = 15000;
 
 export default function ComprarPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [loadingPrice, setLoadingPrice] = useState(true);
+  const [precioTicket, setPrecioTicket] = useState(15000);
 
   // Datos del comprador
   const [email, setEmail] = useState('');
@@ -20,6 +20,22 @@ export default function ComprarPage() {
   const [pasajeros, setPasajeros] = useState([
     { nombre: '', apellido: '', rut: '', esMenor: false }
   ]);
+
+  // Cargar precio del ticket desde configuración
+  useEffect(() => {
+    const fetchPrecio = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/settings`);
+        setPrecioTicket(response.data.precio_ticket || 15000);
+      } catch (error) {
+        console.error('Error al cargar precio:', error);
+        setPrecioTicket(15000); // Fallback al precio por defecto
+      } finally {
+        setLoadingPrice(false);
+      }
+    };
+    fetchPrecio();
+  }, []);
 
   const agregarPasajero = () => {
     setPasajeros([...pasajeros, { nombre: '', apellido: '', rut: '', esMenor: false }]);
@@ -85,7 +101,20 @@ export default function ComprarPage() {
     }
   };
 
-  const montoTotal = cantidadTickets * PRECIO_TICKET;
+  const montoTotal = cantidadTickets * precioTicket;
+
+  if (loadingPrice) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          </div>
+          <p className="text-white text-xl font-medium">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
@@ -104,7 +133,7 @@ export default function ComprarPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Precio por ticket</p>
-              <p className="text-2xl font-bold text-white">${PRECIO_TICKET.toLocaleString('es-CL')}</p>
+              <p className="text-2xl font-bold text-white">${precioTicket.toLocaleString('es-CL')}</p>
             </div>
             <div>
               <p className="text-slate-400 text-sm">Total a pagar</p>
