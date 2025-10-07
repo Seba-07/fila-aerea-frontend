@@ -153,30 +153,49 @@ export default function VuelosPage() {
   };
 
   const handleCreateTanda = async () => {
-    if (!numeroTanda || !fecha || !horaPrevista || selectedAircrafts.length === 0) {
+    // Validar campos obligatorios
+    if (!numeroTanda || !fecha || selectedAircrafts.length === 0) {
       alert('Completa todos los campos y selecciona al menos un avión');
+      return;
+    }
+
+    // Si es tanda #1, requiere hora prevista
+    if (numeroTanda === '1' && !horaPrevista) {
+      alert('Debes ingresar la hora prevista para la Tanda #1');
       return;
     }
 
     try {
       // Crear fecha con hora local (sin conversión UTC)
       const [year, month, day] = fecha.split('-');
-      const [hours, minutes] = horaPrevista.split(':');
 
-      const fechaHora = new Date(
-        parseInt(year),
-        parseInt(month) - 1, // Los meses en JS son 0-indexed
-        parseInt(day),
-        parseInt(hours),
-        parseInt(minutes),
-        0,
-        0
-      );
+      let fechaHora;
+      if (numeroTanda === '1' && horaPrevista) {
+        // Para tanda #1, usar la hora prevista ingresada
+        const [hours, minutes] = horaPrevista.split(':');
+        fechaHora = new Date(
+          parseInt(year),
+          parseInt(month) - 1, // Los meses en JS son 0-indexed
+          parseInt(day),
+          parseInt(hours),
+          parseInt(minutes),
+          0,
+          0
+        );
+      } else {
+        // Para otras tandas, usar medianoche (el backend calculará la hora)
+        fechaHora = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          0, 0, 0, 0
+        );
+      }
 
       await api.post('/staff/tandas', {
         numero_tanda: parseInt(numeroTanda),
         fecha_hora: fechaHora.toISOString(),
-        hora_prevista: horaPrevista,
+        hora_prevista: numeroTanda === '1' ? horaPrevista : undefined,
         aircraftIds: selectedAircrafts,
       });
 
@@ -335,7 +354,7 @@ export default function VuelosPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
             <h2 className="text-xl font-bold text-white mb-4">Nueva Tanda</h2>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-4">
+            <div className="grid gap-4 md:grid-cols-2 mb-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Número de Tanda:</label>
                 <input
@@ -357,17 +376,23 @@ export default function VuelosPage() {
                   className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Hora Prevista de Salida:</label>
+            {/* Campo de hora prevista solo para tanda #1 */}
+            {numeroTanda === '1' && (
+              <div className="mb-4">
+                <label className="block text-sm text-slate-400 mb-1">Hora Prevista de Salida (solo para Tanda #1):</label>
                 <input
                   type="time"
                   value={horaPrevista}
                   onChange={(e) => setHoraPrevista(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
                 />
+                <p className="text-xs text-slate-400 mt-1">
+                  💡 Las siguientes tandas calcularán su hora automáticamente según la duración configurada
+                </p>
               </div>
-            </div>
+            )}
 
             <div className="mb-4">
               <label className="block text-sm text-slate-400 mb-2">Seleccionar Aviones:</label>
