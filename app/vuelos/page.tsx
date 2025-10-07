@@ -24,6 +24,7 @@ export default function VuelosPage() {
   // Form state para nueva tanda
   const [numeroTanda, setNumeroTanda] = useState<number>(1);
   const [fecha, setFecha] = useState('');
+  const [horaPrevista, setHoraPrevista] = useState('');
   const [selectedAircrafts, setSelectedAircrafts] = useState<string[]>([]);
 
   useEffect(() => {
@@ -152,15 +153,30 @@ export default function VuelosPage() {
   };
 
   const handleCreateTanda = async () => {
-    if (!numeroTanda || !fecha || selectedAircrafts.length === 0) {
+    if (!numeroTanda || !fecha || !horaPrevista || selectedAircrafts.length === 0) {
       alert('Completa todos los campos y selecciona al menos un avión');
       return;
     }
 
     try {
+      // Crear fecha con hora local (sin conversión UTC)
+      const [year, month, day] = fecha.split('-');
+      const [hours, minutes] = horaPrevista.split(':');
+
+      const fechaHora = new Date(
+        parseInt(year),
+        parseInt(month) - 1, // Los meses en JS son 0-indexed
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes),
+        0,
+        0
+      );
+
       await api.post('/staff/tandas', {
         numero_tanda: numeroTanda,
-        fecha_hora: new Date(fecha).toISOString(),
+        fecha_hora: fechaHora.toISOString(),
+        hora_prevista: horaPrevista,
         aircraftIds: selectedAircrafts,
       });
 
@@ -168,6 +184,7 @@ export default function VuelosPage() {
       setShowCreateTanda(false);
       setSelectedAircrafts([]);
       setFecha('');
+      setHoraPrevista('');
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al crear tanda');
@@ -317,15 +334,18 @@ export default function VuelosPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
             <h2 className="text-xl font-bold text-white mb-4">Nueva Tanda</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div className="grid gap-4 md:grid-cols-3 mb-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Número de Tanda:</label>
                 <input
-                  type="number"
-                  min="1"
+                  type="text"
                   value={numeroTanda}
-                  onChange={(e) => setNumeroTanda(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setNumeroTanda(val ? Number(val) : 1);
+                  }}
                   className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  placeholder="1"
                 />
               </div>
 
@@ -335,6 +355,16 @@ export default function VuelosPage() {
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Hora Prevista de Salida:</label>
+                <input
+                  type="time"
+                  value={horaPrevista}
+                  onChange={(e) => setHoraPrevista(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
                 />
               </div>
