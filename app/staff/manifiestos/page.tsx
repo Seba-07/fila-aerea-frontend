@@ -107,7 +107,7 @@ export default function ManifiestosPage() {
                   </div>
                   <button
                     onClick={() => handleViewDetail(manifest)}
-                    className="px-4 py-2 bg-blue-600 theme-text-primary rounded-lg hover:bg-blue-700 font-medium transition"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
                   >
                     Ver Detalle
                   </button>
@@ -180,7 +180,7 @@ export default function ManifiestosPage() {
                   <div className="flex gap-2 print:hidden">
                     <button
                       onClick={handlePrint}
-                      className="px-4 py-2 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 font-medium"
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
                     >
                       Imprimir
                     </button>
@@ -231,7 +231,7 @@ export default function ManifiestosPage() {
                             </h3>
                             <p className="text-sm theme-text-muted print:text-gray-600">{vuelo.modelo}</p>
                           </div>
-                          <span className="px-3 py-1 bg-blue-600 theme-text-primary rounded text-sm print:bg-gray-300 print:text-black">
+                          <span className="px-3 py-1 bg-blue-600 text-white rounded text-sm print:bg-gray-300 print:text-black">
                             {vuelo.pasajeros?.length || 0} pasajeros
                           </span>
                         </div>

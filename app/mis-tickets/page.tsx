@@ -272,7 +272,7 @@ export default function MisTicketsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(ticket.id)}
-                        className="flex-1 px-4 py-2 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                        className="flex-1 px-4 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                       >
                         Guardar
                       </button>
@@ -362,7 +362,7 @@ export default function MisTicketsPage() {
                   />
                   <button
                     onClick={() => handleRescheduleToCircuito(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-blue-600/80 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
+                    className="w-full px-6 py-3 bg-blue-600/80 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
                   >
                     Reprogramar
                   </button>
@@ -405,7 +405,7 @@ export default function MisTicketsPage() {
                   </div>
                   <button
                     onClick={() => handleRejectReschedule(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-red-600/80 theme-text-primary rounded-lg hover:bg-red-600 font-medium transition-colors"
+                    className="w-full px-6 py-3 bg-red-600/80 text-white rounded-lg hover:bg-red-600 font-medium transition-colors"
                   >
                     Rechazar y Devolver
                   </button>

@@ -187,7 +187,7 @@ export default function PasajerosPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSaveInfo(passenger.id)}
-                            className="px-3 py-1 bg-green-600 theme-text-primary rounded hover:bg-green-700 transition text-xs font-medium"
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-xs font-medium"
                           >
                             Guardar
                           </button>
@@ -257,7 +257,7 @@ export default function PasajerosPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSaveTickets(passenger.id, passenger.tickets_count)}
-                            className="px-4 py-2 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
                           >
                             Guardar
                           </button>
@@ -276,7 +276,7 @@ export default function PasajerosPage() {
                         </span>
                         <button
                           onClick={() => handleEditTickets(passenger)}
-                          className="px-4 py-2 bg-blue-600 theme-text-primary rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                         >
                           Editar tickets
                         </button>
@@ -318,7 +318,7 @@ export default function PasajerosPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleDelete(passenger.id)}
-                          className="px-4 py-2 bg-red-600 theme-text-primary rounded-lg hover:bg-red-700 transition text-sm font-medium"
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
                         >
                           Confirmar eliminación
                         </button>
@@ -334,7 +334,7 @@ export default function PasajerosPage() {
                 ) : (
                   <button
                     onClick={() => handleDeleteConfirm(passenger.id)}
-                    className="mt-2 px-4 py-2 bg-red-600/80 theme-text-primary rounded-lg hover:bg-red-600 transition text-sm font-medium"
+                    className="mt-2 px-4 py-2 bg-red-600/80 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium"
                   >
                     Eliminar pasajero
                   </button>

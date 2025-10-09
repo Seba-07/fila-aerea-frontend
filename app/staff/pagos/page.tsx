@@ -56,9 +56,9 @@ export default function PagosPage() {
   const getTipoColor = (tipo: string) => {
     switch (tipo) {
       case 'compra':
-        return 'bg-green-500 theme-text-primary';
+        return 'bg-green-500 text-white';
       case 'ajuste_positivo':
-        return 'bg-blue-500 theme-text-primary';
+        return 'bg-blue-500 text-white';
       case 'ajuste_negativo':
         return 'bg-orange-500 theme-text-primary';
       case 'devolucion':
@@ -167,7 +167,7 @@ export default function PagosPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="inline-block bg-blue-600 theme-text-primary px-3 py-1 rounded-full text-xs font-bold">
+                        <span className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                           {payment.cantidad_tickets}
                         </span>
                       </td>

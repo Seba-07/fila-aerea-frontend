@@ -62,7 +62,7 @@ function ConfirmacionContent() {
           <p className="text-red-200 mb-6">{error}</p>
           <button
             onClick={() => router.push('/comprar')}
-            className="px-6 py-3 bg-blue-600 theme-text-primary rounded-lg hover:bg-blue-700 font-medium"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-all"
           >
             Intentar de Nuevo
           </button>
@@ -124,7 +124,7 @@ function ConfirmacionContent() {
             <div className="flex gap-4">
               <button
                 onClick={() => router.push('/login')}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 theme-text-primary font-semibold rounded-lg transition"
+                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
               >
                 Ir al Login
               </button>
@@ -153,7 +153,7 @@ function ConfirmacionContent() {
         <div className="flex gap-4">
           <button
             onClick={() => router.push('/comprar')}
-            className="flex-1 px-6 py-3 bg-blue-600 theme-text-primary rounded-lg hover:bg-blue-700 font-medium"
+            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             Intentar de Nuevo
           </button>

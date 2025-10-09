@@ -66,7 +66,7 @@ export default function MiPasePage() {
           <p className="text-sm theme-text-muted mb-6">Inscribe tus tickets en un vuelo para ver tus pases</p>
           <button
             onClick={() => router.push('/vuelos')}
-            className="bg-blue-600 theme-text-primary px-6 py-3 rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium transition-colors"
           >
             Ver Vuelos
           </button>

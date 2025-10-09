@@ -258,7 +258,7 @@ export default function RegistroPage() {
                           <button
                             type="button"
                             onClick={copiarDatosUsuario}
-                            className="text-xs px-3 py-1 bg-blue-600/80 hover:bg-blue-600 theme-text-primary rounded-lg transition"
+                            className="text-xs px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition"
                           >
                             📋 Copiar datos del comprador
                           </button>

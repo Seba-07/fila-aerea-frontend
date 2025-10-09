@@ -130,7 +130,7 @@ export default function AvionesPage() {
         <div className="mb-6">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-6 py-3 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 font-medium"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
           >
             {showCreateForm ? 'Cancelar' : '+ Crear Nuevo Avión'}
           </button>
@@ -175,7 +175,7 @@ export default function AvionesPage() {
             </div>
             <button
               onClick={handleCreateAircraft}
-              className="w-full px-6 py-3 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 font-medium"
+              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
             >
               Crear Avión
             </button>
@@ -212,7 +212,7 @@ export default function AvionesPage() {
                   <p className="text-sm theme-text-muted">{aircraft.modelo}</p>
                 </div>
                 {!aircraft.habilitado && (
-                  <span className="px-2 py-1 bg-red-600 theme-text-primary text-xs rounded">
+                  <span className="px-2 py-1 bg-red-600 text-white text-xs rounded">
                     DESHABILITADO
                   </span>
                 )}
@@ -236,7 +236,7 @@ export default function AvionesPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleUpdateCapacity(aircraft._id)}
-                      className="flex-1 px-4 py-2 bg-green-600 theme-text-primary rounded hover:bg-green-700 text-sm font-medium"
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
                     >
                       Guardar
                     </button>
@@ -269,8 +269,8 @@ export default function AvionesPage() {
                     onClick={() => handleToggleStatus(aircraft._id, aircraft.habilitado)}
                     className={`w-full px-4 py-2 rounded text-sm font-medium ${
                       aircraft.habilitado
-                        ? 'bg-red-600 theme-text-primary hover:bg-red-700'
-                        : 'bg-green-600 theme-text-primary hover:bg-green-700'
+                        ? 'bg-red-600 text-white hover:bg-red-700'
+                        : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
                   >
                     {aircraft.habilitado ? 'Deshabilitar Avión' : 'Habilitar Avión'}

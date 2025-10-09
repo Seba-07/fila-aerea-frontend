@@ -203,3 +203,56 @@ body {
 .theme-info-text-light {
   color: var(--info-text-light);
 }
+
+/* Button Styles - Better contrast for both themes */
+.theme-button-blue {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.theme-button-blue:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.theme-button-green {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.theme-button-green:hover {
+  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+.theme-button-red {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.theme-button-red:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.theme-button-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.theme-button-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}

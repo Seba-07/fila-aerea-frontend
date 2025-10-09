@@ -177,7 +177,7 @@ function ReabastecimientosContent() {
           <div className="flex items-end">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-6 py-2 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              className="px-6 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               {showForm ? 'Cancelar' : '+ Nuevo Reabastecimiento'}
             </button>
@@ -286,7 +286,7 @@ function ReabastecimientosContent() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
+                className="w-full px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
               >
                 Registrar Reabastecimiento
               </button>

@@ -349,7 +349,7 @@ export default function VuelosPage() {
           <div className="mb-6">
             <button
               onClick={() => setShowCreateTanda(!showCreateTanda)}
-              className="px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              className="px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               {showCreateTanda ? 'Cancelar' : '+ Crear Nuevo Circuito'}
             </button>
@@ -430,7 +430,7 @@ export default function VuelosPage() {
 
             <button
               onClick={handleCreateCircuito}
-              className="w-full px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              className="w-full px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               Crear Circuito
             </button>
@@ -473,14 +473,14 @@ export default function VuelosPage() {
                           ) : (
                             <button
                               onClick={() => handleEditCircuito(circuitoNum)}
-                              className="px-4 py-2 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-sm font-medium transition-colors"
+                              className="px-4 py-2 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors"
                             >
                               Editar Circuito
                             </button>
                           )}
                           <button
                             onClick={() => handleDeleteCircuito(circuitoNum)}
-                            className="px-4 py-2 bg-red-600/80 theme-text-primary rounded hover:bg-red-600 text-sm font-medium transition-colors"
+                            className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
                           >
                             Eliminar Circuito
                           </button>
@@ -500,7 +500,7 @@ export default function VuelosPage() {
                         />
                         <button
                           onClick={() => handleSaveHoraPrevista(circuitoNum)}
-                          className="px-3 py-1 bg-green-600 theme-text-primary rounded hover:bg-green-700 text-xs font-medium"
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
                         >
                           Guardar
                         </button>
@@ -581,7 +581,7 @@ export default function VuelosPage() {
                           {user?.rol === 'staff' && editingCircuito === circuitoNum && flight.asientos_ocupados === 0 && (
                             <button
                               onClick={() => handleRemoveAircraftFromTanda(flight._id)}
-                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 theme-text-primary rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
+                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 text-white rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
                               title="Eliminar avión del circuito"
                             >
                               ✕
@@ -596,7 +596,7 @@ export default function VuelosPage() {
                               {user?.rol === 'staff' && flight.estado === 'abierto' && (
                                 <button
                                   onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
-                                  className="px-3 py-1 bg-red-600/80 theme-text-primary rounded hover:bg-red-600 text-xs font-medium transition-colors"
+                                  className="px-3 py-1 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
                                   title="Cancelar avión por el día"
                                 >
                                   Cancelar Día
@@ -625,7 +625,7 @@ export default function VuelosPage() {
                               <div className="flex gap-2 mt-2">
                                 <button
                                   onClick={() => handleUpdateFlightCapacity(flight._id)}
-                                  className="flex-1 px-2 py-1 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-xs transition-colors"
+                                  className="flex-1 px-2 py-1 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs transition-colors"
                                 >
                                   Guardar
                                 </button>
@@ -681,7 +681,7 @@ export default function VuelosPage() {
                                       </button>
                                       <button
                                         onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-xs font-medium transition-colors"
+                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
                                       >
                                         En Vuelo
                                       </button>
@@ -733,7 +733,7 @@ export default function VuelosPage() {
                                       <p className="text-xs theme-text-muted">
                                         {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
                                       </p>
-                                      <span className="text-xs bg-blue-500 theme-text-primary px-2 py-0.5 rounded">
+                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
                                         {inscrito.estado}
                                       </span>
                                     </div>
