@@ -708,7 +708,7 @@ export default function ComprarNuevoPage() {
                             </div>
 
                             <p className="text-xs text-yellow-800 mt-1">
-                              💡 Usa "Tomar Foto" para capturar con la cámara o "Subir Archivo" para elegir uno existente (máx. 5MB)
+                              💡 Usa &quot;Tomar Foto&quot; para capturar con la cámara o &quot;Subir Archivo&quot; para elegir uno existente (máx. 5MB)
                             </p>
 
                             {pasajero.autorizacionFileName && (
