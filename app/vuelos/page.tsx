@@ -575,72 +575,75 @@ export default function VuelosPage() {
                       return (
                         <div
                           key={flight._id}
-                          className="theme-flight-card rounded-xl p-5 relative"
+                          className="theme-flight-card rounded-xl p-4 relative"
                         >
                           {/* Botón eliminar avión de circuito */}
                           {user?.rol === 'staff' && editingCircuito === circuitoNum && flight.asientos_ocupados === 0 && (
                             <button
                               onClick={() => handleRemoveAircraftFromTanda(flight._id)}
-                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 text-white rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
+                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition-all shadow-md"
                               title="Eliminar avión del circuito"
                             >
                               ✕
                             </button>
                           )}
 
-                          {/* Info del Avión */}
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-bold text-lg theme-text-primary">{flight.aircraftId?.matricula}</h3>
-                              {/* Botón cancelar avión por el día */}
-                              {user?.rol === 'staff' && flight.estado === 'abierto' && (
-                                <button
-                                  onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
-                                  className="px-3 py-1 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
-                                  title="Cancelar avión por el día"
-                                >
-                                  Cancelar Día
-                                </button>
-                              )}
-                              {(!user || user?.rol !== 'staff' || flight.estado !== 'abierto') && (
-                                <span className="px-3 py-1 rounded-full text-xs font-medium border bg-transparent">
-                                  {/* Placeholder vacío */}
-                                </span>
-                              )}
+                          {/* Info del Avión con Estado */}
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex-1">
+                                <h3 className="font-bold text-lg theme-text-primary">{flight.aircraftId?.matricula}</h3>
+                                <p className="text-xs theme-text-muted">{flight.aircraftId?.modelo}</p>
+                              </div>
+                              {/* Badge de estado - más prominente */}
+                              <span
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm ${
+                                  flight.estado === 'abierto'
+                                    ? 'bg-green-600 text-white'
+                                    : flight.estado === 'en_vuelo'
+                                    ? 'bg-blue-600 text-white'
+                                    : flight.estado === 'finalizado'
+                                    ? 'bg-gray-600 text-white'
+                                    : flight.estado === 'reprogramado'
+                                    ? 'bg-amber-600 text-white'
+                                    : 'bg-gray-500 text-white'
+                                }`}
+                              >
+                                {flight.estado.toUpperCase().replace('_', ' ')}
+                              </span>
                             </div>
-                            <p className="text-sm theme-text-muted">{flight.aircraftId?.modelo}</p>
                           </div>
 
-                          {/* Asientos */}
+                          {/* Asientos - Más compacto */}
                           {editingCapacity === flight._id ? (
-                            <div className="my-4 p-4 bg-slate-900/50 rounded-lg">
+                            <div className="my-3 p-3 theme-input rounded-lg">
                               <label className="block text-xs theme-text-muted mb-1">Nueva capacidad:</label>
                               <input
                                 type="number"
                                 min="1"
                                 value={newCapacity}
                                 onChange={(e) => setNewCapacity(Number(e.target.value))}
-                                className="w-full px-2 py-1 theme-bg-secondary border theme-border rounded theme-text-primary text-sm"
+                                className="w-full px-2 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
                               />
                               <div className="flex gap-2 mt-2">
                                 <button
                                   onClick={() => handleUpdateFlightCapacity(flight._id)}
-                                  className="flex-1 px-2 py-1 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs transition-colors"
+                                  className="flex-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs transition-all shadow-sm"
                                 >
                                   Guardar
                                 </button>
                                 <button
                                   onClick={() => setEditingCapacity(null)}
-                                  className="flex-1 px-2 py-1 theme-input/80 theme-text-primary rounded hover:theme-input text-xs transition-colors"
+                                  className="flex-1 px-2 py-1 theme-input theme-text-primary rounded hover:theme-bg-secondary text-xs transition-all"
                                 >
                                   Cancelar
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-center my-4 p-4 bg-slate-900/50 rounded-lg">
-                              <div className="text-center flex-1">
-                                <p className="text-3xl font-black text-primary">{asientosDisponibles}</p>
+                            <div className="flex items-center justify-between my-3 p-2 theme-input rounded-lg">
+                              <div className="flex items-baseline gap-2">
+                                <p className="text-2xl font-bold text-blue-600">{asientosDisponibles}</p>
                                 <p className="text-xs theme-text-muted">asientos libres</p>
                               </div>
                               {user?.rol === 'staff' && flight.estado === 'abierto' && (
@@ -649,7 +652,7 @@ export default function VuelosPage() {
                                     setEditingCapacity(flight._id);
                                     setNewCapacity(capacidadTotal);
                                   }}
-                                  className="text-xs text-blue-400 hover:text-blue-300"
+                                  className="text-xs text-blue-600 hover:text-blue-700"
                                 >
                                   ✏️
                                 </button>
@@ -661,57 +664,48 @@ export default function VuelosPage() {
                           {user?.rol === 'passenger' && flight.estado === 'abierto' && asientosDisponibles > 0 && (
                             <button
                               onClick={() => router.push(`/vuelos/${flight._id}`)}
-                              className="w-full bg-primary theme-text-primary py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+                              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-md hover:shadow-lg"
                             >
                               Inscribirse
                             </button>
                           )}
 
-                          {/* Controles Staff */}
+                          {/* Controles Staff - Botones más grandes y modernos */}
                           {user?.rol === 'staff' && (
                             <div className="space-y-2">
                                 {flight.estado === 'abierto' && (
                                   <>
                                     <div className="flex gap-2">
                                       <button
+                                        onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
+                                        className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
+                                        title="Cancelar avión por el día"
+                                      >
+                                        Cancelar Día
+                                      </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <button
                                         onClick={() => handleOpenRescheduleModal(flight._id)}
-                                        className="flex-1 px-3 py-1.5 bg-amber-600/80 theme-text-primary rounded hover:bg-amber-600 text-xs font-medium transition-colors"
+                                        className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
                                       >
                                         Reprogramar
                                       </button>
                                       <button
                                         onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
+                                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
                                       >
                                         En Vuelo
                                       </button>
-                                    </div>
-                                    {/* Badge de estado */}
-                                    <div className="w-full flex justify-center">
-                                      <span
-                                        className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-                                          flight.estado === 'abierto'
-                                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                            : flight.estado === 'en_vuelo'
-                                            ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                                            : flight.estado === 'finalizado'
-                                            ? 'bg-slate-500/20 theme-text-secondary theme-border/40'
-                                            : flight.estado === 'reprogramado'
-                                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                            : 'bg-slate-500/20 theme-text-secondary theme-border/40'
-                                        }`}
-                                      >
-                                        {flight.estado.toUpperCase().replace('_', ' ')}
-                                      </span>
                                     </div>
                                   </>
                                 )}
                                 {flight.estado === 'en_vuelo' && (
                                   <button
                                     onClick={() => handleChangeState(flight._id, 'finalizado')}
-                                    className="w-full px-3 py-1.5 theme-bg-secondary/80 theme-text-primary rounded hover:theme-bg-secondary text-xs font-medium transition-colors"
+                                    className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
                                   >
-                                    Finalizado
+                                    Finalizar Vuelo
                                   </button>
                                 )}
                             </div>

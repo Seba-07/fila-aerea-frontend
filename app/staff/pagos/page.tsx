@@ -101,21 +101,21 @@ export default function PagosPage() {
         {/* Totales */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           {/* Total recaudado */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 theme-text-primary shadow-2xl">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-2xl">
             <h2 className="text-sm opacity-90 mb-1">Total Recaudado</h2>
             <p className="text-4xl font-black">${totalRecaudado.toLocaleString('es-CL')}</p>
             <p className="text-xs opacity-75 mt-2">Dinero total ingresado</p>
           </div>
 
           {/* Total confirmado */}
-          <div className="bg-gradient-to-r from-blue-600 to-cyan-700 rounded-2xl p-6 theme-text-primary shadow-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-cyan-700 rounded-2xl p-6 text-white shadow-2xl">
             <h2 className="text-sm opacity-90 mb-1">Total Confirmado</h2>
             <p className="text-4xl font-black">${totalConfirmado.toLocaleString('es-CL')}</p>
             <p className="text-xs opacity-75 mt-2">De pasajeros que volaron</p>
           </div>
 
           {/* Pendiente devolución */}
-          <div className="bg-gradient-to-r from-orange-600 to-red-700 rounded-2xl p-6 theme-text-primary shadow-2xl">
+          <div className="bg-gradient-to-r from-orange-600 to-red-700 rounded-2xl p-6 text-white shadow-2xl">
             <h2 className="text-sm opacity-90 mb-1">Pendiente Devolución</h2>
             <p className="text-4xl font-black">${pendienteDevolucion.toLocaleString('es-CL')}</p>
             <p className="text-xs opacity-75 mt-2">Posibles reembolsos</p>

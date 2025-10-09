@@ -181,8 +181,8 @@ export default function ConfiguracionesPage() {
                 <option value="4">UTC-4 (Horario de Invierno)</option>
               </select>
             </div>
-            <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
-              <p className="text-yellow-300 text-xs">
+            <div className="mt-3 p-3 theme-warning-box rounded-lg">
+              <p className="text-xs">
                 ⚠️ <strong>Importante:</strong> Cambia este valor cuando Chile cambie entre horario de verano e invierno para mantener las horas correctas.
               </p>
             </div>

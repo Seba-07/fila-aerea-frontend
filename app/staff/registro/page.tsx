@@ -225,9 +225,9 @@ export default function RegistroPage() {
                       key={metodo}
                       type="button"
                       onClick={() => setMetodoPago(metodo)}
-                      className={`py-3 px-4 rounded-lg font-medium transition ${
+                      className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${
                         metodoPago === metodo
-                          ? 'bg-primary theme-text-primary'
+                          ? 'bg-blue-600 text-white shadow-md'
                           : 'theme-input theme-text-secondary hover:theme-bg-secondary'
                       }`}
                     >

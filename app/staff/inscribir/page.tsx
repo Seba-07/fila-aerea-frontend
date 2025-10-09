@@ -93,12 +93,12 @@ export default function InscribirPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {passengersWithoutFlight.length === 0 ? (
-          <div className="bg-green-900/20 backdrop-blur-sm rounded-xl border border-green-700 p-8 text-center">
+          <div className="theme-success-box backdrop-blur-sm rounded-xl p-8 text-center">
             <div className="text-6xl mb-4">✅</div>
-            <h2 className="text-2xl font-bold text-green-300 mb-2">
+            <h2 className="text-2xl font-bold mb-2">
               Todos los pasajeros están inscritos
             </h2>
-            <p className="text-green-200">
+            <p className="opacity-80">
               No hay pasajeros pendientes de inscripción en vuelos
             </p>
           </div>
