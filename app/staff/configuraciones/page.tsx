@@ -64,32 +64,20 @@ export default function ConfiguracionesPage() {
         timezone_offset_hours: timezoneOffset,
       });
 
-      // Si cambió la duración del circuito, recalcular todas las horas previstas
+      // Si cambió la duración del circuito, recalcular horas de circuitos 2+ manteniendo hora del circuito 1
       if (duracionCambio) {
         try {
-          // Obtener el circuito #1 para obtener su hora actual
-          const { data: flights } = await api.get('/flights');
-          const circuito1 = flights.find((f: any) => f.numero_circuito === 1 && f.estado === 'abierto');
-
-          if (circuito1 && circuito1.fecha_hora) {
-            // Extraer hora actual del circuito #1
-            const fecha = new Date(circuito1.fecha_hora);
-            const horas = String(fecha.getUTCHours()).padStart(2, '0');
-            const minutos = String(fecha.getUTCMinutes()).padStart(2, '0');
-            const horaActual = `${horas}:${minutos}`;
-
-            // Recalcular todas las horas basadas en la nueva duración
-            await api.patch(`/settings/flights/circuito/1/hora-prevista`, {
-              nueva_hora: horaActual,
-            });
-
-            alert('✅ Configuración guardada y horas de circuitos recalculadas exitosamente');
-          } else {
-            alert('✅ Configuración guardada. No hay circuitos activos para recalcular.');
-          }
+          // Llamar al endpoint que recalcula circuitos sin modificar el circuito base
+          await api.post('/settings/recalcular-horas-circuitos');
+          alert('✅ Configuración guardada y horas de circuitos recalculadas exitosamente');
         } catch (recalcError: any) {
-          console.error('Error recalculando horas:', recalcError);
-          alert('✅ Configuración guardada, pero hubo un error al recalcular las horas de los circuitos.');
+          // Si el endpoint no existe o falla, solo guardar la configuración
+          if (recalcError.response?.status === 404) {
+            alert('✅ Configuración guardada. La nueva duración se aplicará a los próximos circuitos. Para recalcular los circuitos existentes, edita manualmente la hora del Circuito #1 en la página de Circuitos de Vuelo.');
+          } else {
+            console.error('Error recalculando horas:', recalcError);
+            alert('✅ Configuración guardada, pero hubo un error al recalcular las horas de los circuitos.');
+          }
         }
       } else {
         alert('✅ Configuración guardada exitosamente');
