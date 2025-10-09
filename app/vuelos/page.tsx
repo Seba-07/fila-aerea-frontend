@@ -589,19 +589,22 @@ export default function VuelosPage() {
                   {/* Sección de agregar avión */}
                   {user?.rol === 'staff' && editingCircuito === circuitoNum && (
                     <div className="mb-4 p-4 theme-input/50 rounded-xl border theme-border">
-                      <h3 className="theme-text-primary font-medium mb-3">Agregar Avión al Circuito</h3>
-                      <div className="grid gap-2 md:grid-cols-3">
+                      <h3 className="theme-text-primary font-medium mb-3">✈️ Agregar Avión al Circuito</h3>
+                      <div className="grid gap-3 md:grid-cols-3">
                         {aircrafts
                           .filter(a => a.habilitado && !selectedAircrafts.includes(a._id))
                           .map((aircraft) => (
                             <button
                               key={aircraft._id}
                               onClick={() => handleAddAircraftToCircuito(circuitoNum, aircraft._id)}
-                              className="flex items-center gap-2 p-3 rounded theme-bg-secondary theme-text-secondary hover:bg-slate-500 transition text-left"
+                              className="flex items-center justify-between gap-2 p-4 rounded-lg border-2 theme-border bg-white/50 dark:bg-slate-800/50 theme-text-primary hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all text-left shadow-md hover:shadow-lg"
                             >
-                              <div>
-                                <p className="font-medium text-sm">{aircraft.matricula}</p>
-                                <p className="text-xs opacity-80">{aircraft.modelo} ({aircraft.capacidad} asientos)</p>
+                              <div className="flex-1">
+                                <p className="font-bold text-sm">{aircraft.matricula}</p>
+                                <p className="text-xs theme-text-muted">{aircraft.modelo} ({aircraft.capacidad} asientos)</p>
+                              </div>
+                              <div className="text-blue-600 dark:text-blue-400 text-lg">
+                                ➕
                               </div>
                             </button>
                           ))}
