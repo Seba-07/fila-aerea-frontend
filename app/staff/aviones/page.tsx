@@ -260,14 +260,14 @@ export default function AvionesPage() {
                         setEditingId(aircraft._id);
                         setNewCapacity(aircraft.capacidad);
                       }}
-                      className="w-full px-4 py-2 bg-primary theme-text-primary rounded hover:bg-blue-700 text-sm font-medium"
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-all shadow-sm hover:shadow-md"
                     >
                       Cambiar Capacidad
                     </button>
                   )}
                   <button
                     onClick={() => handleToggleStatus(aircraft._id, aircraft.habilitado)}
-                    className={`w-full px-4 py-2 rounded text-sm font-medium ${
+                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md ${
                       aircraft.habilitado
                         ? 'bg-red-600 text-white hover:bg-red-700'
                         : 'bg-green-600 text-white hover:bg-green-700'

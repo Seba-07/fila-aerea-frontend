@@ -8,6 +8,20 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = {
   reactStrictMode: true,
+  // Optimizaciones de rendimiento
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Optimizar imágenes
+  images: {
+    domains: [],
+    formats: ['image/webp'],
+  },
+  // Configuración experimental para mejor rendimiento
+  experimental: {
+    optimizeCss: true,
+  },
 };
 
 module.exports = process.env.NODE_ENV === 'production' ? withPWA(nextConfig) : nextConfig;

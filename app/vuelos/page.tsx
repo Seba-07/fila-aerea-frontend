@@ -575,7 +575,7 @@ export default function VuelosPage() {
                       return (
                         <div
                           key={flight._id}
-                          className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border theme-border p-5 hover:shadow-xl hover:scale-105 transition-all relative"
+                          className="theme-flight-card rounded-xl p-5 relative"
                         >
                           {/* Botón eliminar avión de circuito */}
                           {user?.rol === 'staff' && editingCircuito === circuitoNum && flight.asientos_ocupados === 0 && (
