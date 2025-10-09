@@ -597,13 +597,13 @@ export default function VuelosPage() {
                             <button
                               key={aircraft._id}
                               onClick={() => handleAddAircraftToCircuito(circuitoNum, aircraft._id)}
-                              className="flex items-center justify-between gap-2 p-4 rounded-lg border-2 theme-border bg-white/50 dark:bg-slate-800/50 theme-text-primary hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all text-left shadow-md hover:shadow-lg"
+                              className="flex items-center justify-between gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800/50 theme-text-primary hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-all text-left shadow-sm hover:shadow-md"
                             >
                               <div className="flex-1">
                                 <p className="font-bold text-sm">{aircraft.matricula}</p>
                                 <p className="text-xs theme-text-muted">{aircraft.modelo} ({aircraft.capacidad} asientos)</p>
                               </div>
-                              <div className="text-blue-600 dark:text-blue-400 text-lg">
+                              <div className="text-blue-500 dark:text-blue-400 text-lg">
                                 ➕
                               </div>
                             </button>
