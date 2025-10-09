@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { flightsAPI, userAPI, api } from '@/lib/api';
@@ -82,10 +83,10 @@ export default function InscribirVueloPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center theme-bg-primary">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-slate-300">Cargando...</p>
+          <p className="mt-4 theme-text-secondary">Cargando...</p>
         </div>
       </div>
     );
@@ -93,8 +94,8 @@ export default function InscribirVueloPage() {
 
   if (!flight) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        <div className="text-center text-white">
+      <div className="min-h-screen flex items-center justify-center theme-bg-primary">
+        <div className="text-center theme-text-primary">
           <p className="text-xl">Vuelo no encontrado</p>
           <button
             onClick={() => router.push('/vuelos')}
@@ -108,12 +109,12 @@ export default function InscribirVueloPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => router.push('/vuelos')}
-            className="text-white hover:text-primary transition"
+            className="theme-text-primary hover:text-primary transition"
           >
             ← Volver
           </button>
@@ -123,9 +124,9 @@ export default function InscribirVueloPage() {
             className="h-8"
           />
           <div>
-            <h1 className="text-xl font-bold text-white">Inscribir Vuelo</h1>
-            <p className="text-sm text-slate-400">
-              {flight.aircraftId?.matricula} - Tanda #{flight.numero_tanda}
+            <h1 className="text-xl font-bold theme-text-primary">Inscribir Vuelo</h1>
+            <p className="text-sm theme-text-muted">
+              {flight.aircraftId?.matricula} - Circuito #{flight.numero_circuito}
             </p>
           </div>
         </div>
@@ -133,39 +134,39 @@ export default function InscribirVueloPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Info del vuelo */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4">Información del Vuelo</h2>
+        <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6 mb-6">
+          <h2 className="text-2xl font-bold theme-text-primary mb-4">Información del Vuelo</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <p className="text-slate-400">Avión</p>
-              <p className="font-medium text-white">{flight.aircraftId?.matricula}</p>
-              <p className="text-xs text-slate-400">{flight.aircraftId?.modelo}</p>
+              <p className="theme-text-muted">Avión</p>
+              <p className="font-medium theme-text-primary">{flight.aircraftId?.matricula}</p>
+              <p className="text-xs theme-text-muted">{flight.aircraftId?.modelo}</p>
             </div>
             <div>
-              <p className="text-slate-400">Fecha</p>
-              <p className="font-medium text-white">
+              <p className="theme-text-muted">Fecha</p>
+              <p className="font-medium theme-text-primary">
                 {new Date(flight.fecha_hora).toLocaleDateString('es-ES')}
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Estado</p>
-              <p className="font-medium text-white capitalize">{flight.estado}</p>
+              <p className="theme-text-muted">Estado</p>
+              <p className="font-medium theme-text-primary capitalize">{flight.estado}</p>
             </div>
             <div>
-              <p className="text-slate-400">Asientos disponibles</p>
-              <p className="font-medium text-white text-2xl">{flight.asientos_disponibles}</p>
+              <p className="theme-text-muted">Asientos disponibles</p>
+              <p className="font-medium theme-text-primary text-2xl">{flight.asientos_disponibles}</p>
             </div>
           </div>
         </div>
 
         {/* Selección de tickets */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4">Selecciona tus Tickets</h2>
+        <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6 mb-6">
+          <h2 className="text-2xl font-bold theme-text-primary mb-4">Selecciona tus Tickets</h2>
 
           {ticketsDisponibles.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-slate-400 mb-4">No tienes tickets disponibles para inscribir</p>
-              <p className="text-sm text-slate-500">
+              <p className="theme-text-muted mb-4">No tienes tickets disponibles para inscribir</p>
+              <p className="text-sm theme-text-muted">
                 Asegúrate de que tus tickets tengan los datos de pasajero completos
               </p>
             </div>
@@ -182,18 +183,18 @@ export default function InscribirVueloPage() {
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       isSelected
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-600 bg-slate-700/30 hover:border-slate-500'
+                        : 'theme-border theme-input/30 hover:theme-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <p className="font-bold text-white">
+                        <p className="font-bold theme-text-primary">
                           {pasajero.nombre} {pasajero.apellido}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm theme-text-muted">
                           RUT: {pasajero.rut || 'No especificado'}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs theme-text-muted">
                           Ticket: {ticket.codigo_ticket}
                         </p>
                         {pasajero.esMenor && (
@@ -206,9 +207,9 @@ export default function InscribirVueloPage() {
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                           isSelected
                             ? 'border-blue-500 bg-blue-500'
-                            : 'border-slate-500'
+                            : 'theme-border'
                         }`}>
-                          {isSelected && <span className="text-white text-sm">✓</span>}
+                          {isSelected && <span className="theme-text-primary text-sm">✓</span>}
                         </div>
                       </div>
                     </div>
@@ -221,22 +222,22 @@ export default function InscribirVueloPage() {
 
         {/* Resumen y confirmación */}
         {ticketsDisponibles.length > 0 && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
+          <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-slate-400 text-sm">Tickets seleccionados</p>
-                <p className="text-3xl font-bold text-white">{selectedTickets.length}</p>
+                <p className="theme-text-muted text-sm">Tickets seleccionados</p>
+                <p className="text-3xl font-bold theme-text-primary">{selectedTickets.length}</p>
               </div>
               <div className="text-right">
-                <p className="text-slate-400 text-sm">Asientos disponibles</p>
-                <p className="text-3xl font-bold text-white">{flight.asientos_disponibles}</p>
+                <p className="theme-text-muted text-sm">Asientos disponibles</p>
+                <p className="text-3xl font-bold theme-text-primary">{flight.asientos_disponibles}</p>
               </div>
             </div>
 
             <button
               onClick={handleInscribir}
               disabled={selectedTickets.length === 0 || inscribiendo}
-              className="w-full bg-blue-600/90 hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50"
+              className="w-full bg-blue-600/90 hover:bg-blue-600 disabled:theme-bg-secondary disabled:cursor-not-allowed theme-text-primary py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-50"
             >
               {inscribiendo
                 ? 'Inscribiendo...'

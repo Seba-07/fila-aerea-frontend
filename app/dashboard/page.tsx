@@ -6,6 +6,7 @@ import { useAuthStore } from '@/lib/store';
 import { userAPI, flightsAPI } from '@/lib/api';
 import { useSocket } from '@/lib/hooks/useSocket';
 import { useNotifications } from '@/lib/hooks/useNotifications';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface EditingTicket {
   id: string;
@@ -160,12 +161,12 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando...</p>
         </div>
       </div>
     );
@@ -191,9 +192,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen theme-bg-primary">
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Header */}
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img
@@ -201,14 +207,14 @@ export default function DashboardPage() {
               alt="Cessna"
               className="h-10"
             />
-            <h1 className="text-2xl font-bold text-white">Fila Aérea</h1>
+            <h1 className="text-2xl font-bold theme-text-primary">Fila Aérea</h1>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push('/comprar')}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
             >
-              🎫 Comprar Tickets
+              Comprar Tickets
             </button>
             <div className="flex items-center gap-2">
               <div
@@ -216,13 +222,13 @@ export default function DashboardPage() {
                   connected ? 'bg-green-400' : 'bg-red-400'
                 }`}
               />
-              <span className="text-sm text-slate-300">
+              <span className="text-sm theme-text-secondary">
                 {connected ? 'Conectado' : 'Sin conexión'}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className="text-sm text-slate-300 hover:text-white transition"
+              className="text-sm theme-text-secondary hover:theme-text-primary transition"
             >
               Salir
             </button>
@@ -233,16 +239,16 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Usuario Info */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">
+        <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border theme-shadow-md p-8 mb-8">
+          <h2 className="text-3xl font-bold theme-text-primary mb-2">
             Bienvenido, {user?.nombre}
           </h2>
-          <div className="flex gap-6 text-sm text-slate-300">
+          <div className="flex gap-6 text-sm theme-text-secondary">
             <p>
-              <span className="text-slate-400">Email:</span> {user?.email}
+              <span className="theme-text-muted">Email:</span> {user?.email}
             </p>
             <p>
-              <span className="text-slate-400">Rol:</span>{' '}
+              <span className="theme-text-muted">Rol:</span>{' '}
               <span className="capitalize text-primary font-medium">{user?.rol}</span>
             </p>
           </div>
@@ -259,7 +265,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold theme-text-primary mb-2">
                     🔄 Vuelos Reprogramados
                   </h3>
                   <p className="text-white/90 text-sm mb-4">
@@ -272,7 +278,7 @@ export default function DashboardPage() {
                     {reschedulingNotifications.map((notif) => (
                       <div key={notif._id} className="bg-white/10 rounded-lg p-4">
                         <p className="text-white font-medium mb-1">
-                          Tanda {notif.metadata?.tanda_anterior} → Tanda {notif.metadata?.tanda_nueva}
+                          Circuito {notif.metadata?.circuito_anterior} → Circuito {notif.metadata?.circuito_nuevo}
                         </p>
                         <p className="text-white/80 text-sm mb-3">{notif.mensaje}</p>
                         <div className="flex gap-2">
@@ -319,7 +325,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold theme-text-primary mb-2">
                     ⛽ Reabastecimientos Pendientes
                   </h3>
                   <p className="text-white/90 text-sm mb-4">
@@ -371,7 +377,7 @@ export default function DashboardPage() {
               <div className="flex items-start gap-4">
                 <div className="text-4xl">⚠️</div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">Reprogramaciones Pendientes</h3>
+                  <h3 className="text-xl font-bold theme-text-primary mb-2">Reprogramaciones Pendientes</h3>
                   <p className="text-orange-100 text-sm mb-4">
                     Tienes {tickets.filter(t => t.reprogramacion_pendiente).length} ticket(s) con reprogramaciones pendientes que requieren tu atención.
                   </p>
@@ -394,7 +400,7 @@ export default function DashboardPage() {
               <div className="flex items-start gap-4">
                 <div className="text-4xl">⏰</div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">Cambios de Hora Pendientes</h3>
+                  <h3 className="text-xl font-bold theme-text-primary mb-2">Cambios de Hora Pendientes</h3>
                   <p className="text-blue-100 text-sm mb-4">
                     Tienes {tickets.filter(t => t.cambio_hora_pendiente).length} ticket(s) con cambios de hora pendientes que requieren tu confirmación.
                   </p>
@@ -425,42 +431,42 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={ticket.id}
-                    className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6 text-white"
+                    className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border theme-shadow-md p-6 theme-text-primary"
                   >
                     {isEditing ? (
                       // Modo edición
                       <div className="space-y-4">
                         <div className="text-center mb-4">
-                          <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Editando Ticket</p>
-                          <p className="text-sm text-slate-300">{ticket.codigo_ticket}</p>
+                          <p className="text-xs uppercase tracking-widest theme-text-muted mb-1">Editando Ticket</p>
+                          <p className="text-sm theme-text-secondary">{ticket.codigo_ticket}</p>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Nombre</label>
+                          <label className="block text-xs font-medium theme-text-muted mb-1">Nombre</label>
                           <input
                             type="text"
                             value={editingTicket.nombre}
                             onChange={(e) => setEditingTicket({ ...editingTicket, nombre: e.target.value })}
-                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            className="w-full px-3 py-2 theme-input theme-border rounded-lg theme-text-primary text-sm"
                             placeholder="Juan"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Apellido</label>
+                          <label className="block text-xs font-medium theme-text-muted mb-1">Apellido</label>
                           <input
                             type="text"
                             value={editingTicket.apellido}
                             onChange={(e) => setEditingTicket({ ...editingTicket, apellido: e.target.value })}
-                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            className="w-full px-3 py-2 theme-input theme-border rounded-lg theme-text-primary text-sm"
                             placeholder="Pérez"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">RUT</label>
+                          <label className="block text-xs font-medium theme-text-muted mb-1">RUT</label>
                           <input
                             type="text"
                             value={editingTicket.rut}
                             onChange={(e) => setEditingTicket({ ...editingTicket, rut: e.target.value })}
-                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                            className="w-full px-3 py-2 theme-input theme-border rounded-lg theme-text-primary text-sm"
                             placeholder="12.345.678-9"
                           />
                         </div>
@@ -469,9 +475,9 @@ export default function DashboardPage() {
                             type="checkbox"
                             checked={editingTicket.esMenor}
                             onChange={(e) => setEditingTicket({ ...editingTicket, esMenor: e.target.checked })}
-                            className="w-4 h-4 bg-slate-700 border-slate-600 rounded"
+                            className="w-4 h-4 theme-input theme-border rounded"
                           />
-                          <label className="ml-2 text-sm text-slate-300">Es menor de edad</label>
+                          <label className="ml-2 text-sm theme-text-secondary">Es menor de edad</label>
                         </div>
                         <div className="flex gap-2 pt-2">
                           <button
@@ -494,9 +500,9 @@ export default function DashboardPage() {
                       // Modo vista
                       <div>
                         <div className="text-center mb-4">
-                          <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Ticket</p>
+                          <p className="text-xs uppercase tracking-widest theme-text-muted mb-2">Ticket</p>
                           <p className="text-3xl font-black tracking-tight mb-1">{nombreCompleto}</p>
-                          <p className="text-xs text-slate-400">{ticket.codigo_ticket}</p>
+                          <p className="text-xs theme-text-muted">{ticket.codigo_ticket}</p>
                         </div>
                         <div className="mb-4 text-center">
                           <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium ${
@@ -510,10 +516,10 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         {pasajero && (
-                          <div className="mt-4 pt-4 border-t border-slate-700 text-sm space-y-1 text-center">
-                            <p className="text-slate-400">RUT: <span className="text-white">{pasajero.rut || 'No especificado'}</span></p>
+                          <div className="mt-4 pt-4 border-t theme-border text-sm space-y-1 text-center">
+                            <p className="theme-text-muted">RUT: <span className="theme-text-primary">{pasajero.rut || 'No especificado'}</span></p>
                             {pasajero.esMenor && (
-                              <p className="text-amber-400 text-xs">⚠️ Menor de edad</p>
+                              <p className="text-amber-400 text-xs">Menor de edad</p>
                             )}
                           </div>
                         )}
@@ -538,26 +544,26 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <button
             onClick={() => router.push('/vuelos')}
-            className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-blue-500/50"
+            className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-blue-500/50"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors"></div>
             <div className="relative">
               <div className="text-5xl mb-4">✈️</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Tandas de Vuelo</h3>
-              <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Explora y reserva en las tandas disponibles</p>
+              <h3 className="text-2xl font-bold theme-text-primary mb-2">Circuitos de Vuelo</h3>
+              <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Explora y reserva en los circuitos disponibles</p>
             </div>
           </button>
 
           {user?.rol === 'passenger' && (
             <button
               onClick={() => router.push('/mi-pase')}
-              className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-emerald-500/50"
+              className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-emerald-500/50"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
               <div className="relative">
                 <div className="text-5xl mb-4">🎫</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Mis Pases</h3>
-                <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver pases de embarque de tus vuelos</p>
+                <h3 className="text-2xl font-bold theme-text-primary mb-2">Mis Pases</h3>
+                <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Ver pases de embarque de tus vuelos</p>
               </div>
             </button>
           )}
@@ -566,97 +572,97 @@ export default function DashboardPage() {
             <>
               <button
                 onClick={() => router.push('/staff/registro')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-blue-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-blue-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">➕</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Registrar Pasajero</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Crear nuevo pasajero con tickets</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Registrar Pasajero</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Crear nuevo pasajero con tickets</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/pasajeros')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-violet-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-violet-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-violet-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">👥</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Ver Pasajeros</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Gestionar tickets de pasajeros</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Ver Pasajeros</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Gestionar tickets de pasajeros</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/inscribir')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-sky-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-sky-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-sky-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">📝</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Inscribir Pasajeros</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Asignar pasajeros a vuelos</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Inscribir Pasajeros</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Asignar pasajeros a vuelos</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/pagos')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-teal-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-teal-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">💰</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Historial Pagos</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ver transacciones y total recaudado</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Historial Pagos</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Ver transacciones y total recaudado</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/aviones')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-cyan-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-cyan-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-cyan-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">✈️</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Gestión Aviones</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Configurar capacidad de asientos</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Gestión Aviones</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Configurar capacidad de asientos</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/reabastecimientos')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-amber-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-amber-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-amber-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">⛽</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Reabastecimientos</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Gestionar combustible de aviones</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Reabastecimientos</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Gestionar combustible de aviones</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/configuraciones')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-purple-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-purple-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-purple-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">⚙️</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Configuraciones</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Ajustes del sistema</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Configuraciones</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Ajustes del sistema</p>
                 </div>
               </button>
 
               <button
                 onClick={() => router.push('/staff/manifiestos')}
-                className="group relative bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden border border-slate-700 hover:border-orange-500/50"
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-orange-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors"></div>
                 <div className="relative">
                   <div className="text-5xl mb-4">📋</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Manifiestos</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Manifiestos de vuelo</p>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Manifiestos</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Manifiestos de vuelo</p>
                 </div>
               </button>
             </>

@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -97,10 +98,10 @@ export default function RegistroPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Inicio
           </button>
           <img
@@ -108,19 +109,19 @@ export default function RegistroPage() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Registrar Pasajero</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Registrar Pasajero</h1>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-8">
+        <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Información del comprador */}
-            <div className="border-b border-slate-700 pb-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Información del Comprador</h2>
+            <div className="border-b theme-border pb-6">
+              <h2 className="text-lg font-semibold theme-text-primary mb-4">Información del Comprador</h2>
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Nombre(s)
                   </label>
                   <input
@@ -128,13 +129,13 @@ export default function RegistroPage() {
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                     placeholder="Juan"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Apellido(s)
                   </label>
                   <input
@@ -142,30 +143,30 @@ export default function RegistroPage() {
                     value={apellido}
                     onChange={(e) => setApellido(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                     placeholder="Pérez"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">RUT</label>
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">RUT</label>
                   <input
                     type="text"
                     value={rut}
                     onChange={(e) => setRut(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                     placeholder="12.345.678-9"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                     placeholder="juan@example.com"
                   />
                 </div>
@@ -173,11 +174,11 @@ export default function RegistroPage() {
             </div>
 
             {/* Información de pago */}
-            <div className="border-b border-slate-700 pb-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Información de Pago</h2>
+            <div className="border-b theme-border pb-6">
+              <h2 className="text-lg font-semibold theme-text-primary mb-4">Información de Pago</h2>
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Cantidad de Tickets (1-10)
                   </label>
                   <input
@@ -188,12 +189,12 @@ export default function RegistroPage() {
                     max={10}
                     step={1}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Monto Pagado ($)
                   </label>
                   <input
@@ -204,13 +205,13 @@ export default function RegistroPage() {
                     step={1}
                     required
                     placeholder="0"
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                    className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
                   />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-slate-300 mb-3">
+                <label className="block text-sm font-medium theme-text-secondary mb-3">
                   Método de Pago
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -221,8 +222,8 @@ export default function RegistroPage() {
                       onClick={() => setMetodoPago(metodo)}
                       className={`py-3 px-4 rounded-lg font-medium transition ${
                         metodoPago === metodo
-                          ? 'bg-primary text-white'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          ? 'bg-primary theme-text-primary'
+                          : 'theme-input theme-text-secondary hover:theme-bg-secondary'
                       }`}
                     >
                       {metodo.charAt(0).toUpperCase() + metodo.slice(1)}
@@ -235,24 +236,24 @@ export default function RegistroPage() {
             {/* Datos de pasajeros (opcional) */}
             {cantidadTickets > 0 && (
               <div className="pb-6">
-                <h2 className="text-lg font-semibold text-white mb-2">
-                  Datos de Pasajeros <span className="text-sm text-slate-400">(opcional)</span>
+                <h2 className="text-lg font-semibold theme-text-primary mb-2">
+                  Datos de Pasajeros <span className="text-sm theme-text-muted">(opcional)</span>
                 </h2>
-                <p className="text-sm text-slate-400 mb-4">
+                <p className="text-sm theme-text-muted mb-4">
                   Puedes asignar los datos de los pasajeros ahora o después. Si hay menores, debe haber al menos un adulto.
                 </p>
                 <div className="space-y-6">
                   {Array.from({ length: cantidadTickets }).map((_, index) => (
-                    <div key={index} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600">
+                    <div key={index} className="theme-input/30 p-4 rounded-xl border theme-border">
                       <div className="flex items-center justify-between mb-3">
-                        <label className="text-sm font-semibold text-white">
+                        <label className="text-sm font-semibold theme-text-primary">
                           Ticket {index + 1}
                         </label>
                         {index === 0 && (
                           <button
                             type="button"
                             onClick={copiarDatosUsuario}
-                            className="text-xs px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition"
+                            className="text-xs px-3 py-1 bg-blue-600/80 hover:bg-blue-600 theme-text-primary rounded-lg transition"
                           >
                             📋 Copiar datos del comprador
                           </button>
@@ -260,7 +261,7 @@ export default function RegistroPage() {
                       </div>
                       <div className="grid gap-3 md:grid-cols-2">
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                          <label className="block text-xs font-medium theme-text-muted mb-1">
                             Nombre
                           </label>
                           <input
@@ -271,12 +272,12 @@ export default function RegistroPage() {
                               nuevos[index] = { ...nuevos[index], nombre: e.target.value };
                               setPasajeros(nuevos);
                             }}
-                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            className="w-full px-4 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                             placeholder="Juan"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                          <label className="block text-xs font-medium theme-text-muted mb-1">
                             Apellido
                           </label>
                           <input
@@ -287,12 +288,12 @@ export default function RegistroPage() {
                               nuevos[index] = { ...nuevos[index], apellido: e.target.value };
                               setPasajeros(nuevos);
                             }}
-                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            className="w-full px-4 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                             placeholder="Pérez"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                          <label className="block text-xs font-medium theme-text-muted mb-1">
                             RUT
                           </label>
                           <input
@@ -303,12 +304,12 @@ export default function RegistroPage() {
                               nuevos[index] = { ...nuevos[index], rut: e.target.value };
                               setPasajeros(nuevos);
                             }}
-                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-primary text-white placeholder-slate-400"
+                            className="w-full px-4 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary placeholder-slate-400"
                             placeholder="12.345.678-9"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                          <label className="block text-xs font-medium theme-text-muted mb-1">
                             Menor de edad
                           </label>
                           <div className="flex items-center h-10">
@@ -320,9 +321,9 @@ export default function RegistroPage() {
                                 nuevos[index] = { ...nuevos[index], esMenor: e.target.checked };
                                 setPasajeros(nuevos);
                               }}
-                              className="w-5 h-5 bg-slate-700 border-slate-600 rounded focus:ring-2 focus:ring-primary"
+                              className="w-5 h-5 theme-input theme-border rounded focus:ring-2 focus:ring-primary"
                             />
-                            <span className="ml-2 text-sm text-slate-300">
+                            <span className="ml-2 text-sm theme-text-secondary">
                               Es menor de edad
                             </span>
                           </div>
@@ -337,7 +338,7 @@ export default function RegistroPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-secondary to-red-700 text-white py-4 rounded-lg font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-secondary to-red-700 theme-text-primary py-4 rounded-lg font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50"
             >
               {submitting ? 'Registrando...' : 'Registrar Pasajero'}
             </button>

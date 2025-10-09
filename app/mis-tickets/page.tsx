@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -16,7 +17,7 @@ export default function MisTicketsPage() {
   const [pasajeroRut, setPasajeroRut] = useState('');
   const [selectedFlight, setSelectedFlight] = useState('');
   const [rescheduleModalTicket, setRescheduleModalTicket] = useState<any | null>(null);
-  const [selectedTanda, setSelectedTanda] = useState<number | ''>('');
+  const [selectedCircuito, setSelectedCircuito] = useState<number | ''>('');
   const [refundAmount, setRefundAmount] = useState<number>(0);
   const [refundMethod, setRefundMethod] = useState<string>('efectivo');
 
@@ -98,19 +99,19 @@ export default function MisTicketsPage() {
     }
   };
 
-  const handleRescheduleToTanda = async (ticketId: string) => {
-    if (!selectedTanda) {
-      alert('Debes seleccionar una tanda');
+  const handleRescheduleToCircuito = async (ticketId: string) => {
+    if (!selectedCircuito) {
+      alert('Debes seleccionar un circuito');
       return;
     }
 
     try {
       await api.post(`/tickets/${ticketId}/reschedule`, {
-        numero_tanda: selectedTanda,
+        numero_circuito: selectedCircuito,
       });
       alert('Ticket reprogramado exitosamente');
       setRescheduleModalTicket(null);
-      setSelectedTanda('');
+      setSelectedCircuito('');
       loadData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al reprogramar ticket');
@@ -139,22 +140,22 @@ export default function MisTicketsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando tickets...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando tickets...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Volver
           </button>
           <img
@@ -162,13 +163,13 @@ export default function MisTicketsPage() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Mis Tickets</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Mis Tickets</h1>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h2 className="text-lg text-slate-300">
+          <h2 className="text-lg theme-text-secondary">
             Aquí puedes asignar nombres de pasajeros y seleccionar vuelos para tus tickets
           </h2>
         </div>
@@ -179,9 +180,9 @@ export default function MisTicketsPage() {
             <div className="flex items-start gap-4">
               <div className="text-4xl">⚠️</div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2">Reprogramación Pendiente - Ticket {ticket.codigo_ticket}</h3>
+                <h3 className="text-xl font-bold theme-text-primary mb-2">Reprogramación Pendiente - Ticket {ticket.codigo_ticket}</h3>
                 <p className="text-orange-100 text-sm mb-2">
-                  Tu vuelo de la <strong>Tanda {ticket.reprogramacion_pendiente.numero_tanda_anterior}</strong> ha sido reprogramado a la <strong>Tanda {ticket.reprogramacion_pendiente.numero_tanda_nueva}</strong>.
+                  Tu vuelo del <strong>Circuito {ticket.reprogramacion_pendiente.numero_circuito_anterior}</strong> ha sido reprogramado al <strong>Circuito {ticket.reprogramacion_pendiente.numero_circuito_nuevo}</strong>.
                 </p>
                 <p className="text-orange-100 text-xs mb-4">
                   Fecha de reprogramación: {new Date(ticket.reprogramacion_pendiente.fecha_reprogramacion).toLocaleString('es-ES')}
@@ -198,7 +199,7 @@ export default function MisTicketsPage() {
         ))}
 
         {tickets.length === 0 ? (
-          <div className="text-center text-slate-300 py-12">
+          <div className="text-center theme-text-secondary py-12">
             <p className="text-xl">No tienes tickets disponibles</p>
           </div>
         ) : (
@@ -206,16 +207,16 @@ export default function MisTicketsPage() {
             {tickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6"
+                className="theme-bg-card backdrop-blur-sm theme-border rounded-2xl p-6"
               >
                 <div className="text-center mb-4">
-                  <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Ticket</p>
-                  <p className="text-2xl font-black text-white tracking-tight mb-3">{ticket.codigo_ticket}</p>
+                  <p className="text-xs uppercase tracking-widest theme-text-muted mb-2">Ticket</p>
+                  <p className="text-2xl font-black theme-text-primary tracking-tight mb-3">{ticket.codigo_ticket}</p>
                   <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-medium border ${
                     ticket.estado === 'disponible' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
                     ticket.estado === 'asignado' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
                     ticket.estado === 'inscrito' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                    ticket.estado === 'volado' ? 'bg-slate-500/20 text-slate-300 border-slate-500/30' :
+                    ticket.estado === 'volado' ? 'bg-slate-500/20 theme-text-secondary theme-border/30' :
                     'bg-red-500/20 text-red-300 border-red-500/30'
                   }`}>
                     {ticket.estado.toUpperCase()}
@@ -225,39 +226,39 @@ export default function MisTicketsPage() {
                 {editingId === ticket.id ? (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium theme-text-muted mb-1">
                         Nombre del Pasajero *
                       </label>
                       <input
                         type="text"
                         value={pasajeroNombre}
                         onChange={(e) => setPasajeroNombre(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                        className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                         placeholder="Juan Pérez"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium theme-text-muted mb-1">
                         RUT (opcional)
                       </label>
                       <input
                         type="text"
                         value={pasajeroRut}
                         onChange={(e) => setPasajeroRut(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                        className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                         placeholder="12.345.678-9"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium theme-text-muted mb-1">
                         Seleccionar Vuelo (opcional)
                       </label>
                       <select
                         value={selectedFlight}
                         onChange={(e) => setSelectedFlight(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                        className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                       >
                         <option value="">Sin asignar</option>
                         {flights.map((flight) => (
@@ -271,13 +272,13 @@ export default function MisTicketsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(ticket.id)}
-                        className="flex-1 px-4 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                        className="flex-1 px-4 py-2 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                       >
                         Guardar
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex-1 px-4 py-2 bg-slate-700/80 text-white rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium"
+                        className="flex-1 px-4 py-2 theme-input/80 theme-text-primary rounded-lg hover:theme-input transition-colors text-sm font-medium"
                       >
                         Cancelar
                       </button>
@@ -286,23 +287,23 @@ export default function MisTicketsPage() {
                 ) : (
                   <>
                     {ticket.pasajeros && ticket.pasajeros.length > 0 ? (
-                      <div className="mb-4 pt-4 border-t border-slate-700">
-                        <p className="text-xs text-slate-400 mb-1">Pasajero:</p>
-                        <p className="text-sm font-medium text-white">{ticket.pasajeros[0].nombre}</p>
+                      <div className="mb-4 pt-4 border-t theme-border">
+                        <p className="text-xs theme-text-muted mb-1">Pasajero:</p>
+                        <p className="text-sm font-medium theme-text-primary">{ticket.pasajeros[0].nombre}</p>
                         {ticket.pasajeros[0].rut && (
-                          <p className="text-xs text-slate-400">{ticket.pasajeros[0].rut}</p>
+                          <p className="text-xs theme-text-muted">{ticket.pasajeros[0].rut}</p>
                         )}
                       </div>
                     ) : (
-                      <div className="mb-4 pt-4 border-t border-slate-700">
-                        <p className="text-sm text-slate-400">Sin pasajero asignado</p>
+                      <div className="mb-4 pt-4 border-t theme-border">
+                        <p className="text-sm theme-text-muted">Sin pasajero asignado</p>
                       </div>
                     )}
 
                     {ticket.estado !== 'volado' && ticket.estado !== 'cancelado' && (
                       <button
                         onClick={() => handleEdit(ticket)}
-                        className="w-full px-4 py-2 bg-indigo-600/80 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm font-medium"
+                        className="w-full px-4 py-2 bg-indigo-600/80 theme-text-primary rounded-lg hover:bg-indigo-600 transition-colors text-sm font-medium"
                       >
                         {ticket.pasajeros && ticket.pasajeros.length > 0 ? 'Editar' : 'Asignar Pasajero'}
                       </button>
@@ -317,65 +318,65 @@ export default function MisTicketsPage() {
         {/* Modal de reprogramación */}
         {rescheduleModalTicket && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-white mb-4">Gestionar Reprogramación</h2>
-              <p className="text-slate-300 mb-6">
-                Ticket: <strong className="text-white">{rescheduleModalTicket.codigo_ticket}</strong>
+            <div className="theme-bg-card rounded-2xl theme-border p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold theme-text-primary mb-4">Gestionar Reprogramación</h2>
+              <p className="theme-text-secondary mb-6">
+                Ticket: <strong className="theme-text-primary">{rescheduleModalTicket.codigo_ticket}</strong>
                 <br />
-                Tanda Anterior: <strong className="text-orange-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_anterior}</strong>
+                Circuito Anterior: <strong className="text-orange-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_circuito_anterior}</strong>
                 <br />
-                Tanda Nueva Propuesta: <strong className="text-green-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_nueva}</strong>
+                Circuito Nuevo Propuesto: <strong className="text-green-400">#{rescheduleModalTicket.reprogramacion_pendiente.numero_circuito_nuevo}</strong>
               </p>
 
               <div className="space-y-4">
                 {/* Opción 1: Aceptar */}
-                <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
-                  <h3 className="text-lg font-bold text-white mb-2">1. Aceptar Reprogramación</h3>
-                  <p className="text-sm text-slate-300 mb-3">
-                    Tu ticket será movido automáticamente a la Tanda #{rescheduleModalTicket.reprogramacion_pendiente.numero_tanda_nueva}.
+                <div className="theme-bg-secondary/50 rounded-xl p-4 border theme-border">
+                  <h3 className="text-lg font-bold theme-text-primary mb-2">1. Aceptar Reprogramación</h3>
+                  <p className="text-sm theme-text-secondary mb-3">
+                    Tu ticket será movido automáticamente al Circuito #{rescheduleModalTicket.reprogramacion_pendiente.numero_circuito_nuevo}.
                   </p>
                   <button
                     onClick={() => handleAcceptReschedule(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-emerald-600/80 text-white rounded-lg hover:bg-emerald-600 font-medium transition-colors"
+                    className="w-full px-6 py-3 bg-emerald-600/80 theme-text-primary rounded-lg hover:bg-emerald-600 font-medium transition-colors"
                   >
                     Aceptar
                   </button>
                 </div>
 
-                {/* Opción 2: Reprogramar a otra tanda */}
-                <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
-                  <h3 className="text-lg font-bold text-white mb-2">2. Reprogramar a Otra Tanda</h3>
-                  <p className="text-sm text-slate-300 mb-3">
-                    Selecciona una tanda diferente para tu vuelo.
+                {/* Opción 2: Reprogramar a otro circuito */}
+                <div className="theme-bg-secondary/50 rounded-xl p-4 border theme-border">
+                  <h3 className="text-lg font-bold theme-text-primary mb-2">2. Reprogramar a Otro Circuito</h3>
+                  <p className="text-sm theme-text-secondary mb-3">
+                    Selecciona un circuito diferente para tu vuelo.
                   </p>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">
-                    Número de Tanda:
+                  <label className="block text-xs font-medium theme-text-muted mb-2">
+                    Número de Circuito:
                   </label>
                   <input
                     type="number"
                     min="1"
-                    value={selectedTanda}
-                    onChange={(e) => setSelectedTanda(Number(e.target.value))}
+                    value={selectedCircuito}
+                    onChange={(e) => setSelectedCircuito(Number(e.target.value))}
                     placeholder="Ej: 5"
-                    className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white mb-3"
+                    className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded-lg theme-text-primary mb-3"
                   />
                   <button
-                    onClick={() => handleRescheduleToTanda(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-blue-600/80 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+                    onClick={() => handleRescheduleToCircuito(rescheduleModalTicket.id)}
+                    className="w-full px-6 py-3 bg-blue-600/80 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
                   >
                     Reprogramar
                   </button>
                 </div>
 
                 {/* Opción 3: Rechazar con devolución */}
-                <div className="bg-slate-700/50 rounded-xl p-4 border border-red-600/50">
-                  <h3 className="text-lg font-bold text-white mb-2">3. Rechazar y Solicitar Devolución</h3>
-                  <p className="text-sm text-slate-300 mb-3">
+                <div className="theme-bg-secondary/50 rounded-xl p-4 border border-red-600/50">
+                  <h3 className="text-lg font-bold theme-text-primary mb-2">3. Rechazar y Solicitar Devolución</h3>
+                  <p className="text-sm theme-text-secondary mb-3">
                     Tu ticket será cancelado y se registrará una devolución.
                   </p>
                   <div className="space-y-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium theme-text-muted mb-1">
                         Monto de Devolución:
                       </label>
                       <input
@@ -384,17 +385,17 @@ export default function MisTicketsPage() {
                         value={refundAmount}
                         onChange={(e) => setRefundAmount(Number(e.target.value))}
                         placeholder="Ej: 50000"
-                        className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
+                        className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded-lg theme-text-primary"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium theme-text-muted mb-1">
                         Método de Pago:
                       </label>
                       <select
                         value={refundMethod}
                         onChange={(e) => setRefundMethod(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
+                        className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded-lg theme-text-primary"
                       >
                         <option value="efectivo">Efectivo</option>
                         <option value="transferencia">Transferencia</option>
@@ -404,7 +405,7 @@ export default function MisTicketsPage() {
                   </div>
                   <button
                     onClick={() => handleRejectReschedule(rescheduleModalTicket.id)}
-                    className="w-full px-6 py-3 bg-red-600/80 text-white rounded-lg hover:bg-red-600 font-medium transition-colors"
+                    className="w-full px-6 py-3 bg-red-600/80 theme-text-primary rounded-lg hover:bg-red-600 font-medium transition-colors"
                   >
                     Rechazar y Devolver
                   </button>
@@ -413,7 +414,7 @@ export default function MisTicketsPage() {
 
               <button
                 onClick={() => setRescheduleModalTicket(null)}
-                className="mt-6 w-full px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium transition"
+                className="mt-6 w-full px-6 py-3 theme-bg-secondary theme-text-primary rounded-lg hover:theme-input font-medium transition"
               >
                 Cerrar
               </button>

@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -29,8 +30,8 @@ export default function InscribirPage() {
       ]);
 
       setPassengersWithoutFlight(passengersRes.data);
-      // Ordenar vuelos por número de tanda
-      const sortedFlights = flightsRes.data.sort((a: any, b: any) => a.numero_tanda - b.numero_tanda);
+      // Ordenar vuelos por número de circuito
+      const sortedFlights = flightsRes.data.sort((a: any, b: any) => a.numero_circuito - b.numero_circuito);
       setFlights(sortedFlights);
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -63,22 +64,22 @@ export default function InscribirPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando inscripciones...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando inscripciones...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Volver
           </button>
           <img
@@ -86,7 +87,7 @@ export default function InscribirPage() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Inscribir Pasajeros</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Inscribir Pasajeros</h1>
         </div>
       </header>
 
@@ -116,28 +117,28 @@ export default function InscribirPage() {
               {passengersWithoutFlight.map((passenger: any) => (
                 <div
                   key={passenger.userId}
-                  className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6"
+                  className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6"
                 >
-                  <div className="mb-4 pb-4 border-b border-slate-700">
-                    <h3 className="font-bold text-xl text-white">{passenger.userName}</h3>
-                    <p className="text-sm text-slate-400">{passenger.userEmail}</p>
+                  <div className="mb-4 pb-4 border-b theme-border">
+                    <h3 className="font-bold text-xl theme-text-primary">{passenger.userName}</h3>
+                    <p className="text-sm theme-text-muted">{passenger.userEmail}</p>
                   </div>
                   <div className="space-y-3">
                     {passenger.tickets.map((ticket: any) => (
                       <div
                         key={ticket.ticketId}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-700/50 rounded-lg p-4"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 theme-bg-secondary/50 rounded-lg p-4"
                       >
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-white mb-1">
+                          <p className="text-sm font-semibold theme-text-primary mb-1">
                             Pasajero: <span className="text-primary">{ticket.pasajeros[0]?.nombre}</span>
                           </p>
-                          <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded">
+                          <span className="text-xs bg-orange-500 theme-text-primary px-2 py-1 rounded">
                             {ticket.estado.toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1">
-                          <label className="block text-xs text-slate-400 mb-1">
+                          <label className="block text-xs theme-text-muted mb-1">
                             Seleccionar Vuelo:
                           </label>
                           <select
@@ -146,7 +147,7 @@ export default function InscribirPage() {
                                 handleInscribirPasajero(ticket.ticketId, e.target.value);
                               }
                             }}
-                            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm"
+                            className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary text-sm"
                             defaultValue=""
                           >
                             <option value="">-- Seleccionar --</option>
@@ -158,7 +159,7 @@ export default function InscribirPage() {
                                   value={flight._id}
                                   disabled={asientosDisponibles <= 0}
                                 >
-                                  Tanda #{flight.numero_tanda} | {flight.aircraftId?.matricula} ({flight.aircraftId?.modelo}) |
+                                  Circuito #{flight.numero_circuito} | {flight.aircraftId?.matricula} ({flight.aircraftId?.modelo}) |
                                   Asientos: {asientosDisponibles}/{flight.capacidad_total}
                                   {asientosDisponibles <= 0 ? ' (LLENO)' : ''}
                                 </option>

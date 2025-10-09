@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -125,22 +126,22 @@ function ReabastecimientosContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando reabastecimientos...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando reabastecimientos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Volver
           </button>
           <img
@@ -148,7 +149,7 @@ function ReabastecimientosContent() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Gestión de Reabastecimientos</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Gestión de Reabastecimientos</h1>
         </div>
       </header>
 
@@ -156,13 +157,13 @@ function ReabastecimientosContent() {
         {/* Controles superiores */}
         <div className="mb-6 flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium theme-text-secondary mb-2">
               Filtrar por Avión:
             </label>
             <select
               value={selectedAircraft}
               onChange={(e) => handleAircraftChange(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+              className="w-full px-4 py-2 theme-input border theme-border rounded-lg theme-text-primary"
             >
               <option value="">Todos los aviones</option>
               {aircrafts.map((aircraft) => (
@@ -176,7 +177,7 @@ function ReabastecimientosContent() {
           <div className="flex items-end">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-6 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              className="px-6 py-2 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               {showForm ? 'Cancelar' : '+ Nuevo Reabastecimiento'}
             </button>
@@ -186,20 +187,20 @@ function ReabastecimientosContent() {
         {/* Estadísticas */}
         {statistics && (
           <div className="mb-8 grid gap-4 md:grid-cols-4">
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6">
-              <p className="text-sm text-slate-400 mb-1">Total Litros</p>
-              <p className="text-3xl font-bold text-white">{statistics.total_litros.toFixed(0)}</p>
+            <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6">
+              <p className="text-sm theme-text-muted mb-1">Total Litros</p>
+              <p className="text-3xl font-bold theme-text-primary">{statistics.total_litros.toFixed(0)}</p>
             </div>
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6">
-              <p className="text-sm text-slate-400 mb-1">Total Costo</p>
+            <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6">
+              <p className="text-sm theme-text-muted mb-1">Total Costo</p>
               <p className="text-3xl font-bold text-green-400">${statistics.total_costo.toLocaleString()}</p>
             </div>
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6">
-              <p className="text-sm text-slate-400 mb-1">Reabastecimientos</p>
+            <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6">
+              <p className="text-sm theme-text-muted mb-1">Reabastecimientos</p>
               <p className="text-3xl font-bold text-blue-400">{statistics.cantidad_reabastecimientos}</p>
             </div>
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6">
-              <p className="text-sm text-slate-400 mb-1">Promedio Litros</p>
+            <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6">
+              <p className="text-sm theme-text-muted mb-1">Promedio Litros</p>
               <p className="text-3xl font-bold text-purple-400">{statistics.promedio_litros.toFixed(0)}</p>
             </div>
           </div>
@@ -207,12 +208,12 @@ function ReabastecimientosContent() {
 
         {/* Formulario */}
         {showForm && (
-          <div className="mb-8 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Registrar Reabastecimiento</h2>
+          <div className="mb-8 theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6">
+            <h2 className="text-xl font-bold theme-text-primary mb-4">Registrar Reabastecimiento</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Avión * {lockedAircraftId && <span className="text-red-400 text-xs">(Preseleccionado por alerta de combustible)</span>}
                   </label>
                   <select
@@ -220,10 +221,10 @@ function ReabastecimientosContent() {
                     onChange={(e) => setFormData({ ...formData, aircraftId: e.target.value })}
                     required
                     disabled={!!lockedAircraftId}
-                    className={`w-full px-3 py-2 border rounded-lg text-white ${
+                    className={`w-full px-3 py-2 border rounded-lg theme-text-primary ${
                       lockedAircraftId
-                        ? 'bg-slate-600 border-slate-500 cursor-not-allowed opacity-75'
-                        : 'bg-slate-700 border-slate-600'
+                        ? 'theme-bg-secondary theme-border cursor-not-allowed opacity-75'
+                        : 'theme-input theme-border'
                     }`}
                   >
                     <option value="">Seleccionar avión</option>
@@ -234,14 +235,14 @@ function ReabastecimientosContent() {
                     ))}
                   </select>
                   {lockedAircraftId && (
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs theme-text-muted mt-1">
                       Este avión fue reprogramado por falta de combustible y requiere reabastecimiento inmediato.
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Fecha *
                   </label>
                   <input
@@ -249,12 +250,12 @@ function ReabastecimientosContent() {
                     value={formData.fecha}
                     onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
                     required
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Litros *
                   </label>
                   <input
@@ -265,13 +266,13 @@ function ReabastecimientosContent() {
                     onChange={(e) => setFormData({ ...formData, litros: e.target.value })}
                     required
                     placeholder="Ej: 150.5"
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium theme-text-secondary mb-2">
                   Notas (opcional)
                 </label>
                 <textarea
@@ -279,13 +280,13 @@ function ReabastecimientosContent() {
                   onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
                   rows={3}
                   placeholder="Información adicional..."
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                  className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+                className="w-full px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
               >
                 Registrar Reabastecimiento
               </button>
@@ -294,9 +295,9 @@ function ReabastecimientosContent() {
         )}
 
         {/* Tabla de reabastecimientos */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-700">
-            <h2 className="text-xl font-bold text-white">
+        <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border overflow-hidden">
+          <div className="p-6 border-b theme-border">
+            <h2 className="text-xl font-bold theme-text-primary">
               Historial de Reabastecimientos
               {selectedAircraft && aircrafts.find(a => a._id === selectedAircraft) && (
                 <span className="text-primary ml-2">
@@ -307,41 +308,41 @@ function ReabastecimientosContent() {
           </div>
 
           {refuelings.length === 0 ? (
-            <div className="p-12 text-center text-slate-400">
+            <div className="p-12 text-center theme-text-muted">
               <p className="text-lg">No hay reabastecimientos registrados</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-700/50">
+                <thead className="theme-bg-secondary/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Fecha
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Avión
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Litros
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Costo
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Notas
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
                       Registrado Por
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
                   {refuelings.map((refueling: any) => (
-                    <tr key={refueling._id} className="hover:bg-slate-700/30 transition">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                    <tr key={refueling._id} className="hover:theme-input/30 transition">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-primary">
                         {new Date(refueling.fecha).toLocaleDateString('es-ES')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-primary">
                         {refueling.aircraftId?.matricula || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
@@ -350,10 +351,10 @@ function ReabastecimientosContent() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">
                         {refueling.costo ? `$${refueling.costo.toLocaleString()}` : '-'}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-300 max-w-xs truncate">
+                      <td className="px-6 py-4 text-sm theme-text-secondary max-w-xs truncate">
                         {refueling.notas || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted">
                         {refueling.registradoPor?.nombre || 'N/A'}
                       </td>
                     </tr>
@@ -371,12 +372,12 @@ function ReabastecimientosContent() {
 export default function ReabastecimientosPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando reabastecimientos...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando reabastecimientos...</p>
         </div>
       </div>
     }>

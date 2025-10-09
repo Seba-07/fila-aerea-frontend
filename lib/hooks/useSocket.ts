@@ -53,7 +53,7 @@ export const useSocket = () => {
         // Mostrar notificación del navegador si tiene permisos
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('✈️ Vuelo Reprogramado', {
-            body: `Tu vuelo de la tanda ${data.tanda_anterior} fue reprogramado a la tanda ${data.tanda_nueva}`,
+            body: `Tu vuelo del circuito ${data.circuito_anterior} fue reprogramado al circuito ${data.circuito_nuevo}`,
             icon: '/icon-192.png',
             badge: '/icon-192.png',
             tag: 'flight-rescheduling',
@@ -69,7 +69,7 @@ export const useSocket = () => {
         // Mostrar notificación del navegador si tiene permisos
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('⏰ Cambio de Hora de Vuelo', {
-            body: `Tu vuelo de la tanda ${data.numero_tanda} cambió de hora: ${data.hora_anterior} → ${data.hora_nueva}`,
+            body: `Tu vuelo del circuito ${data.numero_circuito} cambió de hora: ${data.hora_anterior} → ${data.hora_nueva}`,
             icon: '/icon-192.png',
             badge: '/icon-192.png',
             tag: 'time-change',

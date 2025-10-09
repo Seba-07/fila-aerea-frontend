@@ -108,5 +108,5 @@ export const staffAPI = {
 // Manifiestos
 export const manifestsAPI = {
   getAll: () => api.get('/manifests'),
-  getByTanda: (numeroTanda: number) => api.get(`/manifests/tanda/${numeroTanda}`),
+  getByCircuito: (numeroCircuito: number) => api.get(`/manifests/circuito/${numeroCircuito}`),
 };

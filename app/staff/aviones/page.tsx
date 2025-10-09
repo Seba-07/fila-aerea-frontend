@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -97,22 +98,22 @@ export default function AvionesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando aviones...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando aviones...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Volver
           </button>
           <img
@@ -120,7 +121,7 @@ export default function AvionesPage() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Gestión de Aviones</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Gestión de Aviones</h1>
         </div>
       </header>
 
@@ -129,7 +130,7 @@ export default function AvionesPage() {
         <div className="mb-6">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+            className="px-6 py-3 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 font-medium"
           >
             {showCreateForm ? 'Cancelar' : '+ Crear Nuevo Avión'}
           </button>
@@ -137,44 +138,44 @@ export default function AvionesPage() {
 
         {/* Formulario crear avión */}
         {showCreateForm && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
-            <h2 className="text-xl font-bold text-white mb-4">Nuevo Avión</h2>
+          <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6 mb-8">
+            <h2 className="text-xl font-bold theme-text-primary mb-4">Nuevo Avión</h2>
             <div className="grid gap-4 md:grid-cols-3 mb-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Matrícula:</label>
+                <label className="block text-sm theme-text-muted mb-1">Matrícula:</label>
                 <input
                   type="text"
                   value={matricula}
                   onChange={(e) => setMatricula(e.target.value.toUpperCase())}
                   placeholder="CC-XXX"
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Modelo:</label>
+                <label className="block text-sm theme-text-muted mb-1">Modelo:</label>
                 <input
                   type="text"
                   value={modelo}
                   onChange={(e) => setModelo(e.target.value)}
                   placeholder="Cessna 172"
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Capacidad (1-10):</label>
+                <label className="block text-sm theme-text-muted mb-1">Capacidad (1-10):</label>
                 <input
                   type="number"
                   min="1"
                   max="10"
                   value={capacidad}
                   onChange={(e) => setCapacidad(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                 />
               </div>
             </div>
             <button
               onClick={handleCreateAircraft}
-              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              className="w-full px-6 py-3 bg-green-600 theme-text-primary rounded-lg hover:bg-green-700 font-medium"
             >
               Crear Avión
             </button>
@@ -201,17 +202,17 @@ export default function AvionesPage() {
               key={aircraft._id}
               className={`backdrop-blur-sm rounded-xl border p-6 ${
                 aircraft.habilitado
-                  ? 'bg-slate-800/50 border-slate-700'
+                  ? 'theme-bg-card theme-border'
                   : 'bg-red-900/20 border-red-700'
               }`}
             >
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-white">{aircraft.matricula}</h3>
-                  <p className="text-sm text-slate-400">{aircraft.modelo}</p>
+                  <h3 className="text-xl font-bold theme-text-primary">{aircraft.matricula}</h3>
+                  <p className="text-sm theme-text-muted">{aircraft.modelo}</p>
                 </div>
                 {!aircraft.habilitado && (
-                  <span className="px-2 py-1 bg-red-600 text-white text-xs rounded">
+                  <span className="px-2 py-1 bg-red-600 theme-text-primary text-xs rounded">
                     DESHABILITADO
                   </span>
                 )}
@@ -220,7 +221,7 @@ export default function AvionesPage() {
               {editingId === aircraft._id ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">
+                    <label className="block text-xs theme-text-muted mb-1">
                       Nueva Capacidad (1-10):
                     </label>
                     <input
@@ -229,19 +230,19 @@ export default function AvionesPage() {
                       max="10"
                       value={newCapacity}
                       onChange={(e) => setNewCapacity(Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                      className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                     />
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleUpdateCapacity(aircraft._id)}
-                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                      className="flex-1 px-4 py-2 bg-green-600 theme-text-primary rounded hover:bg-green-700 text-sm font-medium"
                     >
                       Guardar
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="flex-1 px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 text-sm font-medium"
+                      className="flex-1 px-4 py-2 theme-bg-secondary theme-text-primary rounded hover:theme-input text-sm font-medium"
                     >
                       Cancelar
                     </button>
@@ -249,9 +250,9 @@ export default function AvionesPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+                  <div className="theme-bg-secondary/50 rounded-lg p-4 text-center">
                     <p className="text-3xl font-black text-primary">{aircraft.capacidad}</p>
-                    <p className="text-xs text-slate-400">asientos</p>
+                    <p className="text-xs theme-text-muted">asientos</p>
                   </div>
                   {aircraft.habilitado && (
                     <button
@@ -259,7 +260,7 @@ export default function AvionesPage() {
                         setEditingId(aircraft._id);
                         setNewCapacity(aircraft.capacidad);
                       }}
-                      className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-blue-700 text-sm font-medium"
+                      className="w-full px-4 py-2 bg-primary theme-text-primary rounded hover:bg-blue-700 text-sm font-medium"
                     >
                       Cambiar Capacidad
                     </button>
@@ -268,8 +269,8 @@ export default function AvionesPage() {
                     onClick={() => handleToggleStatus(aircraft._id, aircraft.habilitado)}
                     className={`w-full px-4 py-2 rounded text-sm font-medium ${
                       aircraft.habilitado
-                        ? 'bg-red-600 text-white hover:bg-red-700'
-                        : 'bg-green-600 text-white hover:bg-green-700'
+                        ? 'bg-red-600 theme-text-primary hover:bg-red-700'
+                        : 'bg-green-600 theme-text-primary hover:bg-green-700'
                     }`}
                   >
                     {aircraft.habilitado ? 'Deshabilitar Avión' : 'Habilitar Avión'}

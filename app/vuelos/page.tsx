@@ -1,5 +1,7 @@
 'use client';
 
+import ThemeToggle from '@/components/ThemeToggle';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { flightsAPI, api } from '@/lib/api';
@@ -14,15 +16,15 @@ export default function VuelosPage() {
   const [showCreateTanda, setShowCreateTanda] = useState(false);
   const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
   const [newCapacity, setNewCapacity] = useState<number>(0);
-  const [editingTanda, setEditingTanda] = useState<number | null>(null);
-  const [editingHoraTanda, setEditingHoraTanda] = useState<number | null>(null);
+  const [editingCircuito, setEditingCircuito] = useState<number | null>(null);
+  const [editingHoraCircuito, setEditingHoraCircuito] = useState<number | null>(null);
   const [newHoraPrevista, setNewHoraPrevista] = useState<string>('');
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [rescheduleFlightId, setRescheduleFlightId] = useState<string | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
 
-  // Form state para nueva tanda
-  const [numeroTanda, setNumeroTanda] = useState<string>('');
+  // Form state para nuevo circuito
+  const [numeroCircuito, setNumeroCircuito] = useState<string>('');
   const [fecha, setFecha] = useState('');
   const [horaPrevista, setHoraPrevista] = useState('');
   const [selectedAircrafts, setSelectedAircrafts] = useState<string[]>([]);
@@ -51,10 +53,10 @@ export default function VuelosPage() {
       setFlights(flightsRes.data);
       setAircrafts(aircraftsRes.data);
 
-      // Calcular siguiente número de tanda
+      // Calcular siguiente número de circuito
       if (flightsRes.data.length > 0) {
-        const maxTanda = Math.max(...flightsRes.data.map((f: any) => f.numero_tanda));
-        setNumeroTanda(String(maxTanda + 1));
+        const maxCircuito = Math.max(...flightsRes.data.map((f: any) => f.numero_circuito));
+        setNumeroCircuito(String(maxCircuito + 1));
       }
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -95,7 +97,7 @@ export default function VuelosPage() {
       const { data } = await api.post(`/flights/${rescheduleFlightId}/reschedule`, {
         razon: rescheduleReason,
       });
-      alert(`Vuelo reprogramado exitosamente a Tanda ${data.tanda_nueva}.\n${data.pasajeros_afectados} pasajero(s) notificado(s).`);
+      alert(`Vuelo reprogramado exitosamente a Circuito ${data.circuito_nuevo}.\n${data.pasajeros_afectados} pasajero(s) notificado(s).`);
       setShowRescheduleModal(false);
       setRescheduleFlightId(null);
       fetchData();
@@ -152,16 +154,16 @@ export default function VuelosPage() {
     );
   };
 
-  const handleCreateTanda = async () => {
+  const handleCreateCircuito = async () => {
     // Validar campos obligatorios
-    if (!numeroTanda || !fecha || selectedAircrafts.length === 0) {
+    if (!numeroCircuito || !fecha || selectedAircrafts.length === 0) {
       alert('Completa todos los campos y selecciona al menos un avión');
       return;
     }
 
-    // Si es tanda #1, requiere hora prevista
-    if (numeroTanda === '1' && !horaPrevista) {
-      alert('Debes ingresar la hora prevista para la Tanda #1');
+    // Si es circuito #1, requiere hora prevista
+    if (numeroCircuito === '1' && !horaPrevista) {
+      alert('Debes ingresar la hora prevista para el Circuito #1');
       return;
     }
 
@@ -170,8 +172,8 @@ export default function VuelosPage() {
       const [year, month, day] = fecha.split('-');
 
       let fechaHora;
-      if (numeroTanda === '1' && horaPrevista) {
-        // Para tanda #1, usar la hora prevista ingresada
+      if (numeroCircuito === '1' && horaPrevista) {
+        // Para circuito #1, usar la hora prevista ingresada
         const [hours, minutes] = horaPrevista.split(':');
         fechaHora = new Date(
           parseInt(year),
@@ -183,7 +185,7 @@ export default function VuelosPage() {
           0
         );
       } else {
-        // Para otras tandas, usar medianoche (el backend calculará la hora)
+        // Para otros circuitos, usar medianoche (el backend calculará la hora)
         fechaHora = new Date(
           parseInt(year),
           parseInt(month) - 1,
@@ -192,45 +194,45 @@ export default function VuelosPage() {
         );
       }
 
-      await api.post('/staff/tandas', {
-        numero_tanda: parseInt(numeroTanda),
+      await api.post('/staff/circuitos', {
+        numero_circuito: parseInt(numeroCircuito),
         fecha_hora: fechaHora.toISOString(),
-        hora_prevista: numeroTanda === '1' ? horaPrevista : undefined,
+        hora_prevista: numeroCircuito === '1' ? horaPrevista : undefined,
         aircraftIds: selectedAircrafts,
       });
 
-      alert('Tanda creada exitosamente');
+      alert('Circuito creado exitosamente');
       setShowCreateTanda(false);
       setSelectedAircrafts([]);
       setFecha('');
       setHoraPrevista('');
-      setNumeroTanda('');
+      setNumeroCircuito('');
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al crear tanda');
+      alert(error.response?.data?.error || 'Error al crear circuito');
     }
   };
 
-  const handleEditTanda = (numero_tanda: number) => {
+  const handleEditCircuito = (numero_circuito: number) => {
     // Solo incluir vuelos activos (no reprogramados ni cancelados)
-    const tandaFlights = flights.filter(
-      f => f.numero_tanda === numero_tanda &&
+    const circuitoFlights = flights.filter(
+      f => f.numero_circuito === numero_circuito &&
       f.estado !== 'reprogramado' &&
       f.estado !== 'cancelado'
     );
-    setSelectedAircrafts(tandaFlights.map(f => f.aircraftId._id || f.aircraftId));
-    setEditingTanda(numero_tanda);
+    setSelectedAircrafts(circuitoFlights.map(f => f.aircraftId._id || f.aircraftId));
+    setEditingCircuito(numero_circuito);
   };
 
-  const handleAddAircraftToTanda = async (numero_tanda: number, aircraftId: string) => {
+  const handleAddAircraftToCircuito = async (numero_circuito: number, aircraftId: string) => {
     try {
-      const tanda = flights.find(f => f.numero_tanda === numero_tanda);
-      await api.post('/staff/tandas', {
-        numero_tanda,
-        fecha_hora: tanda.fecha_hora,
+      const circuito = flights.find(f => f.numero_circuito === numero_circuito);
+      await api.post('/staff/circuitos', {
+        numero_circuito,
+        fecha_hora: circuito.fecha_hora,
         aircraftIds: [aircraftId],
       });
-      alert('Avión agregado a la tanda exitosamente');
+      alert('Avión agregado al circuito exitosamente');
 
       // Actualizar selectedAircrafts para incluir el nuevo avión
       setSelectedAircrafts([...selectedAircrafts, aircraftId]);
@@ -247,27 +249,27 @@ export default function VuelosPage() {
 
     try {
       await api.delete(`/flights/${flightId}`);
-      alert('Avión eliminado de la tanda exitosamente');
+      alert('Avión eliminado del circuito exitosamente');
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al eliminar avión de la tanda');
+      alert(error.response?.data?.error || 'Error al eliminar avión del circuito');
     }
   };
 
-  const handleDeleteTanda = async (numero_tanda: number) => {
-    if (!confirm(`¿Eliminar la Tanda #${numero_tanda}?`)) return;
+  const handleDeleteCircuito = async (numero_circuito: number) => {
+    if (!confirm(`¿Eliminar el Circuito #${numero_circuito}?`)) return;
 
     try {
-      await api.delete(`/staff/tandas/${numero_tanda}`);
-      alert('Tanda eliminada exitosamente');
+      await api.delete(`/staff/circuitos/${numero_circuito}`);
+      alert('Circuito eliminado exitosamente');
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al eliminar tanda');
+      alert(error.response?.data?.error || 'Error al eliminar circuito');
     }
   };
 
-  const handleEditHoraPrevista = (numero_tanda: number, hora_actual: string) => {
-    setEditingHoraTanda(numero_tanda);
+  const handleEditHoraPrevista = (numero_circuito: number, hora_actual: string) => {
+    setEditingHoraCircuito(numero_circuito);
     // Convertir a formato HH:MM para el input usando UTC
     const fecha = new Date(hora_actual);
     const horas = String(fecha.getUTCHours()).padStart(2, '0');
@@ -275,56 +277,61 @@ export default function VuelosPage() {
     setNewHoraPrevista(`${horas}:${minutos}`);
   };
 
-  const handleSaveHoraPrevista = async (numero_tanda: number) => {
+  const handleSaveHoraPrevista = async (numero_circuito: number) => {
     if (!newHoraPrevista) {
       alert('Debes ingresar una hora válida');
       return;
     }
 
     try {
-      await api.patch(`/settings/flights/tanda/${numero_tanda}/hora-prevista`, {
+      await api.patch(`/settings/flights/circuito/${numero_circuito}/hora-prevista`, {
         nueva_hora: newHoraPrevista,
       });
-      alert('Hora prevista actualizada. Las siguientes tandas han sido recalculadas.');
-      setEditingHoraTanda(null);
+      alert('Hora prevista actualizada. Los siguientes circuitos han sido recalculados.');
+      setEditingHoraCircuito(null);
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar hora prevista');
     }
   };
 
-  // Agrupar vuelos por número de tanda
-  const flightsByTanda = flights.reduce((acc, flight) => {
-    const tandaNum = flight.numero_tanda;
-    if (!acc[tandaNum]) {
-      acc[tandaNum] = [];
+  // Agrupar vuelos por número de circuito
+  const flightsByCircuito = flights.reduce((acc, flight) => {
+    const circuitoNum = flight.numero_circuito;
+    if (!acc[circuitoNum]) {
+      acc[circuitoNum] = [];
     }
-    acc[tandaNum].push(flight);
+    acc[circuitoNum].push(flight);
     return acc;
   }, {} as Record<number, any[]>);
 
-  const tandasOrdenadas = Object.keys(flightsByTanda)
+  const circuitosOrdenados = Object.keys(flightsByCircuito)
     .map(Number)
     .sort((a, b) => a - b);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
           </div>
-          <p className="text-white text-xl font-medium">Cargando vuelos...</p>
+          <p className="theme-text-primary text-xl font-medium">Cargando vuelos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+    <div className="min-h-screen theme-bg-primary">
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
+      <header className="theme-bg-card backdrop-blur-sm border-b theme-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-white hover:text-primary transition">
+          <button onClick={() => router.push('/')} className="theme-text-primary hover:text-primary transition">
             ← Volver
           </button>
           <img
@@ -332,7 +339,7 @@ export default function VuelosPage() {
             alt="Cessna"
             className="h-8"
           />
-          <h1 className="text-2xl font-bold text-white">Tandas de Vuelo</h1>
+          <h1 className="text-2xl font-bold theme-text-primary">Circuitos de Vuelo</h1>
         </div>
       </header>
 
@@ -342,68 +349,68 @@ export default function VuelosPage() {
           <div className="mb-6">
             <button
               onClick={() => setShowCreateTanda(!showCreateTanda)}
-              className="px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              className="px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
-              {showCreateTanda ? 'Cancelar' : '+ Crear Nueva Tanda'}
+              {showCreateTanda ? 'Cancelar' : '+ Crear Nuevo Circuito'}
             </button>
           </div>
         )}
 
-        {/* Formulario crear tanda */}
+        {/* Formulario crear circuito */}
         {showCreateTanda && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
-            <h2 className="text-xl font-bold text-white mb-4">Nueva Tanda</h2>
+          <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6 mb-8">
+            <h2 className="text-xl font-bold theme-text-primary mb-4">Nuevo Circuito</h2>
 
             <div className="grid gap-4 md:grid-cols-2 mb-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Número de Tanda:</label>
+                <label className="block text-sm theme-text-muted mb-1">Número de Circuito:</label>
                 <input
                   type="number"
                   min="1"
-                  value={numeroTanda}
-                  onChange={(e) => setNumeroTanda(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  value={numeroCircuito}
+                  onChange={(e) => setNumeroCircuito(e.target.value)}
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                   placeholder="1"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Fecha:</label>
+                <label className="block text-sm theme-text-muted mb-1">Fecha:</label>
                 <input
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                 />
               </div>
             </div>
 
-            {/* Campo de hora prevista solo para tanda #1 */}
-            {numeroTanda === '1' && (
+            {/* Campo de hora prevista solo para circuito #1 */}
+            {numeroCircuito === '1' && (
               <div className="mb-4">
-                <label className="block text-sm text-slate-400 mb-1">Hora Prevista de Salida (solo para Tanda #1):</label>
+                <label className="block text-sm theme-text-muted mb-1">Hora Prevista de Salida (solo para Circuito #1):</label>
                 <input
                   type="time"
                   value={horaPrevista}
                   onChange={(e) => setHoraPrevista(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white"
+                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                  💡 Las siguientes tandas calcularán su hora automáticamente según la duración configurada
+                <p className="text-xs theme-text-muted mt-1">
+                  💡 Los siguientes circuitos calcularán su hora automáticamente según la duración configurada
                 </p>
               </div>
             )}
 
             <div className="mb-4">
-              <label className="block text-sm text-slate-400 mb-2">Seleccionar Aviones:</label>
+              <label className="block text-sm theme-text-muted mb-2">Seleccionar Aviones:</label>
               <div className="grid gap-2 md:grid-cols-3">
                 {aircrafts.filter(a => a.habilitado).map((aircraft) => (
                   <label
                     key={aircraft._id}
                     className={`flex items-center gap-2 p-3 rounded cursor-pointer transition ${
                       selectedAircrafts.includes(aircraft._id)
-                        ? 'bg-primary text-white'
-                        : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        ? 'bg-primary theme-text-primary'
+                        : 'theme-bg-secondary theme-text-secondary hover:bg-slate-500'
                     }`}
                   >
                     <input
@@ -422,103 +429,103 @@ export default function VuelosPage() {
             </div>
 
             <button
-              onClick={handleCreateTanda}
-              className="w-full px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+              onClick={handleCreateCircuito}
+              className="w-full px-6 py-3 bg-blue-600/90 theme-text-primary rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
-              Crear Tanda
+              Crear Circuito
             </button>
           </div>
         )}
 
-        {/* Listado de tandas */}
+        {/* Listado de circuitos */}
         {flights.length === 0 ? (
-          <div className="text-center text-slate-300 py-12">
-            <p className="text-xl">No hay tandas disponibles</p>
+          <div className="text-center theme-text-secondary py-12">
+            <p className="text-xl">No hay circuitos disponibles</p>
           </div>
         ) : (
           <div className="space-y-8">
-            {tandasOrdenadas.map((tandaNum) => {
-              const vuelosTanda = flightsByTanda[tandaNum];
+            {circuitosOrdenados.map((circuitoNum) => {
+              const vuelosCircuito = flightsByCircuito[circuitoNum];
 
               return (
-                <div key={tandaNum} className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
-                  {/* Header de la Tanda */}
-                  <div className="mb-6 pb-4 border-b border-slate-700">
+                <div key={circuitoNum} className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6">
+                  {/* Header del Circuito */}
+                  <div className="mb-6 pb-4 border-b theme-border">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h2 className="text-3xl font-bold text-white">Tanda #{tandaNum}</h2>
-                        <p className="text-sm text-slate-400 mt-1">
-                          {new Date(vuelosTanda[0].fecha_hora).toLocaleDateString('es-ES')}
+                        <h2 className="text-3xl font-bold theme-text-primary">Circuito #{circuitoNum}</h2>
+                        <p className="text-sm theme-text-muted mt-1">
+                          {new Date(vuelosCircuito[0].fecha_hora).toLocaleDateString('es-ES')}
                         </p>
                       </div>
                       {user?.rol === 'staff' && (
                         <div className="flex gap-2">
-                          {editingTanda === tandaNum ? (
+                          {editingCircuito === circuitoNum ? (
                             <button
                               onClick={() => {
-                                setEditingTanda(null);
+                                setEditingCircuito(null);
                                 setSelectedAircrafts([]);
                               }}
-                              className="px-4 py-2 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-sm font-medium transition-colors"
+                              className="px-4 py-2 theme-bg-secondary/80 theme-text-primary rounded hover:theme-bg-secondary text-sm font-medium transition-colors"
                             >
                               Cancelar Edición
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleEditTanda(tandaNum)}
-                              className="px-4 py-2 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors"
+                              onClick={() => handleEditCircuito(circuitoNum)}
+                              className="px-4 py-2 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-sm font-medium transition-colors"
                             >
-                              Editar Tanda
+                              Editar Circuito
                             </button>
                           )}
                           <button
-                            onClick={() => handleDeleteTanda(tandaNum)}
-                            className="px-4 py-2 bg-red-600/80 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors"
+                            onClick={() => handleDeleteCircuito(circuitoNum)}
+                            className="px-4 py-2 bg-red-600/80 theme-text-primary rounded hover:bg-red-600 text-sm font-medium transition-colors"
                           >
-                            Eliminar Tanda
+                            Eliminar Circuito
                           </button>
                         </div>
                       )}
                     </div>
 
                     {/* Hora prevista - Editable para staff */}
-                    {editingHoraTanda === tandaNum ? (
+                    {editingHoraCircuito === circuitoNum ? (
                       <div className="flex items-center gap-3 mt-3">
-                        <label className="text-sm text-slate-400">🕐 Hora prevista:</label>
+                        <label className="text-sm theme-text-muted">🕐 Hora prevista:</label>
                         <input
                           type="time"
                           value={newHoraPrevista}
                           onChange={(e) => setNewHoraPrevista(e.target.value)}
-                          className="px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                          className="px-3 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
                         />
                         <button
-                          onClick={() => handleSaveHoraPrevista(tandaNum)}
-                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
+                          onClick={() => handleSaveHoraPrevista(circuitoNum)}
+                          className="px-3 py-1 bg-green-600 theme-text-primary rounded hover:bg-green-700 text-xs font-medium"
                         >
                           Guardar
                         </button>
                         <button
-                          onClick={() => setEditingHoraTanda(null)}
-                          className="px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs font-medium"
+                          onClick={() => setEditingHoraCircuito(null)}
+                          className="px-3 py-1 theme-bg-secondary theme-text-primary rounded hover:theme-input text-xs font-medium"
                         >
                           Cancelar
                         </button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 mt-3">
-                        {vuelosTanda[0].hora_prevista_salida ? (
+                        {vuelosCircuito[0].hora_prevista_salida ? (
                           <>
                             <p className="text-lg text-blue-400 font-semibold">
                               🕐 Hora prevista: {(() => {
-                              const date = new Date(vuelosTanda[0].hora_prevista_salida);
+                              const date = new Date(vuelosCircuito[0].hora_prevista_salida);
                               const hours = String(date.getUTCHours()).padStart(2, '0');
                               const minutes = String(date.getUTCMinutes()).padStart(2, '0');
                               return `${hours}:${minutes}`;
                             })()}
                             </p>
-                            {user?.rol === 'staff' && vuelosTanda[0].estado === 'abierto' && (
+                            {user?.rol === 'staff' && vuelosCircuito[0].estado === 'abierto' && (
                               <button
-                                onClick={() => handleEditHoraPrevista(tandaNum, vuelosTanda[0].hora_prevista_salida)}
+                                onClick={() => handleEditHoraPrevista(circuitoNum, vuelosCircuito[0].hora_prevista_salida)}
                                 className="text-xs text-blue-400 hover:text-blue-300 ml-2"
                               >
                                 ✏️ Editar
@@ -526,24 +533,24 @@ export default function VuelosPage() {
                             )}
                           </>
                         ) : (
-                          <p className="text-sm text-slate-400">🕐 Sin hora prevista configurada</p>
+                          <p className="text-sm theme-text-muted">🕐 Sin hora prevista configurada</p>
                         )}
                       </div>
                     )}
                   </div>
 
                   {/* Sección de agregar avión */}
-                  {user?.rol === 'staff' && editingTanda === tandaNum && (
-                    <div className="mb-4 p-4 bg-slate-700/50 rounded-xl border border-slate-600">
-                      <h3 className="text-white font-medium mb-3">Agregar Avión a la Tanda</h3>
+                  {user?.rol === 'staff' && editingCircuito === circuitoNum && (
+                    <div className="mb-4 p-4 theme-input/50 rounded-xl border theme-border">
+                      <h3 className="theme-text-primary font-medium mb-3">Agregar Avión al Circuito</h3>
                       <div className="grid gap-2 md:grid-cols-3">
                         {aircrafts
                           .filter(a => a.habilitado && !selectedAircrafts.includes(a._id))
                           .map((aircraft) => (
                             <button
                               key={aircraft._id}
-                              onClick={() => handleAddAircraftToTanda(tandaNum, aircraft._id)}
-                              className="flex items-center gap-2 p-3 rounded bg-slate-600 text-slate-300 hover:bg-slate-500 transition text-left"
+                              onClick={() => handleAddAircraftToCircuito(circuitoNum, aircraft._id)}
+                              className="flex items-center gap-2 p-3 rounded theme-bg-secondary theme-text-secondary hover:bg-slate-500 transition text-left"
                             >
                               <div>
                                 <p className="font-medium text-sm">{aircraft.matricula}</p>
@@ -553,14 +560,14 @@ export default function VuelosPage() {
                           ))}
                       </div>
                       {aircrafts.filter(a => a.habilitado && !selectedAircrafts.includes(a._id)).length === 0 && (
-                        <p className="text-slate-400 text-sm">No hay más aviones disponibles para agregar</p>
+                        <p className="theme-text-muted text-sm">No hay más aviones disponibles para agregar</p>
                       )}
                     </div>
                   )}
 
                   {/* Fichas de Aviones */}
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {vuelosTanda.map((flight: any) => {
+                    {vuelosCircuito.map((flight: any) => {
                       const asientosOcupados = flight.asientos_ocupados || 0;
                       const capacidadTotal = flight.capacidad_total || 0;
                       const asientosDisponibles = capacidadTotal - asientosOcupados;
@@ -568,14 +575,14 @@ export default function VuelosPage() {
                       return (
                         <div
                           key={flight._id}
-                          className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border border-slate-600 p-5 hover:shadow-xl hover:scale-105 transition-all relative"
+                          className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border theme-border p-5 hover:shadow-xl hover:scale-105 transition-all relative"
                         >
-                          {/* Botón eliminar avión de tanda */}
-                          {user?.rol === 'staff' && editingTanda === tandaNum && flight.asientos_ocupados === 0 && (
+                          {/* Botón eliminar avión de circuito */}
+                          {user?.rol === 'staff' && editingCircuito === circuitoNum && flight.asientos_ocupados === 0 && (
                             <button
                               onClick={() => handleRemoveAircraftFromTanda(flight._id)}
-                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 text-white rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
-                              title="Eliminar avión de la tanda"
+                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-600/80 theme-text-primary rounded-full hover:bg-red-600 text-xs font-bold transition-colors"
+                              title="Eliminar avión del circuito"
                             >
                               ✕
                             </button>
@@ -584,12 +591,12 @@ export default function VuelosPage() {
                           {/* Info del Avión */}
                           <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-bold text-lg text-white">{flight.aircraftId?.matricula}</h3>
+                              <h3 className="font-bold text-lg theme-text-primary">{flight.aircraftId?.matricula}</h3>
                               {/* Botón cancelar avión por el día */}
                               {user?.rol === 'staff' && flight.estado === 'abierto' && (
                                 <button
                                   onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
-                                  className="px-3 py-1 bg-red-600/80 text-white rounded hover:bg-red-600 text-xs font-medium transition-colors"
+                                  className="px-3 py-1 bg-red-600/80 theme-text-primary rounded hover:bg-red-600 text-xs font-medium transition-colors"
                                   title="Cancelar avión por el día"
                                 >
                                   Cancelar Día
@@ -601,30 +608,30 @@ export default function VuelosPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-slate-400">{flight.aircraftId?.modelo}</p>
+                            <p className="text-sm theme-text-muted">{flight.aircraftId?.modelo}</p>
                           </div>
 
                           {/* Asientos */}
                           {editingCapacity === flight._id ? (
                             <div className="my-4 p-4 bg-slate-900/50 rounded-lg">
-                              <label className="block text-xs text-slate-400 mb-1">Nueva capacidad:</label>
+                              <label className="block text-xs theme-text-muted mb-1">Nueva capacidad:</label>
                               <input
                                 type="number"
                                 min="1"
                                 value={newCapacity}
                                 onChange={(e) => setNewCapacity(Number(e.target.value))}
-                                className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-white text-sm"
+                                className="w-full px-2 py-1 theme-bg-secondary border theme-border rounded theme-text-primary text-sm"
                               />
                               <div className="flex gap-2 mt-2">
                                 <button
                                   onClick={() => handleUpdateFlightCapacity(flight._id)}
-                                  className="flex-1 px-2 py-1 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs transition-colors"
+                                  className="flex-1 px-2 py-1 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-xs transition-colors"
                                 >
                                   Guardar
                                 </button>
                                 <button
                                   onClick={() => setEditingCapacity(null)}
-                                  className="flex-1 px-2 py-1 bg-slate-700/80 text-white rounded hover:bg-slate-700 text-xs transition-colors"
+                                  className="flex-1 px-2 py-1 theme-input/80 theme-text-primary rounded hover:theme-input text-xs transition-colors"
                                 >
                                   Cancelar
                                 </button>
@@ -634,7 +641,7 @@ export default function VuelosPage() {
                             <div className="flex items-center justify-center my-4 p-4 bg-slate-900/50 rounded-lg">
                               <div className="text-center flex-1">
                                 <p className="text-3xl font-black text-primary">{asientosDisponibles}</p>
-                                <p className="text-xs text-slate-400">asientos libres</p>
+                                <p className="text-xs theme-text-muted">asientos libres</p>
                               </div>
                               {user?.rol === 'staff' && flight.estado === 'abierto' && (
                                 <button
@@ -654,7 +661,7 @@ export default function VuelosPage() {
                           {user?.rol === 'passenger' && flight.estado === 'abierto' && asientosDisponibles > 0 && (
                             <button
                               onClick={() => router.push(`/vuelos/${flight._id}`)}
-                              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+                              className="w-full bg-primary theme-text-primary py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm"
                             >
                               Inscribirse
                             </button>
@@ -668,13 +675,13 @@ export default function VuelosPage() {
                                     <div className="flex gap-2">
                                       <button
                                         onClick={() => handleOpenRescheduleModal(flight._id)}
-                                        className="flex-1 px-3 py-1.5 bg-amber-600/80 text-white rounded hover:bg-amber-600 text-xs font-medium transition-colors"
+                                        className="flex-1 px-3 py-1.5 bg-amber-600/80 theme-text-primary rounded hover:bg-amber-600 text-xs font-medium transition-colors"
                                       >
                                         Reprogramar
                                       </button>
                                       <button
                                         onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 text-white rounded hover:bg-blue-600 text-xs font-medium transition-colors"
+                                        className="flex-1 px-3 py-1.5 bg-blue-600/80 theme-text-primary rounded hover:bg-blue-600 text-xs font-medium transition-colors"
                                       >
                                         En Vuelo
                                       </button>
@@ -688,10 +695,10 @@ export default function VuelosPage() {
                                             : flight.estado === 'en_vuelo'
                                             ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
                                             : flight.estado === 'finalizado'
-                                            ? 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                                            ? 'bg-slate-500/20 theme-text-secondary theme-border/40'
                                             : flight.estado === 'reprogramado'
                                             ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                            : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                                            : 'bg-slate-500/20 theme-text-secondary theme-border/40'
                                         }`}
                                       >
                                         {flight.estado.toUpperCase().replace('_', ' ')}
@@ -702,7 +709,7 @@ export default function VuelosPage() {
                                 {flight.estado === 'en_vuelo' && (
                                   <button
                                     onClick={() => handleChangeState(flight._id, 'finalizado')}
-                                    className="w-full px-3 py-1.5 bg-slate-600/80 text-white rounded hover:bg-slate-600 text-xs font-medium transition-colors"
+                                    className="w-full px-3 py-1.5 theme-bg-secondary/80 theme-text-primary rounded hover:theme-bg-secondary text-xs font-medium transition-colors"
                                   >
                                     Finalizado
                                   </button>
@@ -711,22 +718,22 @@ export default function VuelosPage() {
                           )}
 
                           {/* Lista de Pasajeros - Siempre visible */}
-                          <div className="mt-3 pt-3 border-t border-slate-600">
-                            <p className="text-xs font-semibold text-slate-300 mb-2">
+                          <div className="mt-3 pt-3 border-t theme-border">
+                            <p className="text-xs font-semibold theme-text-secondary mb-2">
                               Pasajeros: {flight.pasajeros_inscritos?.length || 0}
                             </p>
                             {flight.pasajeros_inscritos && flight.pasajeros_inscritos.length > 0 ? (
                               <div className="space-y-2">
                                 {flight.pasajeros_inscritos.map((inscrito: any, idx: number) => (
-                                  <div key={idx} className="bg-slate-600/50 rounded p-2 flex items-center justify-between gap-2">
+                                  <div key={idx} className="theme-bg-secondary/50 rounded p-2 flex items-center justify-between gap-2">
                                     <div className="flex-1">
-                                      <p className="text-xs font-medium text-white">
+                                      <p className="text-xs font-medium theme-text-primary">
                                         {inscrito.pasajeros && inscrito.pasajeros[0]?.nombre}
                                       </p>
-                                      <p className="text-xs text-slate-400">
+                                      <p className="text-xs theme-text-muted">
                                         {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
                                       </p>
-                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                                      <span className="text-xs bg-blue-500 theme-text-primary px-2 py-0.5 rounded">
                                         {inscrito.estado}
                                       </span>
                                     </div>
@@ -742,7 +749,7 @@ export default function VuelosPage() {
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-xs text-slate-400">Sin pasajeros inscritos</p>
+                              <p className="text-xs theme-text-muted">Sin pasajeros inscritos</p>
                             )}
                           </div>
                         </div>
@@ -758,14 +765,14 @@ export default function VuelosPage() {
         {/* Modal de Reprogramación */}
         {showRescheduleModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-md w-full">
-              <h2 className="text-2xl font-bold text-white mb-4">Reprogramar Vuelo</h2>
-              <p className="text-slate-300 text-sm mb-4">
+            <div className="bg-slate-800 rounded-2xl theme-border p-6 max-w-md w-full">
+              <h2 className="text-2xl font-bold theme-text-primary mb-4">Reprogramar Vuelo</h2>
+              <p className="theme-text-secondary text-sm mb-4">
                 Selecciona la razón de la reprogramación:
               </p>
 
               <div className="space-y-3 mb-6">
-                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
                   <input
                     type="radio"
                     name="razon"
@@ -775,12 +782,12 @@ export default function VuelosPage() {
                     className="w-4 h-4"
                   />
                   <div>
-                    <p className="text-white font-medium">Combustible</p>
-                    <p className="text-slate-400 text-xs">Falta de combustible</p>
+                    <p className="theme-text-primary font-medium">Combustible</p>
+                    <p className="theme-text-muted text-xs">Falta de combustible</p>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
                   <input
                     type="radio"
                     name="razon"
@@ -790,12 +797,12 @@ export default function VuelosPage() {
                     className="w-4 h-4"
                   />
                   <div>
-                    <p className="text-white font-medium">Meteorología</p>
-                    <p className="text-slate-400 text-xs">Condiciones climáticas adversas</p>
+                    <p className="theme-text-primary font-medium">Meteorología</p>
+                    <p className="theme-text-muted text-xs">Condiciones climáticas adversas</p>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition">
+                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
                   <input
                     type="radio"
                     name="razon"
@@ -805,8 +812,8 @@ export default function VuelosPage() {
                     className="w-4 h-4"
                   />
                   <div>
-                    <p className="text-white font-medium">Mantenimiento</p>
-                    <p className="text-slate-400 text-xs">Problemas técnicos o mantenimiento requerido</p>
+                    <p className="theme-text-primary font-medium">Mantenimiento</p>
+                    <p className="theme-text-muted text-xs">Problemas técnicos o mantenimiento requerido</p>
                   </div>
                 </label>
               </div>
@@ -814,7 +821,7 @@ export default function VuelosPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmReschedule}
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-medium transition"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 theme-text-primary py-3 rounded-lg font-medium transition"
                 >
                   Confirmar Reprogramación
                 </button>
@@ -823,7 +830,7 @@ export default function VuelosPage() {
                     setShowRescheduleModal(false);
                     setRescheduleFlightId(null);
                   }}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-medium transition"
+                  className="flex-1 theme-input hover:theme-bg-secondary theme-text-primary py-3 rounded-lg font-medium transition"
                 >
                   Cancelar
                 </button>
