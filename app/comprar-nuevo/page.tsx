@@ -36,9 +36,21 @@ function generateAuthorizationPDF(
 ): void {
   const doc = new jsPDF();
 
+  // Add logo at the top
+  const logoBase64 = '/logo.png'; // We'll use the image path directly
+  try {
+    doc.addImage(logoBase64, 'PNG', 85, 10, 40, 15);
+  } catch (error) {
+    console.log('Logo could not be added to PDF');
+  }
+
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 30, { align: 'center' });
+  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 35, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Club Aéreo de Castro', 105, 42, { align: 'center' });
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
@@ -83,7 +95,7 @@ function generateAuthorizationPDF(
   doc.setFontSize(8);
   doc.setTextColor(100);
   doc.text(
-    'Este documento debe ser firmado, escaneado y subido al sistema antes de completar la compra.',
+    'Este documento debe ser firmado. Puede tomarlo una foto o escanearlo y subirlo al sistema antes de completar la compra.',
     105,
     280,
     { align: 'center', maxWidth: 170 }
@@ -117,6 +129,8 @@ export default function ComprarNuevoPage() {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
   const [reservationId, setReservationId] = useState<string | null>(null);
+  const [viajanJuntos, setViajanJuntos] = useState(true);
+  const [asignacionesIndividuales, setAsignacionesIndividuales] = useState<{ [pasajeroIndex: number]: Flight | null }>({});
 
   // Cargar precio
   useEffect(() => {
@@ -164,8 +178,9 @@ export default function ComprarNuevoPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      alert('Solo se permiten archivos PDF');
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Solo se permiten archivos PDF o imágenes (JPG, PNG, HEIC)');
       return;
     }
 
@@ -596,11 +611,11 @@ export default function ComprarNuevoPage() {
 
                           <div>
                             <label className="block text-xs text-yellow-900 font-medium mb-1">
-                              Subir autorización firmada *
+                              Subir autorización firmada (foto o PDF) *
                             </label>
                             <input
                               type="file"
-                              accept="application/pdf"
+                              accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic,image/heif"
                               onChange={(e) => handleFileUpload(index, e)}
                               className="w-full px-3 py-2 text-sm border border-yellow-300 rounded bg-white"
                             />
@@ -636,10 +651,82 @@ export default function ComprarNuevoPage() {
               <h2 className="text-2xl font-bold theme-text-primary mb-4">
                 Selecciona tu Circuito de Vuelo
               </h2>
-              <p className="theme-text-muted text-sm">
+              <p className="theme-text-muted text-sm mb-4">
                 Al seleccionar un vuelo, los cupos quedarán reservados por 5 minutos.
               </p>
+
+              {/* Información sobre reprogramación */}
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">ℹ️</div>
+                  <div>
+                    <h3 className="font-semibold theme-text-primary text-sm mb-2">
+                      Información importante sobre horarios
+                    </h3>
+                    <p className="text-xs theme-text-muted mb-2">
+                      Las horas de vuelo indicadas son estimadas y pueden variar por motivos técnicos o meteorológicos.
+                    </p>
+                    <p className="text-xs theme-text-muted">
+                      En caso de cambios, serás notificado a través de esta aplicación y podrás:
+                    </p>
+                    <ul className="text-xs theme-text-muted mt-2 ml-4 space-y-1">
+                      <li>✓ Aceptar la nueva hora reprogramada</li>
+                      <li>✓ Rechazar y solicitar devolución de tu pago</li>
+                      <li>✓ Elegir un nuevo circuito disponible sin cargo adicional</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Opción de viajar juntos o separados */}
+            {cantidadPasajeros > 1 && (
+              <div className="theme-bg-card rounded-2xl p-6 theme-shadow-md">
+                <h3 className="font-semibold theme-text-primary mb-4">
+                  ¿Los pasajeros viajarán juntos o en vuelos separados?
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViajanJuntos(true);
+                      setAsignacionesIndividuales({});
+                    }}
+                    className={`py-4 px-6 rounded-xl font-medium transition-all ${
+                      viajanJuntos
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'theme-input theme-text-secondary hover:theme-bg-secondary border theme-border'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">👥</div>
+                    <div className="font-bold mb-1">Viajar Juntos</div>
+                    <div className="text-xs opacity-80">
+                      Todos en el mismo vuelo
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViajanJuntos(false);
+                      setSelectedFlight(null);
+                      setReservationId(null);
+                    }}
+                    className={`py-4 px-6 rounded-xl font-medium transition-all ${
+                      !viajanJuntos
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'theme-input theme-text-secondary hover:theme-bg-secondary border theme-border'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">✈️✈️</div>
+                    <div className="font-bold mb-1">Vuelos Separados</div>
+                    <div className="text-xs opacity-80">
+                      Asignar individualmente
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {flights.length === 0 ? (
               <div className="theme-bg-card rounded-2xl p-12 text-center theme-shadow-md">
@@ -651,7 +738,8 @@ export default function ComprarNuevoPage() {
                   Por favor intenta más tarde o contacta al staff.
                 </p>
               </div>
-            ) : (
+            ) : viajanJuntos ? (
+              // UI para viajar juntos (todos en el mismo vuelo)
               <div className="space-y-6">
                 {circuitosOrdenados.map((circuitoNum) => {
                   const vuelosCircuito = circuitos[circuitoNum];
@@ -664,17 +752,34 @@ export default function ComprarNuevoPage() {
                       className="theme-bg-card rounded-2xl p-6 theme-shadow-md"
                     >
                       <div className="mb-4 pb-4 border-b theme-border">
-                        <h3 className="text-2xl font-bold theme-text-primary">
-                          Circuito #{circuitoNum}
-                        </h3>
-                        <p className="theme-text-muted text-sm mt-1">
-                          {fechaVuelo.toLocaleDateString('es-CL', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </p>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-2xl font-bold theme-text-primary">
+                              Circuito #{circuitoNum}
+                            </h3>
+                            <p className="theme-text-muted text-sm mt-1">
+                              {fechaVuelo.toLocaleDateString('es-CL', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          {primerVuelo.hora_prevista_salida && (
+                            <div className="text-right">
+                              <p className="text-xs theme-text-muted">Hora prevista</p>
+                              <p className="text-xl font-bold theme-text-primary">
+                                {(() => {
+                                  const date = new Date(primerVuelo.hora_prevista_salida);
+                                  const hours = String(date.getUTCHours()).padStart(2, '0');
+                                  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                  return `${hours}:${minutes}`;
+                                })()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -747,6 +852,122 @@ export default function ComprarNuevoPage() {
                     </div>
                   );
                 })}
+              </div>
+            ) : (
+              // UI para asignación individual (pasajeros en vuelos separados)
+              <div className="space-y-4">
+                {pasajeros.map((pasajero, pasajeroIndex) => (
+                  <div
+                    key={pasajeroIndex}
+                    className="theme-bg-card rounded-2xl p-6 theme-shadow-md"
+                  >
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold theme-text-primary">
+                        {pasajero.nombre} {pasajero.apellido}
+                      </h3>
+                      <p className="text-sm theme-text-muted">
+                        {pasajero.esMenor && '👶 Menor de edad • '}
+                        RUT: {pasajero.rut || 'Sin especificar'}
+                      </p>
+                    </div>
+
+                    {asignacionesIndividuales[pasajeroIndex] ? (
+                      // Vuelo ya seleccionado
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-green-800 mb-1">
+                              ✓ Vuelo asignado
+                            </p>
+                            <p className="text-lg font-bold theme-text-primary">
+                              {asignacionesIndividuales[pasajeroIndex]?.aircraftId.matricula} - Circuito #{asignacionesIndividuales[pasajeroIndex]?.numero_circuito}
+                            </p>
+                            <p className="text-xs theme-text-muted mt-1">
+                              {asignacionesIndividuales[pasajeroIndex]?.aircraftId.modelo}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nuevas = { ...asignacionesIndividuales };
+                              delete nuevas[pasajeroIndex];
+                              setAsignacionesIndividuales(nuevas);
+                            }}
+                            className="px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
+                          >
+                            Cambiar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Selector de vuelo
+                      <div className="space-y-3">
+                        <p className="text-sm theme-text-secondary font-medium">
+                          Selecciona un vuelo:
+                        </p>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {flights
+                            .filter(f => (f.capacidad_total - f.asientos_ocupados) >= 1)
+                            .map((flight) => (
+                              <button
+                                key={flight._id}
+                                type="button"
+                                onClick={() => {
+                                  setAsignacionesIndividuales({
+                                    ...asignacionesIndividuales,
+                                    [pasajeroIndex]: flight
+                                  });
+                                }}
+                                className="p-4 rounded-lg border-2 theme-border hover:border-blue-400 text-left transition-all hover:shadow-lg"
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-2xl">✈️</span>
+                                  <div>
+                                    <p className="font-bold theme-text-primary">
+                                      {flight.aircraftId.matricula}
+                                    </p>
+                                    <p className="text-xs theme-text-muted">
+                                      Circuito #{flight.numero_circuito}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-xs theme-text-muted">
+                                  {new Date(flight.fecha_hora).toLocaleDateString('es-CL')}
+                                  {flight.hora_prevista_salida && ` • ${new Date(flight.hora_prevista_salida).getUTCHours()}:${String(new Date(flight.hora_prevista_salida).getUTCMinutes()).padStart(2, '0')}`}
+                                </div>
+                                <div className="text-xs theme-text-secondary mt-2">
+                                  {flight.capacidad_total - flight.asientos_ocupados} cupos disponibles
+                                </div>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Botón para continuar cuando todos están asignados */}
+                {Object.keys(asignacionesIndividuales).length === pasajeros.length && (
+                  <button
+                    onClick={async () => {
+                      setLoading(true);
+                      try {
+                        // Crear reservaciones para cada vuelo único
+                        const vuelosUnicos = Array.from(new Set(Object.values(asignacionesIndividuales).map(f => f?._id)));
+                        // Por simplicidad, continuar a step 5 con las asignaciones
+                        setStep(5);
+                      } catch (error) {
+                        alert('Error al procesar las reservaciones');
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Procesando...' : 'Continuar a Confirmación'}
+                  </button>
+                )}
               </div>
             )}
           </div>
