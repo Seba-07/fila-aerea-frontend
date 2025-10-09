@@ -39,8 +39,8 @@ function generateAuthorizationPDF(
   // Logo en la parte superior - tamaño reducido y proporcionado
   const logoBase64 = '/logo.png';
   try {
-    // Logo más pequeño y centrado
-    doc.addImage(logoBase64, 'PNG', 70, 15, 70, 35);
+    // Logo con proporciones correctas del óvalo (2:1 aproximadamente)
+    doc.addImage(logoBase64, 'PNG', 75, 15, 60, 30);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
