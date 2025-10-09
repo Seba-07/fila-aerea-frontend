@@ -22,6 +22,7 @@ export default function VuelosPage() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [rescheduleFlightId, setRescheduleFlightId] = useState<string | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
+  const [showCancelAircraftDay, setShowCancelAircraftDay] = useState(false);
 
   // Form state para nuevo circuito
   const [numeroCircuito, setNumeroCircuito] = useState<string>('');
@@ -344,15 +345,61 @@ export default function VuelosPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Botón para crear tanda (solo staff) */}
+        {/* Botones para staff */}
         {user?.rol === 'staff' && (
-          <div className="mb-6">
+          <div className="mb-6 flex gap-3">
             <button
               onClick={() => setShowCreateTanda(!showCreateTanda)}
               className="px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
             >
               {showCreateTanda ? 'Cancelar' : '+ Crear Nuevo Circuito'}
             </button>
+            <button
+              onClick={() => setShowCancelAircraftDay(!showCancelAircraftDay)}
+              className="px-6 py-3 bg-red-600/90 text-white rounded-lg hover:bg-red-600 font-medium transition-colors"
+            >
+              {showCancelAircraftDay ? 'Cancelar' : 'Cancelar Día de Avión'}
+            </button>
+          </div>
+        )}
+
+        {/* Selector para cancelar día de avión */}
+        {showCancelAircraftDay && (
+          <div className="theme-bg-card backdrop-blur-sm rounded-xl theme-border p-6 mb-8">
+            <h2 className="text-xl font-bold theme-text-primary mb-4">Cancelar Día de Avión</h2>
+            <p className="text-sm theme-text-muted mb-4">
+              Selecciona el avión que deseas cancelar por el resto del día. Todos los vuelos futuros abiertos de este avión serán cancelados.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {aircrafts.filter(a => a.habilitado).map((aircraft) => {
+                // Buscar el primer vuelo abierto de este avión
+                const firstOpenFlight = flights.find(
+                  f => f.aircraftId?._id === aircraft._id && f.estado === 'abierto'
+                );
+                return (
+                  <button
+                    key={aircraft._id}
+                    onClick={() => {
+                      if (firstOpenFlight) {
+                        handleCancelAircraftForDay(firstOpenFlight._id, aircraft.matricula);
+                        setShowCancelAircraftDay(false);
+                      } else {
+                        alert(`El avión ${aircraft.matricula} no tiene vuelos abiertos para cancelar.`);
+                      }
+                    }}
+                    className="p-4 theme-input hover:theme-bg-secondary rounded-lg transition-all text-left border theme-border"
+                  >
+                    <p className="font-bold theme-text-primary">{aircraft.matricula}</p>
+                    <p className="text-xs theme-text-muted">{aircraft.modelo}</p>
+                    {firstOpenFlight ? (
+                      <span className="text-xs text-green-600 mt-1 block">Disponible para cancelar</span>
+                    ) : (
+                      <span className="text-xs theme-text-muted mt-1 block">Sin vuelos abiertos</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -664,48 +711,37 @@ export default function VuelosPage() {
                           {user?.rol === 'passenger' && flight.estado === 'abierto' && asientosDisponibles > 0 && (
                             <button
                               onClick={() => router.push(`/vuelos/${flight._id}`)}
-                              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-md hover:shadow-lg"
+                              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-sm"
                             >
                               Inscribirse
                             </button>
                           )}
 
-                          {/* Controles Staff - Botones más grandes y modernos */}
+                          {/* Controles Staff */}
                           {user?.rol === 'staff' && (
                             <div className="space-y-2">
                                 {flight.estado === 'abierto' && (
-                                  <>
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() => handleCancelAircraftForDay(flight._id, flight.aircraftId?.matricula)}
-                                        className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
-                                        title="Cancelar avión por el día"
-                                      >
-                                        Cancelar Día
-                                      </button>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() => handleOpenRescheduleModal(flight._id)}
-                                        className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
-                                      >
-                                        Reprogramar
-                                      </button>
-                                      <button
-                                        onClick={() => handleChangeState(flight._id, 'en_vuelo')}
-                                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
-                                      >
-                                        En Vuelo
-                                      </button>
-                                    </div>
-                                  </>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleOpenRescheduleModal(flight._id)}
+                                      className="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-xs font-medium transition-all shadow-sm"
+                                    >
+                                      Reprogramar
+                                    </button>
+                                    <button
+                                      onClick={() => handleChangeState(flight._id, 'en_vuelo')}
+                                      className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium transition-all shadow-sm"
+                                    >
+                                      En Vuelo
+                                    </button>
+                                  </div>
                                 )}
                                 {flight.estado === 'en_vuelo' && (
                                   <button
                                     onClick={() => handleChangeState(flight._id, 'finalizado')}
-                                    className="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium transition-all shadow-md hover:shadow-lg"
+                                    className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-xs font-medium transition-all shadow-sm"
                                   >
-                                    Finalizar Vuelo
+                                    Finalizar
                                   </button>
                                 )}
                             </div>
