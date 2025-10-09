@@ -1,10 +1,29 @@
 'use client';
 
-import { useTheme } from '@/lib/theme-context';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
-export default function ThemeToggle() {
+// Componente interno que usa el contexto
+function ThemeToggleButton() {
+  const { useTheme } = require('@/lib/theme-context');
   const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle"
+      aria-label="Cambiar tema"
+      title={theme === 'day' ? 'Cambiar a modo noche' : 'Cambiar a modo día'}
+    >
+      <div className="theme-toggle-slider">
+        {theme === 'day' ? '☀️' : '🌙'}
+      </div>
+    </button>
+  );
+}
+
+// Componente principal que maneja SSR
+export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,16 +39,5 @@ export default function ThemeToggle() {
     );
   }
 
-  return (
-    <button
-      onClick={toggleTheme}
-      className="theme-toggle"
-      aria-label="Cambiar tema"
-      title={theme === 'day' ? 'Cambiar a modo noche' : 'Cambiar a modo día'}
-    >
-      <div className="theme-toggle-slider">
-        {theme === 'day' ? '☀️' : '🌙'}
-      </div>
-    </button>
-  );
+  return <ThemeToggleButton />;
 }
