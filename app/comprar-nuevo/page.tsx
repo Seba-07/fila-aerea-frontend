@@ -36,27 +36,24 @@ function generateAuthorizationPDF(
 ): void {
   const doc = new jsPDF();
 
-  // Logo en la parte superior - tamaño reducido y proporcionado
-  const logoBase64 = '/logo.png';
-  try {
-    // Logo con proporciones correctas del óvalo (2:1 aproximadamente)
-    doc.addImage(logoBase64, 'PNG', 75, 15, 60, 30);
-  } catch (error) {
-    console.log('Logo could not be added to PDF');
-  }
+  // Encabezado sin logo para mantener PDF liviano
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 102, 204); // Azul
+  doc.text('CLUB AÉREO DE CASTRO', 105, 20, { align: 'center' });
 
-  // Título principal - más abajo para no solaparse con logo
+  // Título principal
+  doc.setTextColor(0, 0, 0); // Negro
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 60, { align: 'center' });
+  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 35, { align: 'center' });
 
-  // Subtítulo
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Club Aéreo de Castro', 105, 68, { align: 'center' });
+  // Línea decorativa
+  doc.setLineWidth(0.5);
+  doc.line(20, 42, 190, 42);
 
   // Contenido del documento
-  const startY = 85;
+  const startY = 55;
   const lineHeight = 8;
 
   doc.setFontSize(11);
