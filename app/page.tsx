@@ -28,7 +28,7 @@ export default function LandingPage() {
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
+              src="/logo.png"
               alt="Cessna"
               className="h-24 drop-shadow-2xl"
             />
