@@ -39,19 +39,19 @@ function generateAuthorizationPDF(
   // Add logo at the top - tamaño natural sin comprimir
   const logoBase64 = '/logo.png';
   try {
-    // Logo centrado con tamaño adecuado (más ancho para no comprimir)
-    doc.addImage(logoBase64, 'PNG', 70, 10, 70, 25);
+    // Logo centrado con proporciones correctas (3:1 aprox)
+    doc.addImage(logoBase64, 'PNG', 55, 10, 100, 33);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
 
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 35, { align: 'center' });
+  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 50, { align: 'center' });
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Club Aéreo de Castro', 105, 42, { align: 'center' });
+  doc.text('Club Aéreo de Castro', 105, 57, { align: 'center' });
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
@@ -187,7 +187,7 @@ export default function ComprarNuevoPage() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.capture = 'environment'; // Usar cámara trasera
+    input.setAttribute('capture', 'environment'); // Usar cámara trasera
 
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
@@ -223,8 +223,23 @@ export default function ComprarNuevoPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
-      actualizarPasajero(index, 'autorizacionFile', base64);
-      actualizarPasajero(index, 'autorizacionFileName', file.name);
+
+      // Actualizar pasajero con ambos campos a la vez
+      const nuevos = [...pasajeros];
+      nuevos[index] = {
+        ...nuevos[index],
+        autorizacionFile: base64,
+        autorizacionFileName: file.name
+      };
+      setPasajeros(nuevos);
+
+      console.log('✅ Archivo guardado para pasajero', index, ':', {
+        nombre: file.name,
+        tamaño: (file.size / 1024).toFixed(2) + 'KB',
+        tipo: file.type,
+        base64Length: base64.length
+      });
+
       // Mostrar mensaje de éxito
       alert('✅ Documento subido correctamente: ' + file.name);
     };
@@ -272,7 +287,7 @@ export default function ComprarNuevoPage() {
 
   const getBotonDeshabilitadoMensaje = () => {
     const datosIncompletos = pasajeros.filter(p => !p.nombre.trim() || !p.apellido.trim() || !p.rut.trim());
-    const menoresSinAutorizacion = pasajeros.filter(p => p.esMenor && !p.autorizacionFile);
+    const menoresSinAutorizacion = pasajeros.filter(p => p.esMenor && (!p.autorizacionFile || !p.autorizacionFile.trim()));
 
     if (datosIncompletos.length > 0) {
       return `Completa los datos de ${datosIncompletos.length} pasajero(s)`;
