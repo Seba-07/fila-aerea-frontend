@@ -36,11 +36,11 @@ function generateAuthorizationPDF(
 ): void {
   const doc = new jsPDF();
 
-  // Add logo at the top - proporción correcta (cuadrado o similar)
+  // Add logo at the top - tamaño natural sin comprimir
   const logoBase64 = '/logo.png';
   try {
-    // Usar dimensiones proporcionales para el logo (más cuadrado)
-    doc.addImage(logoBase64, 'PNG', 80, 10, 50, 20);
+    // Logo centrado con tamaño adecuado (más ancho para no comprimir)
+    doc.addImage(logoBase64, 'PNG', 70, 10, 70, 25);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
@@ -169,6 +169,36 @@ export default function ComprarNuevoPage() {
     setPasajeros(nuevos);
   };
 
+  const copiarDatosComprador = (index: number) => {
+    if (index !== 0) return; // Solo para pasajero 1
+    const nuevos = [...pasajeros];
+    nuevos[0] = {
+      ...nuevos[0],
+      nombre: nombreComprador.split(' ')[0] || '',
+      apellido: nombreComprador.split(' ').slice(1).join(' ') || nombreComprador,
+      rut: '', // RUT no se copia automáticamente
+    };
+    setPasajeros(nuevos);
+    alert('✅ Datos del comprador copiados al Pasajero 1. Por favor completa el RUT.');
+  };
+
+  const handleCapturePhoto = (index: number) => {
+    // Crear un input file temporal con capture
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // Usar cámara trasera
+
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        handleFileUpload(index, { target: { files: [file] } } as any);
+      }
+    };
+
+    input.click();
+  };
+
   const handleGenerarAutorizacion = (index: number) => {
     const pasajero = pasajeros[index];
     const nombreCompleto = `${pasajero.nombre} ${pasajero.apellido}`.trim();
@@ -221,13 +251,21 @@ export default function ComprarNuevoPage() {
 
     // Todos los menores deben tener autorización
     const menores = pasajeros.filter((p) => p.esMenor);
-    const allMinorsAuthorized = menores.length === 0 || menores.every((p) => p.autorizacionFile);
+    const menoresConAutorizacion = menores.filter(p => p.autorizacionFile && p.autorizacionFile.trim());
+    const allMinorsAuthorized = menores.length === 0 || menores.length === menoresConAutorizacion.length;
 
-    console.log('Validación para avanzar:');
+    console.log('🔍 Validación para avanzar:');
     console.log('- Datos completos:', allComplete);
-    console.log('- Menores:', menores.length);
-    console.log('- Menores autorizados:', allMinorsAuthorized);
-    console.log('- Pasajeros:', pasajeros);
+    console.log('- Total menores:', menores.length);
+    console.log('- Menores con autorización:', menoresConAutorizacion.length);
+    console.log('- Todos los menores autorizados:', allMinorsAuthorized);
+    console.log('- Lista de pasajeros:', pasajeros.map((p, i) => ({
+      index: i,
+      nombre: p.nombre,
+      esMenor: p.esMenor,
+      tieneAutorizacion: !!p.autorizacionFile,
+      archivoNombre: p.autorizacionFileName
+    })));
 
     return allComplete && allMinorsAuthorized;
   };
@@ -552,9 +590,20 @@ export default function ComprarNuevoPage() {
                     key={index}
                     className="theme-bg-secondary rounded-xl p-6 border theme-border"
                   >
-                    <h3 className="font-bold theme-text-primary mb-4 text-lg">
-                      Pasajero {index + 1}
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold theme-text-primary text-lg">
+                        Pasajero {index + 1}
+                      </h3>
+                      {index === 0 && (
+                        <button
+                          type="button"
+                          onClick={() => copiarDatosComprador(0)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                        >
+                          📋 Copiar datos del comprador
+                        </button>
+                      )}
+                    </div>
 
                     <div className="grid md:grid-cols-3 gap-4 mb-4">
                       <div>
@@ -635,18 +684,31 @@ export default function ComprarNuevoPage() {
                           </button>
 
                           <div>
-                            <label className="block text-xs text-yellow-900 font-medium mb-1">
-                              Subir autorización firmada (foto o PDF) *
+                            <label className="block text-xs text-yellow-900 font-medium mb-2">
+                              Subir autorización firmada *
                             </label>
-                            <input
-                              type="file"
-                              accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic,image/heif"
-                              capture="environment"
-                              onChange={(e) => handleFileUpload(index, e)}
-                              className="w-full px-3 py-2 text-sm border border-yellow-300 rounded bg-white"
-                            />
+
+                            <div className="flex gap-2 mb-2">
+                              <button
+                                type="button"
+                                onClick={() => handleCapturePhoto(index)}
+                                className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium flex items-center justify-center gap-2"
+                              >
+                                📸 Tomar Foto
+                              </button>
+                              <label className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center justify-center gap-2 cursor-pointer">
+                                📁 Subir Archivo
+                                <input
+                                  type="file"
+                                  accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic,image/heif"
+                                  onChange={(e) => handleFileUpload(index, e)}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+
                             <p className="text-xs text-yellow-800 mt-1">
-                              💡 Puedes tomar una foto directamente o subir un archivo (máx. 5MB)
+                              💡 Usa "Tomar Foto" para capturar con la cámara o "Subir Archivo" para elegir uno existente (máx. 5MB)
                             </p>
 
                             {pasajero.autorizacionFileName && (
@@ -658,29 +720,32 @@ export default function ComprarNuevoPage() {
 
                                 {/* Vista previa del documento */}
                                 {pasajero.autorizacionFile && (
-                                  <div className="border-2 border-green-300 rounded-lg p-2 bg-green-50">
+                                  <div className="border-2 border-green-300 rounded-lg p-3 bg-green-50">
                                     {pasajero.autorizacionFile.startsWith('data:application/pdf') ? (
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-2xl">📄</span>
-                                        <div>
-                                          <p className="text-xs font-medium text-gray-700">Vista previa PDF</p>
-                                          <a
-                                            href={pasajero.autorizacionFile}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-xs text-blue-600 hover:underline"
-                                          >
-                                            Abrir PDF en nueva pestaña
-                                          </a>
-                                        </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-700 mb-2">Vista previa PDF:</p>
+                                        <iframe
+                                          src={pasajero.autorizacionFile}
+                                          className="w-full h-64 border border-gray-300 rounded"
+                                          title="Vista previa PDF"
+                                        />
+                                        <a
+                                          href={pasajero.autorizacionFile}
+                                          download={pasajero.autorizacionFileName}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-block mt-2 text-xs text-blue-600 hover:underline"
+                                        >
+                                          📥 Descargar PDF
+                                        </a>
                                       </div>
                                     ) : (
                                       <div>
-                                        <p className="text-xs font-medium text-gray-700 mb-1">Vista previa:</p>
+                                        <p className="text-xs font-medium text-gray-700 mb-2">Vista previa de imagen:</p>
                                         <img
                                           src={pasajero.autorizacionFile}
                                           alt="Vista previa"
-                                          className="max-w-full h-32 object-contain rounded border border-gray-300"
+                                          className="max-w-full h-48 object-contain rounded border border-gray-300 bg-white"
                                         />
                                       </div>
                                     )}
