@@ -48,7 +48,7 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {/* Comprar Ticket Card */}
           <button
-            onClick={() => router.push('/seleccionar-vuelo?pasajeros=1')}
+            onClick={() => router.push('/comprar-nuevo')}
             className="group relative bg-gradient-to-br from-green-600 to-emerald-700 hover:from-green-500 hover:to-emerald-600 rounded-3xl p-8 hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300 text-left overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:bg-white/20 transition-colors"></div>
