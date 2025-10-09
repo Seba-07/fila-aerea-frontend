@@ -39,9 +39,9 @@ export default function ConfiguracionesPage() {
       const { data } = await api.get('/settings');
       setSettings(data);
 
-      setDuracionCircuito(data.duracion_circuito_minutos || 20);
+      setDuracionCircuito(data.duracion_circuito_minutos || 30);
       setMaxCircuitosDefault(data.max_circuitos_sin_reabastecimiento_default || 4);
-      setPrecioTicket(data.precio_ticket || 15000);
+      setPrecioTicket(data.precio_ticket || 25000);
       setTimezoneOffset(data.timezone_offset_hours || 3);
     } catch (error) {
       console.error('Error cargando configuración:', error);
@@ -54,6 +54,9 @@ export default function ConfiguracionesPage() {
     try {
       setSaving(true);
 
+      const duracionCambio = settings?.duracion_circuito_minutos !== duracionCircuito;
+
+      // Guardar configuración
       await api.patch('/settings', {
         duracion_circuito_minutos: duracionCircuito,
         max_circuitos_sin_reabastecimiento_default: maxCircuitosDefault,
@@ -61,7 +64,37 @@ export default function ConfiguracionesPage() {
         timezone_offset_hours: timezoneOffset,
       });
 
-      alert('✅ Configuración guardada exitosamente');
+      // Si cambió la duración del circuito, recalcular todas las horas previstas
+      if (duracionCambio) {
+        try {
+          // Obtener el circuito #1 para obtener su hora actual
+          const { data: flights } = await api.get('/flights');
+          const circuito1 = flights.find((f: any) => f.numero_circuito === 1 && f.estado === 'abierto');
+
+          if (circuito1 && circuito1.fecha_hora) {
+            // Extraer hora actual del circuito #1
+            const fecha = new Date(circuito1.fecha_hora);
+            const horas = String(fecha.getUTCHours()).padStart(2, '0');
+            const minutos = String(fecha.getUTCMinutes()).padStart(2, '0');
+            const horaActual = `${horas}:${minutos}`;
+
+            // Recalcular todas las horas basadas en la nueva duración
+            await api.patch(`/settings/flights/circuito/1/hora-prevista`, {
+              nueva_hora: horaActual,
+            });
+
+            alert('✅ Configuración guardada y horas de circuitos recalculadas exitosamente');
+          } else {
+            alert('✅ Configuración guardada. No hay circuitos activos para recalcular.');
+          }
+        } catch (recalcError: any) {
+          console.error('Error recalculando horas:', recalcError);
+          alert('✅ Configuración guardada, pero hubo un error al recalcular las horas de los circuitos.');
+        }
+      } else {
+        alert('✅ Configuración guardada exitosamente');
+      }
+
       await loadSettings();
     } catch (error: any) {
       console.error('Error guardando configuración:', error);
