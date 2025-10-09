@@ -115,8 +115,8 @@ function ConfirmacionContent() {
               </div>
             </div>
 
-            <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
-              <p className="text-blue-300 text-sm text-center">
+            <div className="theme-info-box rounded-lg p-4 mb-6">
+              <p className="theme-info-text text-sm text-center">
                 📧 Revisa tu correo electrónico para ver tu contraseña temporal y acceder a tus tickets
               </p>
             </div>

@@ -26,6 +26,11 @@
   --error: #ef4444;
   --error-bg: rgba(239, 68, 68, 0.1);
 
+  --info-bg: rgba(59, 130, 246, 0.08);
+  --info-border: rgba(59, 130, 246, 0.3);
+  --info-text: #1e40af;
+  --info-text-light: #3b82f6;
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
@@ -57,6 +62,11 @@
   --warning-bg: rgba(245, 158, 11, 0.15);
   --error: #ef4444;
   --error-bg: rgba(239, 68, 68, 0.15);
+
+  --info-bg: rgba(59, 130, 246, 0.15);
+  --info-border: rgba(59, 130, 246, 0.3);
+  --info-text: #93c5fd;
+  --info-text-light: #60a5fa;
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -177,4 +187,19 @@ body {
 
 .theme-night .theme-toggle-slider {
   transform: translateX(30px);
+}
+
+/* Info Box Styles */
+.theme-info-box {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  color: var(--info-text);
+}
+
+.theme-info-text {
+  color: var(--info-text);
+}
+
+.theme-info-text-light {
+  color: var(--info-text-light);
 }

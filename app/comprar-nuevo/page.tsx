@@ -656,20 +656,20 @@ export default function ComprarNuevoPage() {
               </p>
 
               {/* Información sobre reprogramación */}
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="mt-4 p-4 theme-info-box rounded-lg">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">ℹ️</div>
                   <div>
-                    <h3 className="font-semibold theme-text-primary text-sm mb-2">
+                    <h3 className="font-semibold theme-info-text text-sm mb-2">
                       Información importante sobre horarios
                     </h3>
-                    <p className="text-xs theme-text-muted mb-2">
+                    <p className="text-xs theme-info-text mb-2">
                       Las horas de vuelo indicadas son estimadas y pueden variar por motivos técnicos o meteorológicos.
                     </p>
-                    <p className="text-xs theme-text-muted">
+                    <p className="text-xs theme-info-text">
                       En caso de cambios, serás notificado a través de esta aplicación y podrás:
                     </p>
-                    <ul className="text-xs theme-text-muted mt-2 ml-4 space-y-1">
+                    <ul className="text-xs theme-info-text mt-2 ml-4 space-y-1">
                       <li>✓ Aceptar la nueva hora reprogramada</li>
                       <li>✓ Rechazar y solicitar devolución de tu pago</li>
                       <li>✓ Elegir un nuevo circuito disponible sin cargo adicional</li>

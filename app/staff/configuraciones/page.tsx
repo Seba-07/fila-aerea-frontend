@@ -117,7 +117,7 @@ export default function ConfiguracionesPage() {
               max="60"
               value={duracionCircuito}
               onChange={(e) => setDuracionCircuito(parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-900 theme-border rounded-lg theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 theme-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -135,7 +135,7 @@ export default function ConfiguracionesPage() {
               max="20"
               value={maxCircuitosDefault}
               onChange={(e) => setMaxCircuitosDefault(parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-900 theme-border rounded-lg theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 theme-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="theme-text-muted text-xs mt-2">
               💡 Este es el valor por defecto. Puedes configurar un valor específico para cada avión en la sección de Aviones.
@@ -156,7 +156,7 @@ export default function ConfiguracionesPage() {
               step="1000"
               value={precioTicket}
               onChange={(e) => setPrecioTicket(parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-900 theme-border rounded-lg theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 theme-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="theme-text-muted text-xs mt-2">
               💡 El precio se mostrará en la página de compra y se aplicará automáticamente en los pagos.
@@ -175,7 +175,7 @@ export default function ConfiguracionesPage() {
               <select
                 value={timezoneOffset}
                 onChange={(e) => setTimezoneOffset(parseInt(e.target.value))}
-                className="w-full px-4 py-3 bg-slate-900 theme-border rounded-lg theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 theme-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="3">UTC-3 (Horario de Verano)</option>
                 <option value="4">UTC-4 (Horario de Invierno)</option>
@@ -206,8 +206,8 @@ export default function ConfiguracionesPage() {
           </div>
 
           {/* Nota informativa */}
-          <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4">
-            <p className="text-blue-300 text-sm">
+          <div className="theme-info-box rounded-lg p-4">
+            <p className="theme-info-text text-sm">
               💡 <strong>Nota:</strong> La hora de salida de los circuitos se configura directamente en la página de Circuitos de Vuelo. El Circuito #1 determina la hora base y los demás se calculan automáticamente.
             </p>
           </div>
