@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -39,19 +39,19 @@ function generateAuthorizationPDF(
   // Add logo at the top - tamaño natural sin comprimir
   const logoBase64 = '/logo.png';
   try {
-    // Logo centrado con proporciones correctas (3:1 aprox)
-    doc.addImage(logoBase64, 'PNG', 55, 10, 100, 33);
+    // Logo centrado con proporciones correctas - el logo es un óvalo
+    doc.addImage(logoBase64, 'PNG', 60, 10, 90, 45);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
 
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 50, { align: 'center' });
+  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 62, { align: 'center' });
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Club Aéreo de Castro', 105, 57, { align: 'center' });
+  doc.text('Club Aéreo de Castro', 105, 69, { align: 'center' });
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
@@ -112,6 +112,13 @@ export default function ComprarNuevoPage() {
   const [loading, setLoading] = useState(false);
   const [precioTicket, setPrecioTicket] = useState(15000);
   const [loadingFlights, setLoadingFlights] = useState(false);
+
+  // Estados para cámara web
+  const [showWebcam, setShowWebcam] = useState(false);
+  const [currentPasajeroIndex, setCurrentPasajeroIndex] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Paso 1: Cantidad de pasajeros
   const [cantidadPasajeros, setCantidadPasajeros] = useState(1);
@@ -182,22 +189,103 @@ export default function ComprarNuevoPage() {
     alert('✅ Datos del comprador copiados al Pasajero 1. Por favor completa el RUT.');
   };
 
-  const handleCapturePhoto = (index: number) => {
-    // Crear un input file temporal con capture
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment'); // Usar cámara trasera
+  const handleCapturePhoto = async (index: number) => {
+    // Detectar si es dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    input.onchange = (e: any) => {
-      const file = e.target?.files?.[0];
-      if (file) {
-        handleFileUpload(index, { target: { files: [file] } } as any);
-      }
-    };
+    if (isMobile) {
+      // En móvil, usar input con capture
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.setAttribute('capture', 'environment');
 
-    input.click();
+      input.onchange = (e: any) => {
+        const file = e.target?.files?.[0];
+        if (file) {
+          handleFileUpload(index, { target: { files: [file] } } as any);
+        }
+      };
+
+      input.click();
+    } else {
+      // En PC, abrir modal con webcam
+      setCurrentPasajeroIndex(index);
+      setShowWebcam(true);
+    }
   };
+
+  // Iniciar cámara web
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+      }
+    } catch (error) {
+      console.error('Error al acceder a la cámara:', error);
+      alert('❌ No se pudo acceder a la cámara. Verifica los permisos del navegador.');
+      setShowWebcam(false);
+    }
+  };
+
+  // Detener cámara web
+  const stopWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  // Capturar foto desde webcam
+  const capturePhotoFromWebcam = () => {
+    if (!canvasRef.current || !videoRef.current || currentPasajeroIndex === null) return;
+
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0);
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `autorizacion_foto_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const fakeEvent = {
+            target: { files: [file] }
+          } as any;
+
+          handleFileUpload(currentPasajeroIndex, fakeEvent);
+          closeWebcam();
+        }
+      }, 'image/jpeg', 0.9);
+    }
+  };
+
+  // Cerrar webcam
+  const closeWebcam = () => {
+    stopWebcam();
+    setShowWebcam(false);
+    setCurrentPasajeroIndex(null);
+  };
+
+  // Effect para iniciar webcam cuando se abre el modal
+  useEffect(() => {
+    if (showWebcam) {
+      startWebcam();
+    }
+    return () => {
+      stopWebcam();
+    };
+  }, [showWebcam]);
 
   const handleGenerarAutorizacion = (index: number) => {
     const pasajero = pasajeros[index];
@@ -1193,6 +1281,50 @@ export default function ComprarNuevoPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de cámara web */}
+      {showWebcam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="theme-bg-card rounded-2xl p-6 max-w-2xl w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold theme-text-primary">📸 Capturar Foto</h3>
+              <button
+                onClick={closeWebcam}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                ✕ Cerrar
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Video preview */}
+              <div className="relative bg-black rounded-lg overflow-hidden">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-auto"
+                />
+              </div>
+
+              {/* Canvas oculto para capturar */}
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Botón para capturar */}
+              <button
+                onClick={capturePhotoFromWebcam}
+                className="w-full py-4 bg-blue-600 text-white font-bold text-lg rounded-lg hover:bg-blue-700 transition"
+              >
+                📷 Capturar Foto
+              </button>
+
+              <p className="text-xs theme-text-muted text-center">
+                Centra el documento en el cuadro y presiona &quot;Capturar Foto&quot;
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
