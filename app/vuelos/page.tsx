@@ -797,55 +797,67 @@ export default function VuelosPage() {
 
         {/* Modal de Reprogramación */}
         {showRescheduleModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-2xl theme-border p-6 max-w-md w-full">
-              <h2 className="text-2xl font-bold theme-text-primary mb-4">Reprogramar Vuelo</h2>
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="theme-bg-card rounded-2xl theme-border p-6 max-w-md w-full theme-shadow-lg">
+              <h2 className="text-2xl font-bold theme-text-primary mb-4">⚠️ Reprogramar Vuelo</h2>
               <p className="theme-text-secondary text-sm mb-4">
                 Selecciona la razón de la reprogramación:
               </p>
 
               <div className="space-y-3 mb-6">
-                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
+                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  rescheduleReason === 'combustible'
+                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                    : 'theme-border theme-input hover:border-amber-300'
+                }`}>
                   <input
                     type="radio"
                     name="razon"
                     value="combustible"
                     checked={rescheduleReason === 'combustible'}
                     onChange={(e) => setRescheduleReason(e.target.value as any)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-amber-600"
                   />
-                  <div>
-                    <p className="theme-text-primary font-medium">Combustible</p>
+                  <div className="flex-1">
+                    <p className="theme-text-primary font-semibold">⛽ Combustible</p>
                     <p className="theme-text-muted text-xs">Falta de combustible</p>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
+                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  rescheduleReason === 'meteorologia'
+                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                    : 'theme-border theme-input hover:border-amber-300'
+                }`}>
                   <input
                     type="radio"
                     name="razon"
                     value="meteorologia"
                     checked={rescheduleReason === 'meteorologia'}
                     onChange={(e) => setRescheduleReason(e.target.value as any)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-amber-600"
                   />
-                  <div>
-                    <p className="theme-text-primary font-medium">Meteorología</p>
+                  <div className="flex-1">
+                    <p className="theme-text-primary font-semibold">🌧️ Meteorología</p>
                     <p className="theme-text-muted text-xs">Condiciones climáticas adversas</p>
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 border theme-border rounded-lg cursor-pointer hover:theme-input/50 transition">
+                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  rescheduleReason === 'mantenimiento'
+                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                    : 'theme-border theme-input hover:border-amber-300'
+                }`}>
                   <input
                     type="radio"
                     name="razon"
                     value="mantenimiento"
                     checked={rescheduleReason === 'mantenimiento'}
                     onChange={(e) => setRescheduleReason(e.target.value as any)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-amber-600"
                   />
-                  <div>
-                    <p className="theme-text-primary font-medium">Mantenimiento</p>
+                  <div className="flex-1">
+                    <p className="theme-text-primary font-semibold">🔧 Mantenimiento</p>
                     <p className="theme-text-muted text-xs">Problemas técnicos o mantenimiento requerido</p>
                   </div>
                 </label>
@@ -854,7 +866,7 @@ export default function VuelosPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmReschedule}
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 theme-text-primary py-3 rounded-lg font-medium transition"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-lg font-medium transition shadow-md hover:shadow-lg"
                 >
                   Confirmar Reprogramación
                 </button>
@@ -863,7 +875,7 @@ export default function VuelosPage() {
                     setShowRescheduleModal(false);
                     setRescheduleFlightId(null);
                   }}
-                  className="flex-1 theme-input hover:theme-bg-secondary theme-text-primary py-3 rounded-lg font-medium transition"
+                  className="flex-1 theme-input hover:theme-bg-secondary theme-text-primary py-3 rounded-lg font-medium transition border theme-border"
                 >
                   Cancelar
                 </button>
