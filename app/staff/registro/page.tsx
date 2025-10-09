@@ -30,8 +30,13 @@ export default function RegistroPage() {
     })));
   }, [cantidadTickets]);
 
+  useEffect(() => {
+    if (user?.rol !== 'staff') {
+      router.push('/');
+    }
+  }, [user, router]);
+
   if (user?.rol !== 'staff') {
-    router.push('/');
     return null;
   }
 

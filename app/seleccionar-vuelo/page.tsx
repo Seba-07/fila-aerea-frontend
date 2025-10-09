@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -20,7 +20,7 @@ interface Flight {
   estado: string;
 }
 
-export default function SeleccionarVueloPage() {
+function SeleccionarVueloContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [flights, setFlights] = useState<Flight[]>([]);
@@ -307,5 +307,24 @@ export default function SeleccionarVueloPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SeleccionarVueloPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          </div>
+          <p className="theme-text-primary text-xl font-medium">
+            Cargando...
+          </p>
+        </div>
+      </div>
+    }>
+      <SeleccionarVueloContent />
+    </Suspense>
   );
 }
