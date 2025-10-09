@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './theme.css';
+import { ThemeProvider } from '@/lib/theme-context';
 
 export const metadata: Metadata = {
   title: 'Fila Aérea',
@@ -15,11 +17,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className="theme-day">
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="min-h-screen bg-gray-50">{children}</body>
+      <body className="min-h-screen">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

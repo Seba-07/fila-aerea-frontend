@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -16,7 +17,12 @@ export default function LandingPage() {
   }, [isAuthenticated, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen theme-bg-primary flex items-center justify-center p-4 relative">
+      {/* Theme Toggle - Fixed position */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-4xl w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -24,16 +30,16 @@ export default function LandingPage() {
             <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNnOw7rZE9JPq7XN_ruUQKkzF0Ahxov4RxQw&s"
               alt="Cessna"
-              className="h-24"
+              className="h-24 drop-shadow-2xl"
             />
           </div>
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
+          <h1 className="text-5xl md:text-6xl font-black theme-text-primary mb-4 drop-shadow-lg">
             Fila Aérea
           </h1>
-          <p className="text-xl text-slate-300 mb-2">
+          <p className="text-xl theme-text-secondary mb-2">
             Sistema de Gestión de Vuelos
           </p>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg theme-text-muted">
             Compra tu ticket y vive la experiencia de volar
           </p>
         </div>
@@ -85,24 +91,24 @@ export default function LandingPage() {
 
         {/* Features Section */}
         <div className="mt-16 grid md:grid-cols-3 gap-6 text-center">
-          <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <div className="theme-bg-card rounded-2xl p-6 theme-shadow-sm">
             <div className="text-4xl mb-3">✈️</div>
-            <h3 className="text-white font-bold mb-2">Múltiples Vuelos</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="theme-text-primary font-bold mb-2">Múltiples Vuelos</h3>
+            <p className="theme-text-muted text-sm">
               Elige entre diferentes tandas de vuelo disponibles
             </p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <div className="theme-bg-card rounded-2xl p-6 theme-shadow-sm">
             <div className="text-4xl mb-3">💳</div>
-            <h3 className="text-white font-bold mb-2">Pago Seguro</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="theme-text-primary font-bold mb-2">Pago Seguro</h3>
+            <p className="theme-text-muted text-sm">
               Transacciones protegidas con Webpay Plus
             </p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <div className="theme-bg-card rounded-2xl p-6 theme-shadow-sm">
             <div className="text-4xl mb-3">📱</div>
-            <h3 className="text-white font-bold mb-2">Gestión Digital</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="theme-text-primary font-bold mb-2">Gestión Digital</h3>
+            <p className="theme-text-muted text-sm">
               Administra tus tickets desde cualquier dispositivo
             </p>
           </div>
