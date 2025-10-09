@@ -36,10 +36,11 @@ function generateAuthorizationPDF(
 ): void {
   const doc = new jsPDF();
 
-  // Add logo at the top
-  const logoBase64 = '/logo.png'; // We'll use the image path directly
+  // Add logo at the top - proporción correcta (cuadrado o similar)
+  const logoBase64 = '/logo.png';
   try {
-    doc.addImage(logoBase64, 'PNG', 85, 10, 40, 15);
+    // Usar dimensiones proporcionales para el logo (más cuadrado)
+    doc.addImage(logoBase64, 'PNG', 80, 10, 50, 20);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
@@ -180,12 +181,12 @@ export default function ComprarNuevoPage() {
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
     if (!allowedTypes.includes(file.type)) {
-      alert('Solo se permiten archivos PDF o imágenes (JPG, PNG, HEIC)');
+      alert('❌ Solo se permiten archivos PDF o imágenes (JPG, PNG, HEIC)');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo debe ser menor a 5MB');
+      alert('❌ El archivo debe ser menor a 5MB. Tu archivo pesa ' + (file.size / (1024 * 1024)).toFixed(2) + 'MB');
       return;
     }
 
@@ -194,6 +195,11 @@ export default function ComprarNuevoPage() {
       const base64 = e.target?.result as string;
       actualizarPasajero(index, 'autorizacionFile', base64);
       actualizarPasajero(index, 'autorizacionFileName', file.name);
+      // Mostrar mensaje de éxito
+      alert('✅ Documento subido correctamente: ' + file.name);
+    };
+    reader.onerror = () => {
+      alert('❌ Error al leer el archivo. Por favor, intenta de nuevo.');
     };
     reader.readAsDataURL(file);
   };
@@ -212,12 +218,31 @@ export default function ComprarNuevoPage() {
     const allComplete = pasajeros.every(
       (p) => p.nombre.trim() && p.apellido.trim() && p.rut.trim()
     );
+
     // Todos los menores deben tener autorización
-    const allMinorsAuthorized = pasajeros
-      .filter((p) => p.esMenor)
-      .every((p) => p.autorizacionFile);
+    const menores = pasajeros.filter((p) => p.esMenor);
+    const allMinorsAuthorized = menores.length === 0 || menores.every((p) => p.autorizacionFile);
+
+    console.log('Validación para avanzar:');
+    console.log('- Datos completos:', allComplete);
+    console.log('- Menores:', menores.length);
+    console.log('- Menores autorizados:', allMinorsAuthorized);
+    console.log('- Pasajeros:', pasajeros);
 
     return allComplete && allMinorsAuthorized;
+  };
+
+  const getBotonDeshabilitadoMensaje = () => {
+    const datosIncompletos = pasajeros.filter(p => !p.nombre.trim() || !p.apellido.trim() || !p.rut.trim());
+    const menoresSinAutorizacion = pasajeros.filter(p => p.esMenor && !p.autorizacionFile);
+
+    if (datosIncompletos.length > 0) {
+      return `Completa los datos de ${datosIncompletos.length} pasajero(s)`;
+    }
+    if (menoresSinAutorizacion.length > 0) {
+      return `Sube la autorización de ${menoresSinAutorizacion.length} menor(es)`;
+    }
+    return '';
   };
 
   const handleGoToStep4 = async () => {
@@ -616,14 +641,52 @@ export default function ComprarNuevoPage() {
                             <input
                               type="file"
                               accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic,image/heif"
+                              capture="environment"
                               onChange={(e) => handleFileUpload(index, e)}
                               className="w-full px-3 py-2 text-sm border border-yellow-300 rounded bg-white"
                             />
+                            <p className="text-xs text-yellow-800 mt-1">
+                              💡 Puedes tomar una foto directamente o subir un archivo (máx. 5MB)
+                            </p>
+
                             {pasajero.autorizacionFileName && (
-                              <p className="text-xs text-green-700 mt-1 flex items-center gap-1">
-                                <span>✓</span>
-                                <span>Archivo: {pasajero.autorizacionFileName}</span>
-                              </p>
+                              <div className="mt-3">
+                                <p className="text-xs text-green-700 font-medium flex items-center gap-1 mb-2">
+                                  <span>✅</span>
+                                  <span>Documento subido: {pasajero.autorizacionFileName}</span>
+                                </p>
+
+                                {/* Vista previa del documento */}
+                                {pasajero.autorizacionFile && (
+                                  <div className="border-2 border-green-300 rounded-lg p-2 bg-green-50">
+                                    {pasajero.autorizacionFile.startsWith('data:application/pdf') ? (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-2xl">📄</span>
+                                        <div>
+                                          <p className="text-xs font-medium text-gray-700">Vista previa PDF</p>
+                                          <a
+                                            href={pasajero.autorizacionFile}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 hover:underline"
+                                          >
+                                            Abrir PDF en nueva pestaña
+                                          </a>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-700 mb-1">Vista previa:</p>
+                                        <img
+                                          src={pasajero.autorizacionFile}
+                                          alt="Vista previa"
+                                          className="max-w-full h-32 object-contain rounded border border-gray-300"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -633,6 +696,14 @@ export default function ComprarNuevoPage() {
                 ))}
               </div>
             </div>
+
+            {!canGoToStep4() && getBotonDeshabilitadoMensaje() && (
+              <div className="bg-amber-100 border border-amber-400 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-800 font-medium">
+                  ⚠️ {getBotonDeshabilitadoMensaje()}
+                </p>
+              </div>
+            )}
 
             <button
               onClick={handleGoToStep4}
