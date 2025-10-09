@@ -36,70 +36,95 @@ function generateAuthorizationPDF(
 ): void {
   const doc = new jsPDF();
 
-  // Add logo at the top - tamaño natural sin comprimir
+  // Logo en la parte superior - tamaño reducido y proporcionado
   const logoBase64 = '/logo.png';
   try {
-    // Logo centrado con proporciones correctas - el logo es un óvalo
-    doc.addImage(logoBase64, 'PNG', 60, 10, 90, 45);
+    // Logo más pequeño y centrado
+    doc.addImage(logoBase64, 'PNG', 70, 15, 70, 35);
   } catch (error) {
     console.log('Logo could not be added to PDF');
   }
 
-  doc.setFontSize(18);
+  // Título principal - más abajo para no solaparse con logo
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 62, { align: 'center' });
+  doc.text('AUTORIZACIÓN DE VUELO PARA MENOR DE EDAD', 105, 60, { align: 'center' });
 
-  doc.setFontSize(10);
+  // Subtítulo
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
-  doc.text('Club Aéreo de Castro', 105, 69, { align: 'center' });
+  doc.text('Club Aéreo de Castro', 105, 68, { align: 'center' });
 
+  // Contenido del documento
+  const startY = 85;
+  const lineHeight = 8;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+
+  // Línea 1: Yo, nombre del adulto
+  doc.text('Yo, ________________________________________ (nombre del adulto responsable),', 20, startY);
+
+  // Línea 2: RUT
+  doc.text('RUT _________________________, autorizo a:', 20, startY + lineHeight);
+
+  // Línea 3: Nombre del menor (en negrita)
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
+  doc.text(`${nombreMenor}${rutMenor ? ` (RUT: ${rutMenor})` : ''}`, 20, startY + lineHeight * 2.5);
+
+  // Línea 4: a volar en...
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text('a volar en un avión del Club Aéreo de Castro', 20, startY + lineHeight * 4);
 
-  const startY = 60;
-  const lineHeight = 10;
-
-  doc.text(`Yo, __________________________________ (nombre del adulto responsable),`, 20, startY);
-  doc.text(`RUT ____________________, autorizo a:`, 20, startY + lineHeight);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${nombreMenor} ${rutMenor ? `(RUT: ${rutMenor})` : ''}`, 20, startY + lineHeight * 2);
-
-  doc.setFont('helvetica', 'normal');
-  doc.text(`a volar en un avión del Club Aéreo de Castro`, 20, startY + lineHeight * 3);
-
+  // Info del vuelo (si existe)
   if (flightInfo) {
-    doc.text(`en el Circuito #${flightInfo.numero_circuito}`, 20, startY + lineHeight * 4);
-    doc.text(
-      `el día ${new Date(flightInfo.fecha_hora).toLocaleDateString('es-CL', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })}`,
-      20,
-      startY + lineHeight * 5
-    );
+    doc.text(`en el Circuito #${flightInfo.numero_circuito}`, 20, startY + lineHeight * 5.2);
+    const fecha = new Date(flightInfo.fecha_hora).toLocaleDateString('es-CL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    doc.text(`el día ${fecha}.`, 20, startY + lineHeight * 6.4);
+  } else {
+    doc.text('el día _______________________.', 20, startY + lineHeight * 5.2);
   }
 
-  const signatureY = startY + lineHeight * 8;
-  doc.text('_______________________________', 20, signatureY);
-  doc.text('Firma del adulto responsable', 20, signatureY + 7);
+  // Firmas
+  const signatureY = startY + lineHeight * 10;
 
-  doc.text('_______________________________', 120, signatureY);
-  doc.text('Fecha', 120, signatureY + 7);
+  // Firma adulto
+  doc.text('_________________________________', 20, signatureY);
+  doc.setFontSize(9);
+  doc.text('Firma del adulto responsable', 20, signatureY + 6);
 
-  const infoY = signatureY + lineHeight * 3;
+  // Fecha
+  doc.setFontSize(11);
+  doc.text('_________________________________', 120, signatureY);
+  doc.setFontSize(9);
+  doc.text('Fecha', 120, signatureY + 6);
+
+  // Información de contacto
+  const contactY = signatureY + lineHeight * 3.5;
   doc.setFontSize(10);
-  doc.text('Teléfono de contacto: ____________________', 20, infoY);
-  doc.text('Email: ____________________', 20, infoY + 7);
+  doc.text('Teléfono de contacto: _______________________________', 20, contactY);
+  doc.text('Email: _______________________________________________', 20, contactY + 8);
 
+  // Nota al pie
   doc.setFontSize(8);
-  doc.setTextColor(100);
+  doc.setTextColor(80);
   doc.text(
-    'Este documento debe ser firmado. Puede tomarlo una foto o escanearlo y subirlo al sistema antes de completar la compra.',
+    'Este documento debe ser firmado por el adulto responsable. Puede tomar una foto o escanearlo',
     105,
-    280,
-    { align: 'center', maxWidth: 170 }
+    270,
+    { align: 'center' }
+  );
+  doc.text(
+    'y subirlo al sistema antes de completar la compra del ticket.',
+    105,
+    276,
+    { align: 'center' }
   );
 
   const fileName = `autorizacion_${nombreMenor.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
