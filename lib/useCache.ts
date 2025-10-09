@@ -65,6 +65,7 @@ export function useCache<T>(
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, ...dependencies]);
 
   return { data, loading, error };

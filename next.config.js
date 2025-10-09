@@ -18,10 +18,6 @@ const nextConfig = {
     domains: [],
     formats: ['image/webp'],
   },
-  // Configuración experimental para mejor rendimiento
-  experimental: {
-    optimizeCss: true,
-  },
 };
 
 module.exports = process.env.NODE_ENV === 'production' ? withPWA(nextConfig) : nextConfig;
