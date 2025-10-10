@@ -75,7 +75,12 @@ function ConfirmacionContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen theme-bg-primary flex items-center justify-center p-4">
+      <div className="min-h-screen theme-bg-primary flex items-center justify-center p-4 relative">
+        {/* Theme Toggle */}
+        <div className="fixed top-6 right-6 z-50">
+          <ThemeToggle />
+        </div>
+
         <div className="max-w-2xl w-full theme-bg-card backdrop-blur-sm rounded-2xl theme-border overflow-hidden">
           <div className="bg-green-600 p-6 text-center">
             <div className="text-6xl mb-2">✅</div>
@@ -83,7 +88,7 @@ function ConfirmacionContent() {
           </div>
 
           <div className="p-8">
-            <div className="bg-slate-900/50 rounded-lg p-6 mb-6">
+            <div className="theme-bg-secondary rounded-lg p-6 mb-6 border theme-border">
               <h2 className="text-xl font-bold theme-text-primary mb-4">Detalles del Pago</h2>
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -110,14 +115,14 @@ function ConfirmacionContent() {
                 )}
                 <div className="flex justify-between">
                   <span className="theme-text-muted">Tickets Generados:</span>
-                  <span className="text-green-400 font-bold">{transaction.tickets_generados}</span>
+                  <span className="text-green-600 font-bold">{transaction.tickets_generados}</span>
                 </div>
               </div>
             </div>
 
             <div className="theme-info-box rounded-lg p-4 mb-6">
               <p className="theme-info-text text-sm text-center">
-                📧 Revisa tu correo electrónico para ver tu contraseña temporal y acceder a tus tickets
+                📧 Revisa tu correo electrónico donde recibirás tus tickets de vuelo y toda la información necesaria
               </p>
             </div>
 
