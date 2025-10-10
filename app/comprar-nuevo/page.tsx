@@ -465,6 +465,15 @@ export default function ComprarNuevoPage() {
     try {
       setLoading(true);
 
+      // Si hay vuelos separados, agregar flightId a cada pasajero
+      const pasajerosConVuelos = pasajeros.map((pasajero, idx) => {
+        const flight = asignacionesIndividuales[idx];
+        return {
+          ...pasajero,
+          flightId: flight?._id || undefined,
+        };
+      });
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/iniciar`,
         {
@@ -472,7 +481,7 @@ export default function ComprarNuevoPage() {
           nombre_comprador: nombreComprador,
           telefono,
           cantidad_tickets: cantidadPasajeros,
-          pasajeros,
+          pasajeros: viajanJuntos ? pasajeros : pasajerosConVuelos,
           selectedFlightId: selectedFlight?._id,
           reservationId,
         }
@@ -919,7 +928,7 @@ export default function ComprarNuevoPage() {
                 Selecciona tu Circuito de Vuelo
               </h2>
               <p className="theme-text-muted text-sm mb-4">
-                Al seleccionar un vuelo, los cupos quedarán reservados por 5 minutos.
+                Al seleccionar un vuelo, los cupos quedarán reservados por 10 minutos.
               </p>
 
               {/* Información sobre reprogramación */}
@@ -1299,11 +1308,32 @@ export default function ComprarNuevoPage() {
                       setLoading(true);
                       try {
                         // Crear reservaciones para cada vuelo único
-                        const vuelosUnicos = Array.from(new Set(Object.values(asignacionesIndividuales).map(f => f?._id)));
-                        // Por simplicidad, continuar a step 5 con las asignaciones
+                        const vuelosConPasajeros: { [flightId: string]: number } = {};
+
+                        // Contar pasajeros por vuelo
+                        Object.values(asignacionesIndividuales).forEach(flight => {
+                          if (flight) {
+                            vuelosConPasajeros[flight._id] = (vuelosConPasajeros[flight._id] || 0) + 1;
+                          }
+                        });
+
+                        // Crear reserva para cada vuelo
+                        const reservationPromises = Object.entries(vuelosConPasajeros).map(async ([flightId, cantidad]) => {
+                          const response = await axios.post(
+                            `${process.env.NEXT_PUBLIC_API_BASE_URL}/flights/reserve`,
+                            {
+                              flightId,
+                              cantidadPasajeros: cantidad,
+                            }
+                          );
+                          return response.data.reservation;
+                        });
+
+                        await Promise.all(reservationPromises);
                         setStep(5);
-                      } catch (error) {
-                        alert('Error al procesar las reservaciones');
+                      } catch (error: any) {
+                        console.error('Error al reservar:', error);
+                        alert(error.response?.data?.error || 'Error al procesar las reservaciones');
                       } finally {
                         setLoading(false);
                       }
