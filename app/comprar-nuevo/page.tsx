@@ -1357,13 +1357,23 @@ export default function ComprarNuevoPage() {
                     return (
                       <div key={idx} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-bold text-blue-900">
                               {pasajero.nombre} {pasajero.apellido}
                             </p>
                             <p className="text-sm text-blue-700">
                               Circuito #{flight.numero_circuito} - {flight.aircraftId.matricula}
                             </p>
+                            {flight.hora_prevista_salida && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                Hora prevista: {(() => {
+                                  const date = new Date(flight.hora_prevista_salida);
+                                  const hours = String(date.getUTCHours()).padStart(2, '0');
+                                  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                  return `${hours}:${minutes}`;
+                                })()}
+                              </p>
+                            )}
                           </div>
                           <div className="text-2xl">✈️</div>
                         </div>
