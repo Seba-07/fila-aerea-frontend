@@ -1320,26 +1320,58 @@ export default function ComprarNuevoPage() {
         )}
 
         {/* Step 5: Confirmar y Pagar */}
-        {step === 5 && selectedFlight && (
+        {step === 5 && (selectedFlight || Object.keys(asignacionesIndividuales).length > 0) && (
           <div className="space-y-6">
             <div className="theme-bg-card rounded-2xl p-8 theme-shadow-md">
               <h2 className="text-2xl font-bold theme-text-primary mb-6">
                 Confirmar Compra
               </h2>
 
-              {/* Vuelo seleccionado */}
-              <div className="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                <p className="text-sm text-blue-800 font-medium mb-2">
-                  Vuelo Reservado
-                </p>
-                <p className="text-2xl font-bold text-blue-900">
-                  Circuito #{selectedFlight.numero_circuito} -{' '}
-                  {selectedFlight.aircraftId.matricula}
-                </p>
-                <p className="text-sm text-blue-700 mt-1">
-                  {selectedFlight.aircraftId.modelo}
-                </p>
-              </div>
+              {/* Mostrar vuelo(s) seleccionado(s) */}
+              {viajanJuntos && selectedFlight ? (
+                // Vuelo único para todos
+                <div className="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+                  <p className="text-sm text-blue-800 font-medium mb-2">
+                    Vuelo Reservado
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900">
+                    Circuito #{selectedFlight.numero_circuito} -{' '}
+                    {selectedFlight.aircraftId.matricula}
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    {selectedFlight.aircraftId.modelo}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-2">
+                    {cantidadPasajeros} {cantidadPasajeros === 1 ? 'pasajero' : 'pasajeros'}
+                  </p>
+                </div>
+              ) : (
+                // Vuelos separados
+                <div className="mb-6 space-y-3">
+                  <p className="text-sm font-medium theme-text-secondary mb-3">
+                    Vuelos Reservados
+                  </p>
+                  {Object.entries(asignacionesIndividuales).map(([idx, flight]) => {
+                    if (!flight) return null;
+                    const pasajero = pasajeros[parseInt(idx)];
+                    return (
+                      <div key={idx} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-blue-900">
+                              {pasajero.nombre} {pasajero.apellido}
+                            </p>
+                            <p className="text-sm text-blue-700">
+                              Circuito #{flight.numero_circuito} - {flight.aircraftId.matricula}
+                            </p>
+                          </div>
+                          <div className="text-2xl">✈️</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Resumen */}
               <div className="space-y-3 mb-6">
