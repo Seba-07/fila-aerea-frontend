@@ -1346,40 +1346,83 @@ export default function ComprarNuevoPage() {
                   </p>
                 </div>
               ) : (
-                // Vuelos separados
-                <div className="mb-6 space-y-3">
+                // Vuelos separados - Agrupar por vuelo
+                <div className="mb-6 space-y-4">
                   <p className="text-sm font-medium theme-text-secondary mb-3">
-                    Vuelos Reservados
+                    Vuelos Reservados (Pasajeros en vuelos separados)
                   </p>
-                  {Object.entries(asignacionesIndividuales).map(([idx, flight]) => {
-                    if (!flight) return null;
-                    const pasajero = pasajeros[parseInt(idx)];
-                    return (
-                      <div key={idx} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="font-bold text-blue-900">
-                              {pasajero.nombre} {pasajero.apellido}
-                            </p>
-                            <p className="text-sm text-blue-700">
-                              Circuito #{flight.numero_circuito} - {flight.aircraftId.matricula}
-                            </p>
-                            {flight.hora_prevista_salida && (
-                              <p className="text-xs text-blue-600 mt-1">
-                                Hora prevista: {(() => {
-                                  const date = new Date(flight.hora_prevista_salida);
-                                  const hours = String(date.getUTCHours()).padStart(2, '0');
-                                  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                                  return `${hours}:${minutes}`;
-                                })()}
-                              </p>
+                  {(() => {
+                    // Agrupar pasajeros por vuelo
+                    const vuelosPorId: { [key: string]: { flight: Flight; pasajeros: Array<{ idx: number; pasajero: typeof pasajeros[0] }> } } = {};
+
+                    Object.entries(asignacionesIndividuales).forEach(([idx, flight]) => {
+                      if (!flight) return;
+                      if (!vuelosPorId[flight._id]) {
+                        vuelosPorId[flight._id] = { flight, pasajeros: [] };
+                      }
+                      vuelosPorId[flight._id].pasajeros.push({
+                        idx: parseInt(idx),
+                        pasajero: pasajeros[parseInt(idx)]
+                      });
+                    });
+
+                    return Object.values(vuelosPorId).map((grupo) => {
+                      const { flight, pasajeros: pasajerosEnVuelo } = grupo;
+                      const viajanJuntosEnEsteVuelo = pasajerosEnVuelo.length > 1;
+
+                      return (
+                        <div key={flight._id} className="p-5 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                          {/* Encabezado del vuelo */}
+                          <div className="flex items-start justify-between mb-3 pb-3 border-b border-blue-300">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">✈️</span>
+                                <div>
+                                  <p className="text-lg font-bold text-blue-900">
+                                    Circuito #{flight.numero_circuito} - {flight.aircraftId.matricula}
+                                  </p>
+                                  <p className="text-sm text-blue-700">
+                                    {flight.aircraftId.modelo}
+                                  </p>
+                                  {flight.hora_prevista_salida && (
+                                    <p className="text-xs text-blue-600 mt-1">
+                                      🕐 Hora prevista: {(() => {
+                                        const date = new Date(flight.hora_prevista_salida);
+                                        const hours = String(date.getUTCHours()).padStart(2, '0');
+                                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                        return `${hours}:${minutes}`;
+                                      })()}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            {viajanJuntosEnEsteVuelo && (
+                              <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+                                👥 Viajan juntos
+                              </span>
                             )}
                           </div>
-                          <div className="text-2xl">✈️</div>
+
+                          {/* Lista de pasajeros */}
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-blue-800 mb-2">
+                              Pasajero{pasajerosEnVuelo.length > 1 ? 's' : ''}:
+                            </p>
+                            {pasajerosEnVuelo.map(({ pasajero }) => (
+                              <div key={pasajero.nombre} className="flex items-center gap-2 text-sm text-blue-900">
+                                <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                                <span className="font-medium">
+                                  {pasajero.nombre} {pasajero.apellido}
+                                  {pasajero.esMenor && ' 👶'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               )}
 
@@ -1407,12 +1450,54 @@ export default function ComprarNuevoPage() {
                   <span className="font-medium">${precioTicket.toLocaleString('es-CL')}</span>
                 </div>
 
-                <div className="pt-3 border-t theme-border flex justify-between">
-                  <span className="font-bold theme-text-primary text-lg">Total:</span>
-                  <span className="font-bold text-blue-600 text-2xl">
-                    ${montoTotal.toLocaleString('es-CL')}
-                  </span>
+                <div className="flex justify-between theme-text-secondary">
+                  <span>Subtotal tickets:</span>
+                  <span className="font-medium">${montoTotal.toLocaleString('es-CL')}</span>
                 </div>
+
+                {/* Comisión Webpay */}
+                {(() => {
+                  // Calcular comisión: 3.5% de crédito (peor caso)
+                  const comisionBruta = montoTotal * 0.035;
+                  // Redondear al múltiplo de 100 superior
+                  const comisionRedondeada = Math.ceil(comisionBruta / 100) * 100;
+                  const totalConComision = montoTotal + comisionRedondeada;
+
+                  return (
+                    <>
+                      <div className="flex justify-between text-sm theme-text-muted">
+                        <span className="flex items-center gap-1">
+                          Comisión Webpay
+                          <span className="cursor-help" title="Comisión por pago con tarjeta de crédito/débito">ℹ️</span>
+                        </span>
+                        <span className="font-medium">+${comisionRedondeada.toLocaleString('es-CL')}</span>
+                      </div>
+
+                      <div className="pt-3 border-t theme-border">
+                        <div className="flex justify-between items-baseline mb-2">
+                          <span className="font-bold theme-text-primary text-lg">Total a Pagar:</span>
+                          <span className="font-bold text-green-600 text-2xl">
+                            ${totalConComision.toLocaleString('es-CL')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Mensaje informativo */}
+                      <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800 mb-2">
+                          💡 <strong>Ahorra la comisión:</strong>
+                        </p>
+                        <p className="text-xs text-yellow-700">
+                          Puedes pagar directamente en efectivo o transferencia bancaria al Club Aéreo de Castro
+                          y <strong>evitar la comisión de ${comisionRedondeada.toLocaleString('es-CL')}</strong>.
+                        </p>
+                        <p className="text-xs text-yellow-700 mt-2">
+                          Contacta al club para más información sobre pago directo.
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <button
@@ -1420,7 +1505,12 @@ export default function ComprarNuevoPage() {
                 disabled={loading}
                 className="w-full py-4 bg-green-600 text-white font-bold text-lg rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >
-                {loading ? 'Redirigiendo a Webpay...' : `Pagar $${montoTotal.toLocaleString('es-CL')}`}
+                {(() => {
+                  const comisionBruta = montoTotal * 0.035;
+                  const comisionRedondeada = Math.ceil(comisionBruta / 100) * 100;
+                  const totalConComision = montoTotal + comisionRedondeada;
+                  return loading ? 'Redirigiendo a Webpay...' : `Pagar $${totalConComision.toLocaleString('es-CL')} con Webpay`;
+                })()}
               </button>
 
               <p className="text-xs theme-text-muted text-center mt-3">
