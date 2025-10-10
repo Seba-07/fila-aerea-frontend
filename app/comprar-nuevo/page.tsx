@@ -1192,7 +1192,7 @@ export default function ComprarNuevoPage() {
                         {vuelosCircuito.map((flight) => {
                           const cuposDisponibles = flight.capacidad_total - flight.asientos_ocupados;
                           const pasajerosAsignados = Object.entries(asignacionesIndividuales)
-                            .filter(([_, f]) => f._id === flight._id)
+                            .filter(([_, f]) => f && f._id === flight._id)
                             .map(([idx]) => parseInt(idx));
 
                           const pasajerosSinAsignar = pasajeros
