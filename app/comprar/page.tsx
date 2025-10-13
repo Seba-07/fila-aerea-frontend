@@ -53,7 +53,7 @@ export default function ComprarPage() {
                       Compra tus tickets en Passline
                     </h4>
                     <p className="theme-text-muted text-sm">
-                      Haz clic en el botón "Ir a Passline" y completa tu compra de forma segura.
+                      Haz clic en el botón &quot;Ir a Passline&quot; y completa tu compra de forma segura.
                     </p>
                   </div>
                 </div>
