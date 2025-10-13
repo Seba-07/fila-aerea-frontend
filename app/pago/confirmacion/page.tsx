@@ -13,18 +13,43 @@ function ConfirmacionContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Verificar si es de Mercado Pago o Webpay
+    const external_reference = searchParams.get('external_reference');
+    const payment_id = searchParams.get('payment_id');
+    const status = searchParams.get('status');
     const token_ws = searchParams.get('token_ws');
 
-    if (!token_ws) {
-      setError('Token no encontrado');
+    if (external_reference) {
+      // Es Mercado Pago
+      confirmarPagoMP(external_reference, payment_id, status);
+    } else if (token_ws) {
+      // Es Webpay
+      confirmarPagoWebpay(token_ws);
+    } else {
+      setError('Token o referencia no encontrada');
       setLoading(false);
-      return;
     }
-
-    confirmarPago(token_ws);
   }, [searchParams]);
 
-  const confirmarPago = async (token_ws: string) => {
+  const confirmarPagoMP = async (external_reference: string, payment_id: string | null, status: string | null) => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/mercadopago/confirmar`,
+        {
+          params: { external_reference, payment_id, status }
+        }
+      );
+
+      setResultado(response.data);
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError(err.response?.data?.error || 'Error al confirmar el pago');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmarPagoWebpay = async (token_ws: string) => {
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/confirmar`,

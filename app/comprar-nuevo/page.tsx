@@ -474,8 +474,9 @@ export default function ComprarNuevoPage() {
         };
       });
 
+      // Usar Mercado Pago en lugar de Webpay
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/iniciar`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/payment/mercadopago/iniciar`,
         {
           email,
           nombre_comprador: nombreComprador,
@@ -491,19 +492,8 @@ export default function ComprarNuevoPage() {
       localStorage.removeItem('reservationId');
       localStorage.removeItem('selectedFlightId');
 
-      // Redirigir a Webpay
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = response.data.url;
-
-      const tokenInput = document.createElement('input');
-      tokenInput.type = 'hidden';
-      tokenInput.name = 'token_ws';
-      tokenInput.value = response.data.token;
-
-      form.appendChild(tokenInput);
-      document.body.appendChild(form);
-      form.submit();
+      // Redirigir a Mercado Pago
+      window.location.href = response.data.init_point;
     } catch (error: any) {
       console.error('Error:', error);
       alert(error.response?.data?.error || 'Error al iniciar el pago');
