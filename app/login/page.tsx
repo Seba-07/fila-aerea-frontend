@@ -15,7 +15,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [requiresPassword, setRequiresPassword] = useState(false);
 
-  const isStaffEmail = email.toLowerCase() === 'staff@cac.cl';
+  // TEMPORALMENTE DESHABILITADO: Validación de contraseña
+  const isStaffEmail = false; // email.toLowerCase() === 'staff@cac.cl';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
