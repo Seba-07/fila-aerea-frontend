@@ -21,12 +21,12 @@ export default function PasajerosPage() {
   const [editingTicketsId, setEditingTicketsId] = useState<string | null>(null);
   const [editTicketCount, setEditTicketCount] = useState(0);
   const [montoAjuste, setMontoAjuste] = useState<number | ''>('');
-  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
+  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
 
   // Estado para eliminar
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [montoDevolucion, setMontoDevolucion] = useState<number | ''>('');
-  const [metodoDevolucion, setMetodoDevolucion] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
+  const [metodoDevolucion, setMetodoDevolucion] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
 
   useEffect(() => {
     if (user?.rol !== 'staff') {
@@ -251,7 +251,7 @@ export default function PasajerosPage() {
                           >
                             <option value="efectivo">Efectivo</option>
                             <option value="transferencia">Transferencia</option>
-                            <option value="tarjeta">Tarjeta</option>
+                            <option value="passline">PassLine</option>
                           </select>
                         </div>
                         <div className="flex gap-2">
@@ -311,7 +311,7 @@ export default function PasajerosPage() {
                           >
                             <option value="efectivo">Efectivo</option>
                             <option value="transferencia">Transferencia</option>
-                            <option value="tarjeta">Tarjeta</option>
+                            <option value="passline">PassLine</option>
                           </select>
                         </div>
                       )}
