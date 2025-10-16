@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { userAPI, flightsAPI } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function MiPasePage() {
   const router = useRouter();
@@ -246,6 +247,30 @@ export default function MiPasePage() {
                       </p>
                     </div>
                   )}
+
+                  {/* Código QR para validación */}
+                  <div className="mt-6 pt-6 border-t theme-border">
+                    <p className="text-sm theme-text-muted text-center mb-4">
+                      Presenta este código QR al momento del embarque
+                    </p>
+                    <div className="flex justify-center p-6 bg-white rounded-lg">
+                      <QRCodeSVG
+                        value={JSON.stringify({
+                          ticketId: ticket.id,
+                          codigo: ticket.codigo_ticket,
+                          pasajero: pasajero ? `${pasajero.nombre} ${pasajero.apellido}` : 'Sin asignar',
+                          flightId: flight._id,
+                          circuito: flight.numero_circuito
+                        })}
+                        size={200}
+                        level="H"
+                        includeMargin={true}
+                      />
+                    </div>
+                    <p className="text-xs theme-text-muted text-center mt-2">
+                      Ticket: {ticket.codigo_ticket}
+                    </p>
+                  </div>
                 </div>
               </div>
             );

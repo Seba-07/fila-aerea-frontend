@@ -103,6 +103,8 @@ export const staffAPI = {
     metodo_pago?: 'transferencia' | 'passline' | 'efectivo';
   }) => api.delete(`/staff/passengers/${passengerId}`, { data }),
   getPayments: () => api.get('/staff/payments'),
+  validateQR: (qrData: { ticketId: string; codigo: string; flightId: string; circuito: number }) =>
+    api.post('/staff/validate-qr', qrData),
 };
 
 // Manifiestos
