@@ -84,7 +84,7 @@ export const staffAPI = {
     rut?: string;
     email: string;
     cantidad_tickets: number;
-    metodo_pago: 'transferencia' | 'tarjeta' | 'efectivo';
+    metodo_pago: 'transferencia' | 'passline' | 'efectivo';
     monto: number;
     pasajeros?: Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>;
     flightId?: string;
@@ -96,11 +96,11 @@ export const staffAPI = {
   updatePassengerTickets: (passengerId: string, data: {
     cantidad_tickets: number;
     monto_ajuste?: number;
-    metodo_pago?: 'transferencia' | 'tarjeta' | 'efectivo';
+    metodo_pago?: 'transferencia' | 'passline' | 'efectivo';
   }) => api.patch(`/staff/passengers/${passengerId}/tickets`, data),
   deletePassenger: (passengerId: string, data: {
     monto_devolucion?: number;
-    metodo_pago?: 'transferencia' | 'tarjeta' | 'efectivo';
+    metodo_pago?: 'transferencia' | 'passline' | 'efectivo';
   }) => api.delete(`/staff/passengers/${passengerId}`, { data }),
   getPayments: () => api.get('/staff/payments'),
 };
