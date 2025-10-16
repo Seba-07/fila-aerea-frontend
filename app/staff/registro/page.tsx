@@ -15,7 +15,7 @@ export default function RegistroPage() {
   const [rut, setRut] = useState('');
   const [email, setEmail] = useState('');
   const [cantidadTickets, setCantidadTickets] = useState(1);
-  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'tarjeta' | 'efectivo'>('efectivo');
+  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
   const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -220,7 +220,7 @@ export default function RegistroPage() {
                   Método de Pago
                 </label>
                 <div className="grid grid-cols-3 gap-3">
-                  {(['efectivo', 'transferencia', 'tarjeta'] as const).map((metodo) => (
+                  {(['efectivo', 'transferencia', 'passline'] as const).map((metodo) => (
                     <button
                       key={metodo}
                       type="button"
@@ -231,7 +231,7 @@ export default function RegistroPage() {
                           : 'theme-input theme-text-secondary hover:theme-bg-secondary'
                       }`}
                     >
-                      {metodo.charAt(0).toUpperCase() + metodo.slice(1)}
+                      {metodo === 'passline' ? 'PassLine' : metodo.charAt(0).toUpperCase() + metodo.slice(1)}
                     </button>
                   ))}
                 </div>
