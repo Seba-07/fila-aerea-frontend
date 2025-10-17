@@ -2,10 +2,11 @@
 
 import ThemeToggle from '@/components/ThemeToggle';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { flightsAPI, api } from '@/lib/api';
+import { flightsAPI, api, staffAPI } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function VuelosPage() {
   const router = useRouter();
@@ -23,6 +24,12 @@ export default function VuelosPage() {
   const [rescheduleFlightId, setRescheduleFlightId] = useState<string | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
   const [showCancelAircraftDay, setShowCancelAircraftDay] = useState(false);
+
+  // QR Scanner state
+  const [scanningCircuito, setScanningCircuito] = useState<number | null>(null);
+  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanError, setScanError] = useState('');
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   // Form state para nuevo circuito
   const [numeroCircuito, setNumeroCircuito] = useState<string>('');
@@ -294,6 +301,73 @@ export default function VuelosPage() {
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar hora prevista');
     }
+  };
+
+  // QR Scanner functions
+  const startScanner = async (numeroCircuito: number) => {
+    try {
+      setScanError('');
+      setScanResult(null);
+      setScanningCircuito(numeroCircuito);
+
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        const backCamera = devices.find(d =>
+          d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('environment')
+        );
+        const selectedCamera = backCamera || devices[0];
+
+        const html5QrCode = new Html5Qrcode(`qr-reader-${numeroCircuito}`);
+        scannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          selectedCamera.id,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          async (decodedText) => {
+            await html5QrCode.stop();
+            setScanningCircuito(null);
+
+            try {
+              const qrData = JSON.parse(decodedText);
+              const validation = await staffAPI.validateQR(qrData);
+              setScanResult(validation.data);
+
+              // Recargar vuelos para actualizar estados
+              setTimeout(() => {
+                fetchData();
+              }, 2000);
+            } catch (err: any) {
+              setScanError('Error al validar el QR: ' + (err.response?.data?.error || err.message));
+            }
+          },
+          (errorMessage) => {
+            // Scanning errors (not critical)
+          }
+        );
+      } else {
+        setScanError('No se encontraron cámaras disponibles');
+      }
+    } catch (err: any) {
+      setScanError('Error al iniciar el scanner: ' + err.message);
+      setScanningCircuito(null);
+    }
+  };
+
+  const stopScanner = async () => {
+    if (scannerRef.current && scanningCircuito) {
+      await scannerRef.current.stop();
+      scannerRef.current = null;
+      setScanningCircuito(null);
+    }
+  };
+
+  const resetScan = () => {
+    setScanResult(null);
+    setScanError('');
   };
 
   // Agrupar vuelos por número de circuito
@@ -586,6 +660,128 @@ export default function VuelosPage() {
                     )}
                   </div>
 
+                  {/* Scanner QR para staff */}
+                  {user?.rol === 'staff' && (
+                    <div className="mb-6 pb-6 border-b theme-border">
+                      <div className="mb-4">
+                        <h3 className="text-xl font-bold theme-text-primary mb-2">
+                          📱 Validación de Embarque
+                        </h3>
+                        <p className="text-sm theme-text-muted">
+                          Escanea el código QR del pase de embarque del pasajero
+                        </p>
+                      </div>
+
+                      {/* Scanner Area */}
+                      <div className="mb-4">
+                        <div
+                          id={`qr-reader-${circuitoNum}`}
+                          className={`${scanningCircuito === circuitoNum ? '' : 'hidden'} rounded-lg overflow-hidden`}
+                        ></div>
+
+                        {scanningCircuito !== circuitoNum && !scanResult && (
+                          <div className="bg-slate-700 rounded-lg p-8 text-center">
+                            <svg className="w-20 h-20 mx-auto theme-text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                            <p className="theme-text-muted">
+                              Presiona &quot;Iniciar Escaneo&quot; para activar la cámara
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Controls */}
+                      <div className="flex gap-3 mb-4">
+                        {scanningCircuito !== circuitoNum && !scanResult && (
+                          <button
+                            onClick={() => startScanner(circuitoNum)}
+                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+                          >
+                            📷 Iniciar Escaneo
+                          </button>
+                        )}
+
+                        {scanningCircuito === circuitoNum && (
+                          <button
+                            onClick={stopScanner}
+                            className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition"
+                          >
+                            ⏹ Detener
+                          </button>
+                        )}
+
+                        {scanResult && (
+                          <button
+                            onClick={() => {
+                              resetScan();
+                              startScanner(circuitoNum);
+                            }}
+                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+                          >
+                            🔄 Escanear Otro
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Error */}
+                      {scanError && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                          <p className="text-red-400 text-sm">{scanError}</p>
+                        </div>
+                      )}
+
+                      {/* Result */}
+                      {scanResult && (
+                        <div className={`border rounded-lg p-6 ${
+                          scanResult.valido
+                            ? 'bg-green-500/10 border-green-500/30'
+                            : 'bg-red-500/10 border-red-500/30'
+                        }`}>
+                          <div className="text-center mb-4">
+                            {scanResult.valido ? (
+                              <div className="text-6xl mb-2">✅</div>
+                            ) : (
+                              <div className="text-6xl mb-2">❌</div>
+                            )}
+                            <h3 className={`text-xl font-bold ${
+                              scanResult.valido ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {scanResult.valido ? 'PASAJERO EMBARCADO' : 'PASAJERO INVÁLIDO'}
+                            </h3>
+                          </div>
+
+                          {scanResult.valido && scanResult.ticket && (
+                            <div className="space-y-3">
+                              <div className="theme-bg-secondary rounded-lg p-3">
+                                <p className="text-sm theme-text-muted">Pasajero</p>
+                                <p className="text-lg font-bold theme-text-primary">
+                                  {scanResult.ticket.pasajero?.nombre} {scanResult.ticket.pasajero?.apellido}
+                                </p>
+                              </div>
+                              <div className="theme-bg-secondary rounded-lg p-3">
+                                <p className="text-sm theme-text-muted">Ticket</p>
+                                <p className="text-lg font-medium theme-text-primary">{scanResult.ticket.codigo}</p>
+                              </div>
+                              <div className="theme-bg-secondary rounded-lg p-3">
+                                <p className="text-sm theme-text-muted">Estado</p>
+                                <p className="text-lg font-medium text-green-400">
+                                  {scanResult.ticket.estado?.toUpperCase()}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {!scanResult.valido && (
+                            <div className="mt-4">
+                              <p className="text-red-300 text-center">{scanResult.mensaje}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Sección de agregar avión */}
                   {user?.rol === 'staff' && editingCircuito === circuitoNum && (
                     <div className="mb-4 p-4 theme-input/50 rounded-xl border theme-border">
@@ -766,8 +962,16 @@ export default function VuelosPage() {
                                       <p className="text-xs theme-text-muted">
                                         {inscrito.usuario?.nombre} ({inscrito.usuario?.email})
                                       </p>
-                                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
-                                        {inscrito.estado}
+                                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                                        inscrito.estado === 'embarcado'
+                                          ? 'bg-green-500/20 text-green-300'
+                                          : inscrito.estado === 'inscrito'
+                                          ? 'bg-blue-500/20 text-blue-300'
+                                          : 'bg-gray-500/20 theme-text-secondary'
+                                      }`}>
+                                        {inscrito.estado === 'embarcado' ? '✓ Embarcado' :
+                                         inscrito.estado === 'inscrito' ? 'Inscrito' :
+                                         inscrito.estado}
                                       </span>
                                     </div>
                                     {user?.rol === 'staff' && flight.estado === 'abierto' && (
