@@ -31,6 +31,9 @@ export default function VuelosPage() {
   const [scanError, setScanError] = useState('');
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
+  // Tabs state
+  const [selectedCircuitoTab, setSelectedCircuitoTab] = useState<number | null>(null);
+
   // Form state para nuevo circuito
   const [numeroCircuito, setNumeroCircuito] = useState<string>('');
   const [fecha, setFecha] = useState('');
@@ -384,6 +387,26 @@ export default function VuelosPage() {
     .map(Number)
     .sort((a, b) => a - b);
 
+  // Inicializar el tab seleccionado con el primer circuito si no hay uno seleccionado
+  if (selectedCircuitoTab === null && circuitosOrdenados.length > 0) {
+    setSelectedCircuitoTab(circuitosOrdenados[0]);
+  }
+
+  // Función para determinar el estado del circuito
+  const getCircuitoStatus = (circuitoNum: number) => {
+    const vuelos = flightsByCircuito[circuitoNum];
+    if (!vuelos || vuelos.length === 0) return 'sin_estado';
+
+    const enVuelo = vuelos.some(v => v.estado === 'en_vuelo');
+    const finalizado = vuelos.every(v => v.estado === 'finalizado');
+    const abierto = vuelos.some(v => v.estado === 'abierto');
+
+    if (enVuelo) return 'volando';
+    if (finalizado) return 'finalizado';
+    if (abierto) return 'activo';
+    return 'pendiente';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen theme-bg-primary flex items-center justify-center">
@@ -558,18 +581,74 @@ export default function VuelosPage() {
           </div>
         )}
 
-        {/* Listado de circuitos */}
+        {/* Tabs de circuitos */}
         {flights.length === 0 ? (
           <div className="text-center theme-text-secondary py-12">
             <p className="text-xl">No hay circuitos disponibles</p>
           </div>
         ) : (
-          <div className="space-y-8">
-            {circuitosOrdenados.map((circuitoNum) => {
-              const vuelosCircuito = flightsByCircuito[circuitoNum];
+          <>
+            {/* Tabs */}
+            <div className="mb-6 overflow-x-auto">
+              <div className="flex gap-2 min-w-max pb-2">
+                {circuitosOrdenados.map((circuitoNum) => {
+                  const vuelos = flightsByCircuito[circuitoNum];
+                  const horaPrevista = vuelos[0]?.hora_prevista_salida;
+                  const status = getCircuitoStatus(circuitoNum);
+                  const isSelected = selectedCircuitoTab === circuitoNum;
 
-              return (
-                <div key={circuitoNum} className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6">
+                  return (
+                    <button
+                      key={circuitoNum}
+                      onClick={() => {
+                        setSelectedCircuitoTab(circuitoNum);
+                        resetScan();
+                      }}
+                      className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-lg'
+                          : 'theme-bg-card theme-text-primary hover:theme-bg-secondary'
+                      }`}
+                    >
+                      <div className="text-center min-w-[120px]">
+                        <div className="text-lg font-bold">Circuito #{circuitoNum}</div>
+                        {horaPrevista && (
+                          <div className="text-xs opacity-90 mt-1">
+                            {(() => {
+                              const date = new Date(horaPrevista);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })()}
+                          </div>
+                        )}
+                        <div className={`text-xs mt-1 px-2 py-0.5 rounded inline-block ${
+                          status === 'activo' ? 'bg-green-500/20 text-green-300' :
+                          status === 'volando' ? 'bg-blue-500/20 text-blue-300' :
+                          status === 'finalizado' ? 'bg-gray-500/20 text-gray-300' :
+                          'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {status === 'activo' ? '● Activo' :
+                           status === 'volando' ? '✈ Volando' :
+                           status === 'finalizado' ? '✓ Finalizado' :
+                           '○ Pendiente'}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Contenido del circuito seleccionado */}
+            {selectedCircuitoTab !== null && flightsByCircuito[selectedCircuitoTab] && (
+              <div className="theme-bg-card backdrop-blur-sm rounded-2xl theme-border p-6">
+                {(() => {
+                  const circuitoNum = selectedCircuitoTab;
+                  const vuelosCircuito = flightsByCircuito[circuitoNum];
+
+                  return (
+                    <>
                   {/* Header del Circuito */}
                   <div className="mb-6 pb-4 border-b theme-border">
                     <div className="flex items-start justify-between mb-3">
@@ -660,43 +739,36 @@ export default function VuelosPage() {
                     )}
                   </div>
 
-                  {/* Scanner QR para staff */}
+                  {/* Scanner QR para staff - Versión compacta */}
                   {user?.rol === 'staff' && (
-                    <div className="mb-6 pb-6 border-b theme-border">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold theme-text-primary mb-2">
-                          📱 Validación de Embarque
-                        </h3>
-                        <p className="text-sm theme-text-muted">
-                          Escanea el código QR del pase de embarque del pasajero
-                        </p>
-                      </div>
+                    <div className="mb-4 pb-4 border-b theme-border">
+                      <h3 className="text-lg font-bold theme-text-primary mb-3 flex items-center gap-2">
+                        📱 Validación de Embarque
+                      </h3>
 
-                      {/* Scanner Area */}
-                      <div className="mb-4">
+                      {/* Scanner Area - Compacto */}
+                      <div className="mb-3">
                         <div
                           id={`qr-reader-${circuitoNum}`}
-                          className={`${scanningCircuito === circuitoNum ? '' : 'hidden'} rounded-lg overflow-hidden`}
+                          className={`${scanningCircuito === circuitoNum ? '' : 'hidden'} rounded-lg overflow-hidden max-w-md mx-auto`}
                         ></div>
 
                         {scanningCircuito !== circuitoNum && !scanResult && (
-                          <div className="bg-slate-700 rounded-lg p-8 text-center">
-                            <svg className="w-20 h-20 mx-auto theme-text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+                            <svg className="w-12 h-12 mx-auto theme-text-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                             </svg>
-                            <p className="theme-text-muted">
-                              Presiona &quot;Iniciar Escaneo&quot; para activar la cámara
-                            </p>
+                            <p className="text-sm theme-text-muted">Presiona el botón para escanear</p>
                           </div>
                         )}
                       </div>
 
-                      {/* Controls */}
-                      <div className="flex gap-3 mb-4">
+                      {/* Controls - Más pequeños */}
+                      <div className="flex gap-2 mb-3">
                         {scanningCircuito !== circuitoNum && !scanResult && (
                           <button
                             onClick={() => startScanner(circuitoNum)}
-                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                           >
                             📷 Iniciar Escaneo
                           </button>
@@ -705,7 +777,7 @@ export default function VuelosPage() {
                         {scanningCircuito === circuitoNum && (
                           <button
                             onClick={stopScanner}
-                            className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition"
+                            className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition"
                           >
                             ⏹ Detener
                           </button>
@@ -717,65 +789,47 @@ export default function VuelosPage() {
                               resetScan();
                               startScanner(circuitoNum);
                             }}
-                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                           >
                             🔄 Escanear Otro
                           </button>
                         )}
                       </div>
 
-                      {/* Error */}
+                      {/* Error - Compacto */}
                       {scanError && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">
                           <p className="text-red-400 text-sm">{scanError}</p>
                         </div>
                       )}
 
-                      {/* Result */}
+                      {/* Result - Compacto */}
                       {scanResult && (
-                        <div className={`border rounded-lg p-6 ${
+                        <div className={`border rounded-lg p-4 ${
                           scanResult.valido
                             ? 'bg-green-500/10 border-green-500/30'
                             : 'bg-red-500/10 border-red-500/30'
                         }`}>
-                          <div className="text-center mb-4">
-                            {scanResult.valido ? (
-                              <div className="text-6xl mb-2">✅</div>
-                            ) : (
-                              <div className="text-6xl mb-2">❌</div>
-                            )}
-                            <h3 className={`text-xl font-bold ${
-                              scanResult.valido ? 'text-green-400' : 'text-red-400'
-                            }`}>
-                              {scanResult.valido ? 'PASAJERO EMBARCADO' : 'PASAJERO INVÁLIDO'}
-                            </h3>
-                          </div>
-
-                          {scanResult.valido && scanResult.ticket && (
-                            <div className="space-y-3">
-                              <div className="theme-bg-secondary rounded-lg p-3">
-                                <p className="text-sm theme-text-muted">Pasajero</p>
-                                <p className="text-lg font-bold theme-text-primary">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="text-4xl">
+                              {scanResult.valido ? '✅' : '❌'}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className={`text-lg font-bold ${
+                                scanResult.valido ? 'text-green-400' : 'text-red-400'
+                              }`}>
+                                {scanResult.valido ? 'EMBARCADO' : 'INVÁLIDO'}
+                              </h4>
+                              {scanResult.valido && scanResult.ticket && (
+                                <p className="text-sm theme-text-primary">
                                   {scanResult.ticket.pasajero?.nombre} {scanResult.ticket.pasajero?.apellido}
                                 </p>
-                              </div>
-                              <div className="theme-bg-secondary rounded-lg p-3">
-                                <p className="text-sm theme-text-muted">Ticket</p>
-                                <p className="text-lg font-medium theme-text-primary">{scanResult.ticket.codigo}</p>
-                              </div>
-                              <div className="theme-bg-secondary rounded-lg p-3">
-                                <p className="text-sm theme-text-muted">Estado</p>
-                                <p className="text-lg font-medium text-green-400">
-                                  {scanResult.ticket.estado?.toUpperCase()}
-                                </p>
-                              </div>
+                              )}
                             </div>
-                          )}
+                          </div>
 
                           {!scanResult.valido && (
-                            <div className="mt-4">
-                              <p className="text-red-300 text-center">{scanResult.mensaje}</p>
-                            </div>
+                            <p className="text-red-300 text-sm">{scanResult.mensaje}</p>
                           )}
                         </div>
                       )}
@@ -993,10 +1047,12 @@ export default function VuelosPage() {
                       );
                     })}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </>
         )}
 
         {/* Modal de Reprogramación */}
