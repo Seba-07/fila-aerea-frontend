@@ -137,7 +137,7 @@ export default function QRScannerPage() {
                   </svg>
                 </div>
                 <p className="theme-text-muted">
-                  Presiona "Iniciar Escaneo" para activar la cámara
+                  Presiona &quot;Iniciar Escaneo&quot; para activar la cámara
                 </p>
               </div>
             )}
