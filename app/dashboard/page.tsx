@@ -667,14 +667,14 @@ export default function DashboardPage() {
               </button>
 
               <button
-                onClick={() => router.push('/staff/scanner')}
+                onClick={() => router.push('/staff/circuitos')}
                 className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-purple-500/50"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-purple-500/10 transition-colors"></div>
                 <div className="relative">
-                  <div className="text-5xl mb-4">📱</div>
-                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Escanear QR</h3>
-                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Validar pases de embarque</p>
+                  <div className="text-5xl mb-4">🔄</div>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Circuitos</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Gestionar circuitos y validar embarques</p>
                 </div>
               </button>
             </>
