@@ -4,15 +4,18 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { manifestsAPI } from '@/lib/api';
+import { manifestsAPI, pilotsAPI, flightsAPI } from '@/lib/api';
 
 export default function ManifiestosPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [manifests, setManifests] = useState<any[]>([]);
+  const [pilots, setPilots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedManifest, setSelectedManifest] = useState<any | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [editingPilot, setEditingPilot] = useState<{flightId: string, vueloIdx: number} | null>(null);
+  const [selectedPilotId, setSelectedPilotId] = useState<string>('');
 
   useEffect(() => {
     if (user?.rol !== 'staff') {
@@ -25,8 +28,12 @@ export default function ManifiestosPage() {
 
   const fetchManifests = async () => {
     try {
-      const { data } = await manifestsAPI.getAll();
-      setManifests(data);
+      const [manifestsRes, pilotsRes] = await Promise.all([
+        manifestsAPI.getAll(),
+        pilotsAPI.getAll().catch(() => ({ data: [] })),
+      ]);
+      setManifests(manifestsRes.data);
+      setPilots(pilotsRes.data);
     } catch (error) {
       console.error('Error al cargar manifiestos:', error);
     } finally {
@@ -49,6 +56,25 @@ export default function ManifiestosPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleUpdatePilot = async (flightId: string, vueloIdx: number) => {
+    try {
+      await flightsAPI.updateFlight(flightId, {
+        pilotId: selectedPilotId || null,
+      });
+      alert('Piloto actualizado exitosamente');
+      setEditingPilot(null);
+      setSelectedPilotId('');
+
+      // Refrescar el detalle del manifiesto
+      if (selectedManifest) {
+        const { data } = await manifestsAPI.getByCircuito(selectedManifest.numero_circuito);
+        setSelectedManifest(data);
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar piloto');
+    }
   };
 
   if (loading) {
@@ -243,24 +269,72 @@ export default function ManifiestosPage() {
                             </span>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 mt-2 p-2 theme-bg-secondary/30 rounded print:bg-gray-50">
-                            <div>
-                              <p className="text-xs theme-text-muted print:text-gray-600">Piloto al mando:</p>
-                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_nombre}</p>
+                          {editingPilot?.flightId === vuelo.flightId && editingPilot?.vueloIdx === idx ? (
+                            <div className="mt-2 p-3 theme-input rounded-lg print:hidden">
+                              <label className="block text-xs theme-text-muted mb-2">Seleccionar piloto:</label>
+                              <select
+                                value={selectedPilotId}
+                                onChange={(e) => setSelectedPilotId(e.target.value)}
+                                className="w-full px-2 py-2 theme-input border theme-border rounded theme-text-primary text-sm mb-3"
+                              >
+                                <option value="">Sin asignar</option>
+                                {pilots.map((pilot) => (
+                                  <option key={pilot._id} value={pilot._id}>
+                                    {pilot.nombre} - {pilot.numero_licencia}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleUpdatePilot(vuelo.flightId, idx)}
+                                  className="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium transition"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingPilot(null);
+                                    setSelectedPilotId('');
+                                  }}
+                                  className="flex-1 px-3 py-2 theme-bg-secondary theme-text-primary rounded hover:theme-input text-sm font-medium transition"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs theme-text-muted print:text-gray-600">Licencia:</p>
-                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_licencia}</p>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2 mt-2 p-2 theme-bg-secondary/30 rounded print:bg-gray-50">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs theme-text-muted print:text-gray-600">Piloto al mando:</p>
+                                    <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_nombre}</p>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      setEditingPilot({flightId: vuelo.flightId, vueloIdx: idx});
+                                      setSelectedPilotId(vuelo.pilotId || '');
+                                    }}
+                                    className="text-xs text-blue-600 hover:text-blue-700 print:hidden ml-2"
+                                  >
+                                    ✏️
+                                  </button>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs theme-text-muted print:text-gray-600">Licencia:</p>
+                                <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_licencia}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de salida:</p>
+                                <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_salida}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de llegada:</p>
+                                <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_llegada}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de salida:</p>
-                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_salida}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de llegada:</p>
-                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_llegada}</p>
-                            </div>
-                          </div>
+                          )}
                         </div>
 
                         {vuelo.pasajeros && vuelo.pasajeros.length > 0 ? (
