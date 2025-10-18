@@ -11,6 +11,7 @@ export default function PasajerosPage() {
   const { user } = useAuthStore();
   const [passengers, setPassengers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<'todos' | 'volados' | 'pendientes'>('todos');
 
   // Estado para editar info básica
   const [editingInfoId, setEditingInfoId] = useState<string | null>(null);
@@ -124,6 +125,23 @@ export default function PasajerosPage() {
     }
   };
 
+  // Filtrar pasajeros según estado
+  const filteredPassengers = passengers.filter(passenger => {
+    if (filterStatus === 'todos') return true;
+
+    const hasVoladoTicket = passenger.tickets?.some((t: any) => t.estado === 'volado');
+    const hasPendingTicket = passenger.tickets?.some((t: any) =>
+      ['disponible', 'asignado', 'inscrito', 'embarcado'].includes(t.estado)
+    );
+
+    if (filterStatus === 'volados') {
+      return hasVoladoTicket;
+    } else if (filterStatus === 'pendientes') {
+      return hasPendingTicket && !hasVoladoTicket;
+    }
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen theme-bg-primary flex items-center justify-center">
@@ -154,13 +172,51 @@ export default function PasajerosPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {passengers.length === 0 ? (
+        {/* Filtros */}
+        <div className="mb-6 flex gap-3">
+          <button
+            onClick={() => setFilterStatus('todos')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              filterStatus === 'todos'
+                ? 'bg-blue-600 text-white'
+                : 'theme-bg-card theme-text-primary hover:theme-bg-secondary'
+            }`}
+          >
+            Todos ({passengers.length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('volados')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              filterStatus === 'volados'
+                ? 'bg-green-600 text-white'
+                : 'theme-bg-card theme-text-primary hover:theme-bg-secondary'
+            }`}
+          >
+            Ya volaron ({passengers.filter(p => p.tickets?.some((t: any) => t.estado === 'volado')).length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('pendientes')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              filterStatus === 'pendientes'
+                ? 'bg-yellow-600 text-white'
+                : 'theme-bg-card theme-text-primary hover:theme-bg-secondary'
+            }`}
+          >
+            Pendientes por volar ({passengers.filter(p => {
+              const hasVolado = p.tickets?.some((t: any) => t.estado === 'volado');
+              const hasPending = p.tickets?.some((t: any) => ['disponible', 'asignado', 'inscrito', 'embarcado'].includes(t.estado));
+              return hasPending && !hasVolado;
+            }).length})
+          </button>
+        </div>
+
+        {filteredPassengers.length === 0 ? (
           <div className="text-center theme-text-secondary py-12">
-            <p className="text-xl">No hay pasajeros registrados</p>
+            <p className="text-xl">No hay pasajeros en esta categoría</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {passengers.map((passenger) => (
+            {filteredPassengers.map((passenger) => (
               <div
                 key={passenger.id}
                 className="theme-bg-card backdrop-blur-sm theme-border rounded-xl p-4"
@@ -369,7 +425,17 @@ export default function PasajerosPage() {
                             <div className="mt-2">
                               <p className="text-xs theme-text-muted">Pasajero:</p>
                               {ticket.pasajeros.map((p: any, idx: number) => (
-                                <p key={idx} className="text-xs theme-text-primary font-medium">{p.nombre}</p>
+                                <div key={idx}>
+                                  <p className="text-xs theme-text-primary font-medium">{p.nombre} {p.apellido}</p>
+                                  {p.rut && (
+                                    <p className="text-xs theme-text-muted">RUT: {p.rut}</p>
+                                  )}
+                                  {p.esMenor && (
+                                    <span className="inline-block text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded mt-1">
+                                      Menor
+                                    </span>
+                                  )}
+                                </div>
                               ))}
                             </div>
                           )}
