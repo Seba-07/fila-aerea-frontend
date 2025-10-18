@@ -315,11 +315,15 @@ export default function VuelosPage() {
 
       const devices = await Html5Qrcode.getCameras();
       if (devices && devices.length > 0) {
+        // Buscar cámara trasera (back/rear/environment)
         const backCamera = devices.find(d =>
           d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('rear') ||
           d.label.toLowerCase().includes('environment')
         );
-        const selectedCamera = backCamera || devices[0];
+
+        // Si no encuentra cámara trasera, usar la última (generalmente es la trasera en móviles)
+        const selectedCamera = backCamera || devices[devices.length - 1];
 
         const html5QrCode = new Html5Qrcode(`qr-reader-${numeroCircuito}`);
         scannerRef.current = html5QrCode;
@@ -329,6 +333,7 @@ export default function VuelosPage() {
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
+            facingMode: 'environment', // Forzar cámara trasera
           },
           async (decodedText) => {
             await html5QrCode.stop();
