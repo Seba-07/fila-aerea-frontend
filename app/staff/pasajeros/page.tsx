@@ -24,6 +24,11 @@ export default function PasajerosPage() {
   const [montoAjuste, setMontoAjuste] = useState<number | ''>('');
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
 
+  // Estado para editar pago
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+  const [editMontoPagado, setEditMontoPagado] = useState(0);
+  const [editMetodoPago, setEditMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
+
   // Estado para eliminar
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [montoDevolucion, setMontoDevolucion] = useState<number | ''>('');
@@ -109,6 +114,26 @@ export default function PasajerosPage() {
     setDeletingId(passengerId);
     setMontoDevolucion('');
     setMetodoDevolucion('efectivo');
+  };
+
+  const handleEditPayment = (passenger: any) => {
+    setEditingPaymentId(passenger.id);
+    setEditMontoPagado(passenger.pago_inicial?.monto || 0);
+    setEditMetodoPago(passenger.pago_inicial?.metodo_pago || 'efectivo');
+  };
+
+  const handleSavePayment = async (passengerId: string) => {
+    try {
+      await staffAPI.updatePassengerPayment(passengerId, {
+        nuevo_monto: editMontoPagado,
+        metodo_pago: editMetodoPago,
+      });
+      alert('Pago actualizado exitosamente');
+      setEditingPaymentId(null);
+      fetchPassengers();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar pago');
+    }
   };
 
   const handleDelete = async (passengerId: string) => {
@@ -259,12 +284,27 @@ export default function PasajerosPage() {
                       <>
                         <h3 className="font-bold text-lg theme-text-primary truncate">{passenger.nombre}</h3>
                         <p className="text-xs theme-text-muted truncate">{passenger.email}</p>
-                        <button
-                          onClick={() => handleEditInfo(passenger)}
-                          className="mt-1 text-blue-400 hover:text-blue-300 text-xs"
-                        >
-                          Editar
-                        </button>
+                        <div className="mt-1 flex items-center gap-3">
+                          <button
+                            onClick={() => handleEditInfo(passenger)}
+                            className="text-blue-400 hover:text-blue-300 text-xs"
+                          >
+                            Editar info
+                          </button>
+                          {passenger.pago_inicial && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs theme-text-secondary">
+                                Pagado: ${passenger.total_pagado?.toLocaleString() || 0}
+                              </span>
+                              <button
+                                onClick={() => handleEditPayment(passenger)}
+                                className="text-green-400 hover:text-green-300 text-xs"
+                              >
+                                Editar pago
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
@@ -340,6 +380,52 @@ export default function PasajerosPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Modal editar pago */}
+                {editingPaymentId === passenger.id && (
+                  <div className="mt-4 p-4 theme-bg-secondary/50 border theme-border rounded-lg">
+                    <p className="text-sm font-semibold theme-text-primary mb-3">Editar Pago Inicial</p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs theme-text-secondary block mb-1">Monto pagado</label>
+                        <input
+                          type="number"
+                          value={editMontoPagado}
+                          onChange={(e) => setEditMontoPagado(Number(e.target.value) || 0)}
+                          min={0}
+                          className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
+                          placeholder="$"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs theme-text-secondary block mb-1">Método de pago</label>
+                        <select
+                          value={editMetodoPago}
+                          onChange={(e) => setEditMetodoPago(e.target.value as any)}
+                          className="w-full px-3 py-2 theme-input border theme-border rounded-lg theme-text-primary"
+                        >
+                          <option value="efectivo">Efectivo</option>
+                          <option value="transferencia">Transferencia</option>
+                          <option value="passline">PassLine</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleSavePayment(passenger.id)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={() => setEditingPaymentId(null)}
+                          className="px-4 py-2 bg-gray-600 theme-text-primary rounded-lg hover:bg-gray-700 transition text-sm font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Modal eliminar */}
                 {deletingId === passenger.id ? (
