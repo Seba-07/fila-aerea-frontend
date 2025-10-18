@@ -4,7 +4,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { staffAPI } from '@/lib/api';
+import { staffAPI, api } from '@/lib/api';
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -17,11 +17,26 @@ export default function RegistroPage() {
   const [cantidadTickets, setCantidadTickets] = useState(1);
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
+  const [precioTicket, setPrecioTicket] = useState(0);
   const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Cargar precio del ticket desde configuración
   useEffect(() => {
-    // Ajustar array de pasajeros cuando cambia la cantidad
+    const fetchPrecioTicket = async () => {
+      try {
+        const { data } = await api.get('/settings/precio-ticket');
+        setPrecioTicket(data.precio_ticket);
+        setMonto(data.precio_ticket * cantidadTickets);
+      } catch (error) {
+        console.error('Error al cargar precio del ticket:', error);
+      }
+    };
+    fetchPrecioTicket();
+  }, []);
+
+  // Ajustar array de pasajeros cuando cambia la cantidad
+  useEffect(() => {
     setPasajeros(Array(cantidadTickets).fill(null).map(() => ({
       nombre: '',
       apellido: '',
@@ -29,6 +44,13 @@ export default function RegistroPage() {
       esMenor: false
     })));
   }, [cantidadTickets]);
+
+  // Calcular monto automáticamente según cantidad de tickets
+  useEffect(() => {
+    if (precioTicket > 0) {
+      setMonto(precioTicket * cantidadTickets);
+    }
+  }, [cantidadTickets, precioTicket]);
 
   useEffect(() => {
     if (user?.rol !== 'staff') {
@@ -201,6 +223,11 @@ export default function RegistroPage() {
                 <div>
                   <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Monto Pagado ($)
+                    {precioTicket > 0 && (
+                      <span className="ml-2 text-xs theme-text-muted">
+                        (Calculado automáticamente: ${precioTicket.toLocaleString()} × {cantidadTickets})
+                      </span>
+                    )}
                   </label>
                   <input
                     type="number"
@@ -212,6 +239,9 @@ export default function RegistroPage() {
                     placeholder="0"
                     className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
                   />
+                  <p className="mt-1 text-xs theme-text-muted">
+                    El monto se calcula automáticamente pero puede modificarse si es necesario
+                  </p>
                 </div>
               </div>
 
