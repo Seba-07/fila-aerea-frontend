@@ -340,6 +340,13 @@ export default function VuelosPage() {
 
             try {
               const qrData = JSON.parse(decodedText);
+
+              // Validar que el circuito del QR coincide con el circuito actual
+              if (qrData.circuito && qrData.circuito !== numeroCircuito) {
+                setScanError(`Este pasajero está inscrito en el circuito ${qrData.circuito}, no en el circuito ${numeroCircuito}`);
+                return;
+              }
+
               const validation = await staffAPI.validateQR(qrData);
               setScanResult(validation.data);
 

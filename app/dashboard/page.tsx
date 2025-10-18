@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false);
   const [pendingRefuelings, setPendingRefuelings] = useState<any[]>([]);
   const [reschedulingNotifications, setReschedulingNotifications] = useState<any[]>([]);
+  const [ticketFilter, setTicketFilter] = useState<'activos' | 'embarcados' | 'volados'>('activos');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -420,8 +421,54 @@ export default function DashboardPage() {
         {user?.rol === 'passenger' && tickets.length > 0 && (
           <div className="mb-12">
             <h3 className="text-2xl font-bold text-white mb-6">Mis Tickets</h3>
+
+            {/* Filtros de tickets */}
+            <div className="flex gap-3 mb-6">
+              <button
+                onClick={() => setTicketFilter('activos')}
+                className={`px-6 py-2 rounded-lg font-medium transition ${
+                  ticketFilter === 'activos'
+                    ? 'bg-blue-600 text-white'
+                    : 'theme-bg-card theme-text-secondary hover:theme-bg-secondary'
+                }`}
+              >
+                Activos ({tickets.filter(t => t.estado === 'disponible' || t.estado === 'asignado' || t.estado === 'inscrito').length})
+              </button>
+              <button
+                onClick={() => setTicketFilter('embarcados')}
+                className={`px-6 py-2 rounded-lg font-medium transition ${
+                  ticketFilter === 'embarcados'
+                    ? 'bg-green-600 text-white'
+                    : 'theme-bg-card theme-text-secondary hover:theme-bg-secondary'
+                }`}
+              >
+                Embarcados ({tickets.filter(t => t.estado === 'embarcado').length})
+              </button>
+              <button
+                onClick={() => setTicketFilter('volados')}
+                className={`px-6 py-2 rounded-lg font-medium transition ${
+                  ticketFilter === 'volados'
+                    ? 'bg-gray-600 text-white'
+                    : 'theme-bg-card theme-text-secondary hover:theme-bg-secondary'
+                }`}
+              >
+                Utilizados ({tickets.filter(t => t.estado === 'volado').length})
+              </button>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {tickets.map((ticket) => {
+              {tickets
+                .filter(ticket => {
+                  if (ticketFilter === 'activos') {
+                    return ticket.estado === 'disponible' || ticket.estado === 'asignado' || ticket.estado === 'inscrito';
+                  } else if (ticketFilter === 'embarcados') {
+                    return ticket.estado === 'embarcado';
+                  } else if (ticketFilter === 'volados') {
+                    return ticket.estado === 'volado';
+                  }
+                  return true;
+                })
+                .map((ticket) => {
                 const pasajero = ticket.pasajeros?.[0];
                 const isEditing = editingTicket?.id === ticket.id;
                 const nombreCompleto = pasajero
