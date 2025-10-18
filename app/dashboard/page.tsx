@@ -747,6 +747,18 @@ export default function DashboardPage() {
               </button>
 
               <button
+                onClick={() => router.push('/staff/pilotos')}
+                className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-indigo-500/50"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
+                <div className="relative">
+                  <div className="text-5xl mb-4">👨‍✈️</div>
+                  <h3 className="text-2xl font-bold theme-text-primary mb-2">Pilotos</h3>
+                  <p className="text-sm theme-text-muted group-hover:theme-text-secondary transition-colors">Gestionar pilotos y licencias</p>
+                </div>
+              </button>
+
+              <button
                 onClick={() => router.push('/staff/reabastecimientos')}
                 className="group relative theme-bg-card hover:theme-bg-secondary rounded-2xl p-8 hover:shadow-xl transition-all duration-300 text-left overflow-hidden theme-border hover:border-amber-500/50"
               >
