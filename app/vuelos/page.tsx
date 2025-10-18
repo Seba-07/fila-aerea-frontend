@@ -27,7 +27,7 @@ export default function VuelosPage() {
   const [showCancelAircraftDay, setShowCancelAircraftDay] = useState(false);
   const [editingPilotoFlight, setEditingPilotoFlight] = useState<string | null>(null);
   const [newPilotId, setNewPilotId] = useState<string>('');
-  const [editingHoraAterrizajeCircuito, setEditingHoraAterrizajeCircuito] = useState<number | null>(null);
+  const [editingHoraAterrizajeFlight, setEditingHoraAterrizajeFlight] = useState<string | null>(null);
   const [newHoraAterrizaje, setNewHoraAterrizaje] = useState<string>('');
 
   // QR Scanner state
@@ -327,8 +327,8 @@ export default function VuelosPage() {
     }
   };
 
-  const handleEditHoraAterrizaje = (numero_circuito: number, hora_actual?: string) => {
-    setEditingHoraAterrizajeCircuito(numero_circuito);
+  const handleEditHoraAterrizaje = (flightId: string, hora_actual?: string) => {
+    setEditingHoraAterrizajeFlight(flightId);
     if (hora_actual) {
       const date = new Date(hora_actual);
       const horas = String(date.getUTCHours()).padStart(2, '0');
@@ -339,30 +339,30 @@ export default function VuelosPage() {
     }
   };
 
-  const handleSaveHoraAterrizaje = async (numero_circuito: number) => {
+  const handleSaveHoraAterrizaje = async (flightId: string) => {
     if (!newHoraAterrizaje) {
       alert('Debes ingresar una hora válida');
       return;
     }
 
     try {
-      // Obtener vuelos del circuito
-      const vuelosCircuito = flights.filter(
-        f => f.numero_circuito === numero_circuito &&
-        f.estado !== 'reprogramado' &&
-        f.estado !== 'cancelado'
-      );
+      // Obtener el vuelo
+      const flight = flights.find(f => f._id === flightId);
+      if (!flight) {
+        alert('Vuelo no encontrado');
+        return;
+      }
 
-      // Obtener la fecha base del primer vuelo del circuito
-      const primeraFecha = new Date(vuelosCircuito[0].fecha_hora);
+      // Obtener la fecha base del vuelo
+      const fechaVuelo = new Date(flight.fecha_hora);
       const [hours, minutes] = newHoraAterrizaje.split(':');
 
-      // Crear la fecha de aterrizaje usando la fecha del circuito con la hora especificada
+      // Crear la fecha de aterrizaje usando la fecha del vuelo con la hora especificada
       const fechaAterrizaje = new Date(
         Date.UTC(
-          primeraFecha.getUTCFullYear(),
-          primeraFecha.getUTCMonth(),
-          primeraFecha.getUTCDate(),
+          fechaVuelo.getUTCFullYear(),
+          fechaVuelo.getUTCMonth(),
+          fechaVuelo.getUTCDate(),
           parseInt(hours),
           parseInt(minutes),
           0,
@@ -370,17 +370,13 @@ export default function VuelosPage() {
         )
       );
 
-      // Actualizar hora_arribo para todos los vuelos del circuito
-      await Promise.all(
-        vuelosCircuito.map(flight =>
-          flightsAPI.updateFlight(flight._id, {
-            hora_arribo: fechaAterrizaje.toISOString(),
-          })
-        )
-      );
+      // Actualizar hora_arribo solo para este vuelo
+      await flightsAPI.updateFlight(flightId, {
+        hora_arribo: fechaAterrizaje.toISOString(),
+      });
 
       alert('Hora de aterrizaje actualizada exitosamente');
-      setEditingHoraAterrizajeCircuito(null);
+      setEditingHoraAterrizajeFlight(null);
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar hora de aterrizaje');
@@ -840,66 +836,6 @@ export default function VuelosPage() {
                         )}
                       </div>
                     )}
-
-                    {/* Hora aterrizaje - Editable para staff */}
-                    {editingHoraAterrizajeCircuito === circuitoNum ? (
-                      <div className="flex items-center gap-3 mt-3">
-                        <label className="text-sm theme-text-muted">🛬 Hora aterrizaje:</label>
-                        <input
-                          type="time"
-                          value={newHoraAterrizaje}
-                          onChange={(e) => setNewHoraAterrizaje(e.target.value)}
-                          className="px-3 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
-                        />
-                        <button
-                          onClick={() => handleSaveHoraAterrizaje(circuitoNum)}
-                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          onClick={() => setEditingHoraAterrizajeCircuito(null)}
-                          className="px-3 py-1 theme-bg-secondary theme-text-primary rounded hover:theme-input text-xs font-medium"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 mt-3">
-                        {vuelosCircuito[0].hora_arribo ? (
-                          <>
-                            <p className="text-lg text-green-400 font-semibold">
-                              🛬 Hora aterrizaje: {(() => {
-                              const date = new Date(vuelosCircuito[0].hora_arribo);
-                              const hours = String(date.getUTCHours()).padStart(2, '0');
-                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                              return `${hours}:${minutes}`;
-                            })()}
-                            </p>
-                            {user?.rol === 'staff' && (
-                              <button
-                                onClick={() => handleEditHoraAterrizaje(circuitoNum, vuelosCircuito[0].hora_arribo)}
-                                className="text-xs text-green-400 hover:text-green-300 ml-2"
-                              >
-                                ✏️ Editar
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm theme-text-muted">🛬 Sin hora de aterrizaje registrada</p>
-                            {user?.rol === 'staff' && (
-                              <button
-                                onClick={() => handleEditHoraAterrizaje(circuitoNum)}
-                                className="text-xs text-green-400 hover:text-green-300 ml-2"
-                              >
-                                ✏️ Agregar
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   {/* Scanner QR para staff - Solo botón */}
@@ -1192,6 +1128,62 @@ export default function VuelosPage() {
                                     setNewPilotId(flight.pilotId?._id || '');
                                   }}
                                   className="text-xs text-blue-600 hover:text-blue-700"
+                                >
+                                  ✏️
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Hora de aterrizaje - Editable por staff */}
+                          {editingHoraAterrizajeFlight === flight._id ? (
+                            <div className="my-3 p-3 theme-input rounded-lg">
+                              <label className="block text-xs theme-text-muted mb-1">Hora de aterrizaje:</label>
+                              <input
+                                type="time"
+                                value={newHoraAterrizaje}
+                                onChange={(e) => setNewHoraAterrizaje(e.target.value)}
+                                className="w-full px-2 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleSaveHoraAterrizaje(flight._id)}
+                                  className="flex-1 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs transition-all shadow-sm"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingHoraAterrizajeFlight(null);
+                                    setNewHoraAterrizaje('');
+                                  }}
+                                  className="flex-1 px-2 py-1 theme-input theme-text-primary rounded hover:theme-bg-secondary text-xs transition-all"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between my-3 p-2 theme-input rounded-lg">
+                              <div>
+                                <p className="text-xs theme-text-muted">Hora de aterrizaje</p>
+                                {flight.hora_arribo ? (
+                                  <p className="text-sm theme-text-primary font-medium">
+                                    🛬 {(() => {
+                                      const date = new Date(flight.hora_arribo);
+                                      const hours = String(date.getUTCHours()).padStart(2, '0');
+                                      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                      return `${hours}:${minutes}`;
+                                    })()}
+                                  </p>
+                                ) : (
+                                  <p className="text-sm theme-text-muted">No registrada</p>
+                                )}
+                              </div>
+                              {user?.rol === 'staff' && (
+                                <button
+                                  onClick={() => handleEditHoraAterrizaje(flight._id, flight.hora_arribo)}
+                                  className="text-xs text-green-600 hover:text-green-700"
                                 >
                                   ✏️
                                 </button>
