@@ -27,6 +27,8 @@ export default function VuelosPage() {
   const [showCancelAircraftDay, setShowCancelAircraftDay] = useState(false);
   const [editingPilotoFlight, setEditingPilotoFlight] = useState<string | null>(null);
   const [newPilotId, setNewPilotId] = useState<string>('');
+  const [editingHoraAterrizajeCircuito, setEditingHoraAterrizajeCircuito] = useState<number | null>(null);
+  const [newHoraAterrizaje, setNewHoraAterrizaje] = useState<string>('');
 
   // QR Scanner state
   const [scanningCircuito, setScanningCircuito] = useState<number | null>(null);
@@ -322,6 +324,66 @@ export default function VuelosPage() {
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar hora prevista');
+    }
+  };
+
+  const handleEditHoraAterrizaje = (numero_circuito: number, hora_actual?: string) => {
+    setEditingHoraAterrizajeCircuito(numero_circuito);
+    if (hora_actual) {
+      const date = new Date(hora_actual);
+      const horas = String(date.getUTCHours()).padStart(2, '0');
+      const minutos = String(date.getUTCMinutes()).padStart(2, '0');
+      setNewHoraAterrizaje(`${horas}:${minutos}`);
+    } else {
+      setNewHoraAterrizaje('');
+    }
+  };
+
+  const handleSaveHoraAterrizaje = async (numero_circuito: number) => {
+    if (!newHoraAterrizaje) {
+      alert('Debes ingresar una hora válida');
+      return;
+    }
+
+    try {
+      // Obtener vuelos del circuito
+      const vuelosCircuito = flights.filter(
+        f => f.numero_circuito === numero_circuito &&
+        f.estado !== 'reprogramado' &&
+        f.estado !== 'cancelado'
+      );
+
+      // Obtener la fecha base del primer vuelo del circuito
+      const primeraFecha = new Date(vuelosCircuito[0].fecha_hora);
+      const [hours, minutes] = newHoraAterrizaje.split(':');
+
+      // Crear la fecha de aterrizaje usando la fecha del circuito con la hora especificada
+      const fechaAterrizaje = new Date(
+        Date.UTC(
+          primeraFecha.getUTCFullYear(),
+          primeraFecha.getUTCMonth(),
+          primeraFecha.getUTCDate(),
+          parseInt(hours),
+          parseInt(minutes),
+          0,
+          0
+        )
+      );
+
+      // Actualizar hora_arribo para todos los vuelos del circuito
+      await Promise.all(
+        vuelosCircuito.map(flight =>
+          flightsAPI.updateFlight(flight._id, {
+            hora_arribo: fechaAterrizaje.toISOString(),
+          })
+        )
+      );
+
+      alert('Hora de aterrizaje actualizada exitosamente');
+      setEditingHoraAterrizajeCircuito(null);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar hora de aterrizaje');
     }
   };
 
@@ -775,6 +837,66 @@ export default function VuelosPage() {
                           </>
                         ) : (
                           <p className="text-sm theme-text-muted">🕐 Sin hora prevista configurada</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Hora aterrizaje - Editable para staff */}
+                    {editingHoraAterrizajeCircuito === circuitoNum ? (
+                      <div className="flex items-center gap-3 mt-3">
+                        <label className="text-sm theme-text-muted">🛬 Hora aterrizaje:</label>
+                        <input
+                          type="time"
+                          value={newHoraAterrizaje}
+                          onChange={(e) => setNewHoraAterrizaje(e.target.value)}
+                          className="px-3 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
+                        />
+                        <button
+                          onClick={() => handleSaveHoraAterrizaje(circuitoNum)}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={() => setEditingHoraAterrizajeCircuito(null)}
+                          className="px-3 py-1 theme-bg-secondary theme-text-primary rounded hover:theme-input text-xs font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-3">
+                        {vuelosCircuito[0].hora_arribo ? (
+                          <>
+                            <p className="text-lg text-green-400 font-semibold">
+                              🛬 Hora aterrizaje: {(() => {
+                              const date = new Date(vuelosCircuito[0].hora_arribo);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })()}
+                            </p>
+                            {user?.rol === 'staff' && (
+                              <button
+                                onClick={() => handleEditHoraAterrizaje(circuitoNum, vuelosCircuito[0].hora_arribo)}
+                                className="text-xs text-green-400 hover:text-green-300 ml-2"
+                              >
+                                ✏️ Editar
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm theme-text-muted">🛬 Sin hora de aterrizaje registrada</p>
+                            {user?.rol === 'staff' && (
+                              <button
+                                onClick={() => handleEditHoraAterrizaje(circuitoNum)}
+                                className="text-xs text-green-400 hover:text-green-300 ml-2"
+                              >
+                                ✏️ Agregar
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
