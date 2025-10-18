@@ -739,98 +739,108 @@ export default function VuelosPage() {
                     )}
                   </div>
 
-                  {/* Scanner QR para staff - Versión compacta */}
+                  {/* Scanner QR para staff - Solo botón */}
                   {user?.rol === 'staff' && (
                     <div className="mb-4 pb-4 border-b theme-border">
-                      <h3 className="text-lg font-bold theme-text-primary mb-3 flex items-center gap-2">
-                        📱 Validación de Embarque
-                      </h3>
-
-                      {/* Scanner Area - Compacto */}
-                      <div className="mb-3">
-                        <div
-                          id={`qr-reader-${circuitoNum}`}
-                          className={`${scanningCircuito === circuitoNum ? '' : 'hidden'} rounded-lg overflow-hidden max-w-md mx-auto`}
-                        ></div>
-
-                        {scanningCircuito !== circuitoNum && !scanResult && (
-                          <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                            <svg className="w-12 h-12 mx-auto theme-text-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                            </svg>
-                            <p className="text-sm theme-text-muted">Presiona el botón para escanear</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Controls - Más pequeños */}
-                      <div className="flex gap-2 mb-3">
-                        {scanningCircuito !== circuitoNum && !scanResult && (
-                          <button
-                            onClick={() => startScanner(circuitoNum)}
-                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                          >
-                            📷 Iniciar Escaneo
-                          </button>
-                        )}
-
-                        {scanningCircuito === circuitoNum && (
-                          <button
-                            onClick={stopScanner}
-                            className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition"
-                          >
-                            ⏹ Detener
-                          </button>
-                        )}
-
-                        {scanResult && (
-                          <button
-                            onClick={() => {
-                              resetScan();
-                              startScanner(circuitoNum);
-                            }}
-                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                          >
-                            🔄 Escanear Otro
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Error - Compacto */}
-                      {scanError && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">
-                          <p className="text-red-400 text-sm">{scanError}</p>
-                        </div>
+                      {/* Botón para activar scanner */}
+                      {scanningCircuito !== circuitoNum && !scanResult && (
+                        <button
+                          onClick={() => startScanner(circuitoNum)}
+                          className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                        >
+                          📱 Validar Embarque con QR
+                        </button>
                       )}
 
-                      {/* Result - Compacto */}
-                      {scanResult && (
-                        <div className={`border rounded-lg p-4 ${
-                          scanResult.valido
-                            ? 'bg-green-500/10 border-green-500/30'
-                            : 'bg-red-500/10 border-red-500/30'
-                        }`}>
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="text-4xl">
-                              {scanResult.valido ? '✅' : '❌'}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className={`text-lg font-bold ${
-                                scanResult.valido ? 'text-green-400' : 'text-red-400'
-                              }`}>
-                                {scanResult.valido ? 'EMBARCADO' : 'INVÁLIDO'}
-                              </h4>
-                              {scanResult.valido && scanResult.ticket && (
-                                <p className="text-sm theme-text-primary">
-                                  {scanResult.ticket.pasajero?.nombre} {scanResult.ticket.pasajero?.apellido}
-                                </p>
-                              )}
-                            </div>
-                          </div>
+                      {/* Modal/Ventana de scanner cuando está activo */}
+                      {(scanningCircuito === circuitoNum || scanResult || scanError) && (
+                        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                          <div className="bg-slate-800 rounded-xl max-w-lg w-full p-6 relative">
+                            {/* Botón cerrar */}
+                            <button
+                              onClick={() => {
+                                stopScanner();
+                                resetScan();
+                              }}
+                              className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl"
+                            >
+                              ✕
+                            </button>
 
-                          {!scanResult.valido && (
-                            <p className="text-red-300 text-sm">{scanResult.mensaje}</p>
-                          )}
+                            <h3 className="text-xl font-bold text-white mb-4">
+                              📱 Validación de Embarque
+                            </h3>
+
+                            {/* Scanner Area */}
+                            <div
+                              id={`qr-reader-${circuitoNum}`}
+                              className={`${scanningCircuito === circuitoNum ? '' : 'hidden'} rounded-lg overflow-hidden mb-4`}
+                            ></div>
+
+                            {/* Controles */}
+                            {scanningCircuito === circuitoNum && (
+                              <button
+                                onClick={stopScanner}
+                                className="w-full bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition mb-4"
+                              >
+                                ⏹ Detener Escaneo
+                              </button>
+                            )}
+
+                            {/* Error */}
+                            {scanError && (
+                              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                                <p className="text-red-400">{scanError}</p>
+                                <button
+                                  onClick={() => {
+                                    resetScan();
+                                    startScanner(circuitoNum);
+                                  }}
+                                  className="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition"
+                                >
+                                  🔄 Reintentar
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Resultado */}
+                            {scanResult && (
+                              <div className={`border rounded-lg p-6 mb-4 ${
+                                scanResult.valido
+                                  ? 'bg-green-500/10 border-green-500/30'
+                                  : 'bg-red-500/10 border-red-500/30'
+                              }`}>
+                                <div className="text-center mb-4">
+                                  <div className="text-6xl mb-3">
+                                    {scanResult.valido ? '✅' : '❌'}
+                                  </div>
+                                  <h4 className={`text-2xl font-bold mb-2 ${
+                                    scanResult.valido ? 'text-green-400' : 'text-red-400'
+                                  }`}>
+                                    {scanResult.valido ? 'EMBARCADO' : 'INVÁLIDO'}
+                                  </h4>
+                                  {scanResult.valido && scanResult.ticket && (
+                                    <p className="text-lg text-white">
+                                      {scanResult.ticket.pasajero?.nombre} {scanResult.ticket.pasajero?.apellido}
+                                    </p>
+                                  )}
+                                  {!scanResult.valido && (
+                                    <p className="text-red-300 mt-2">{scanResult.mensaje}</p>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => {
+                                    resetScan();
+                                    startScanner(circuitoNum);
+                                  }}
+                                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition"
+                                >
+                                  🔄 Escanear Otro Pasajero
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
