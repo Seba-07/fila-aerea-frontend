@@ -208,8 +208,8 @@ export default function VuelosPage() {
       const [year, month, day] = fecha.split('-');
 
       let fechaHora;
-      if (numeroCircuito === '1' && horaPrevista) {
-        // Para circuito #1, usar la hora prevista ingresada
+      if (horaPrevista) {
+        // Si se proporciona hora prevista, usarla
         const [hours, minutes] = horaPrevista.split(':');
         fechaHora = new Date(
           parseInt(year),
@@ -221,7 +221,7 @@ export default function VuelosPage() {
           0
         );
       } else {
-        // Para otros circuitos, usar medianoche (el backend calculará la hora)
+        // Para circuitos sin hora prevista, usar medianoche (el backend calculará la hora)
         fechaHora = new Date(
           parseInt(year),
           parseInt(month) - 1,
@@ -233,7 +233,7 @@ export default function VuelosPage() {
       await api.post('/staff/circuitos', {
         numero_circuito: parseInt(numeroCircuito),
         fecha_hora: fechaHora.toISOString(),
-        hora_prevista: numeroCircuito === '1' ? horaPrevista : undefined,
+        hora_prevista: horaPrevista || undefined,
         aircraftIds: selectedAircrafts,
       });
 
@@ -587,6 +587,22 @@ export default function VuelosPage() {
   };
 
   // Agrupar vuelos por número de circuito
+  // Agrupar vuelos por fecha + circuito para identificar circuitos únicos
+  const flightsByCircuitoAndDate = flights.reduce((acc, flight) => {
+    const fecha = new Date(flight.fecha_hora).toISOString().split('T')[0]; // YYYY-MM-DD
+    const key = `${fecha}-${flight.numero_circuito}`;
+    if (!acc[key]) {
+      acc[key] = {
+        fecha,
+        numero_circuito: flight.numero_circuito,
+        flights: [],
+      };
+    }
+    acc[key].flights.push(flight);
+    return acc;
+  }, {} as Record<string, { fecha: string; numero_circuito: number; flights: any[] }>);
+
+  // Mantener compatibilidad con flightsByCircuito para código existente
   const flightsByCircuito = flights.reduce((acc, flight) => {
     const circuitoNum = flight.numero_circuito;
     if (!acc[circuitoNum]) {
@@ -596,13 +612,34 @@ export default function VuelosPage() {
     return acc;
   }, {} as Record<number, any[]>);
 
-  const circuitosOrdenados = Object.keys(flightsByCircuito)
-    .map(Number)
-    .sort((a, b) => a - b);
+  // Ordenar circuitos: primero por estado (activos primero, finalizados último), luego por fecha y número
+  const circuitosOrdenados = Object.values(flightsByCircuitoAndDate)
+    .sort((a, b) => {
+      // Determinar estado de cada circuito
+      const statusA = a.flights.every((f: any) => f.estado === 'finalizado') ? 'finalizado' : 'activo';
+      const statusB = b.flights.every((f: any) => f.estado === 'finalizado') ? 'finalizado' : 'activo';
 
-  // Inicializar el tab seleccionado con el primer circuito si no hay uno seleccionado
+      // Primero ordenar por estado (activos primero)
+      if (statusA === 'activo' && statusB === 'finalizado') return -1;
+      if (statusA === 'finalizado' && statusB === 'activo') return 1;
+
+      // Luego por fecha (más reciente primero para activos, mantener orden para finalizados)
+      if (statusA === 'activo') {
+        const dateCompare = new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
+        if (dateCompare !== 0) return dateCompare;
+      } else {
+        const dateCompare = new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
+        if (dateCompare !== 0) return dateCompare;
+      }
+
+      // Finalmente por número de circuito
+      return a.numero_circuito - b.numero_circuito;
+    });
+
+  // Inicializar el tab seleccionado con el primer circuito activo si no hay uno seleccionado
   if (selectedCircuitoTab === null && circuitosOrdenados.length > 0) {
-    setSelectedCircuitoTab(circuitosOrdenados[0]);
+    const primerActivo = circuitosOrdenados.find(c => !c.flights.every((f: any) => f.estado === 'finalizado'));
+    setSelectedCircuitoTab(primerActivo ? primerActivo.numero_circuito : circuitosOrdenados[0].numero_circuito);
   }
 
   // Función para determinar el estado del circuito
@@ -742,21 +779,24 @@ export default function VuelosPage() {
               </div>
             </div>
 
-            {/* Campo de hora prevista solo para circuito #1 */}
-            {numeroCircuito === '1' && (
-              <div className="mb-4">
-                <label className="block text-sm theme-text-muted mb-1">Hora Prevista de Salida (solo para Circuito #1):</label>
-                <input
-                  type="time"
-                  value={horaPrevista}
-                  onChange={(e) => setHoraPrevista(e.target.value)}
-                  className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
-                />
-                <p className="text-xs theme-text-muted mt-1">
-                  💡 Los siguientes circuitos calcularán su hora automáticamente según la duración configurada
-                </p>
-              </div>
-            )}
+            {/* Campo de hora prevista para todos los circuitos */}
+            <div className="mb-4">
+              <label className="block text-sm theme-text-muted mb-1">
+                Hora Prevista de Salida {numeroCircuito !== '1' && '(opcional)'}:
+              </label>
+              <input
+                type="time"
+                value={horaPrevista}
+                onChange={(e) => setHoraPrevista(e.target.value)}
+                className="w-full px-3 py-2 theme-bg-secondary border theme-border rounded theme-text-primary"
+                placeholder={numeroCircuito !== '1' ? 'Se calculará automáticamente' : ''}
+              />
+              <p className="text-xs theme-text-muted mt-1">
+                {numeroCircuito === '1'
+                  ? '⚠️ Obligatorio para el primer circuito del día'
+                  : '💡 Se calculará automáticamente según la duración configurada, pero puedes modificarla'}
+              </p>
+            </div>
 
             <div className="mb-4">
               <label className="block text-sm theme-text-muted mb-2">Seleccionar Aviones:</label>
@@ -804,15 +844,23 @@ export default function VuelosPage() {
             {/* Tabs */}
             <div className="mb-6 overflow-x-auto">
               <div className="flex gap-2 min-w-max pb-2">
-                {circuitosOrdenados.map((circuitoNum) => {
-                  const vuelos = flightsByCircuito[circuitoNum];
+                {circuitosOrdenados.map((circuito) => {
+                  const circuitoNum = circuito.numero_circuito;
+                  const vuelos = circuito.flights;
                   const horaPrevista = vuelos[0]?.hora_prevista_salida;
-                  const status = getCircuitoStatus(circuitoNum);
+                  const fechaVuelo = new Date(vuelos[0]?.fecha_hora);
+                  const status = vuelos.every((f: any) => f.estado === 'finalizado')
+                    ? 'finalizado'
+                    : vuelos.some((f: any) => f.estado === 'en_vuelo')
+                    ? 'volando'
+                    : vuelos.some((f: any) => f.estado === 'abierto')
+                    ? 'activo'
+                    : 'pendiente';
                   const isSelected = selectedCircuitoTab === circuitoNum;
 
                   return (
                     <button
-                      key={circuitoNum}
+                      key={`${circuito.fecha}-${circuitoNum}`}
                       onClick={() => {
                         setSelectedCircuitoTab(circuitoNum);
                         resetScan();
@@ -823,7 +871,10 @@ export default function VuelosPage() {
                           : 'theme-bg-card theme-text-primary hover:theme-bg-secondary'
                       }`}
                     >
-                      <div className="text-center min-w-[120px]">
+                      <div className="text-center min-w-[140px]">
+                        <div className="text-xs opacity-75 mb-1">
+                          {fechaVuelo.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' })}
+                        </div>
                         <div className="text-lg font-bold">Circuito #{circuitoNum}</div>
                         {horaPrevista && (
                           <div className="text-xs opacity-90 mt-1">
