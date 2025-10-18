@@ -231,11 +231,14 @@ export default function ManifiestosPage() {
                     {selectedManifest.vuelos.map((vuelo: any, idx: number) => (
                       <div key={idx} className="theme-bg-secondary/50 rounded-xl p-6 print:bg-gray-100 print:border print:border-gray-300">
                         <div className="flex items-center justify-between mb-4">
-                          <div>
+                          <div className="flex-1">
                             <h3 className="text-xl font-bold theme-text-primary print:text-black">
                               {vuelo.matricula}
                             </h3>
                             <p className="text-sm theme-text-muted print:text-gray-600">{vuelo.modelo}</p>
+                            <p className="text-sm theme-text-primary print:text-black mt-1">
+                              <span className="theme-text-muted print:text-gray-600">Piloto:</span> {vuelo.piloto_nombre}
+                            </p>
                           </div>
                           <span className="px-3 py-1 bg-blue-600 text-white rounded text-sm print:bg-gray-300 print:text-black">
                             {vuelo.pasajeros?.length || 0} pasajeros
