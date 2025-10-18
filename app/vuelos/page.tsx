@@ -333,7 +333,6 @@ export default function VuelosPage() {
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
-            facingMode: 'environment', // Forzar cámara trasera
           },
           async (decodedText) => {
             await html5QrCode.stop();
