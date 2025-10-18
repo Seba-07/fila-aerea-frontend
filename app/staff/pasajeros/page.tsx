@@ -669,14 +669,14 @@ export default function PasajerosPage() {
                           )}
 
                           {/* Inscripción de vuelo */}
-                          {ticket.pasajeros && ticket.pasajeros.length > 0 && (
+                          {ticket.estado !== 'volado' && editingTicketPassengerId !== ticket.id && (
                             <div className="mt-2">
                               {ticket.flightId ? (
                                 <div>
                                   <p className="text-xs theme-text-muted">
                                     Vuelo: Circuito #{ticket.flightNumber || 'N/A'}
                                   </p>
-                                  {ticket.estado !== 'volado' && ticket.estado !== 'embarcado' && (
+                                  {ticket.estado !== 'embarcado' && (
                                     <button
                                       onClick={() => handleDesinscribirTicket(ticket.id)}
                                       className="mt-1 text-xs text-red-400 hover:text-red-300"
