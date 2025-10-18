@@ -348,7 +348,18 @@ export default function VuelosPage() {
                 fetchData();
               }, 2000);
             } catch (err: any) {
-              setScanError('Error al validar el QR: ' + (err.response?.data?.error || err.message));
+              // Mejorar mensaje de error
+              let errorMessage = 'Código QR inválido o no reconocido';
+
+              if (err.response?.data?.mensaje) {
+                errorMessage = err.response.data.mensaje;
+              } else if (err.response?.data?.error) {
+                errorMessage = err.response.data.error;
+              } else if (err.message && err.message.includes('JSON')) {
+                errorMessage = 'El código QR escaneado no es válido para este sistema';
+              }
+
+              setScanError(errorMessage);
             }
           },
           (errorMessage) => {
