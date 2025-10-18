@@ -613,7 +613,7 @@ export default function VuelosPage() {
   }, {} as Record<number, any[]>);
 
   // Ordenar circuitos: primero por estado (activos primero, finalizados último), luego por fecha y número
-  const circuitosOrdenados = Object.values(flightsByCircuitoAndDate)
+  const circuitosOrdenados = (Object.values(flightsByCircuitoAndDate) as Array<{ fecha: string; numero_circuito: number; flights: any[] }>)
     .sort((a, b) => {
       // Determinar estado de cada circuito
       const statusA = a.flights.every((f: any) => f.estado === 'finalizado') ? 'finalizado' : 'activo';
