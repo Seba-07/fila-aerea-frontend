@@ -12,7 +12,7 @@ export default function PasajerosPage() {
   const [passengers, setPassengers] = useState<any[]>([]);
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<'todos' | 'volados' | 'pendientes'>('todos');
+  const [filterStatus, setFilterStatus] = useState<'todos' | 'volados' | 'pendientes'>('pendientes');
 
   // Estado para editar info básica
   const [editingInfoId, setEditingInfoId] = useState<string | null>(null);
@@ -223,13 +223,13 @@ export default function PasajerosPage() {
 
     const hasVoladoTicket = passenger.tickets?.some((t: any) => t.estado === 'volado');
     const hasPendingTicket = passenger.tickets?.some((t: any) =>
-      ['disponible', 'asignado', 'inscrito', 'embarcado'].includes(t.estado)
+      ['disponible', 'inscrito'].includes(t.estado)
     );
 
     if (filterStatus === 'volados') {
       return hasVoladoTicket;
     } else if (filterStatus === 'pendientes') {
-      return hasPendingTicket && !hasVoladoTicket;
+      return hasPendingTicket;
     }
     return true;
   });
@@ -295,9 +295,8 @@ export default function PasajerosPage() {
             }`}
           >
             Pendientes por volar ({passengers.filter(p => {
-              const hasVolado = p.tickets?.some((t: any) => t.estado === 'volado');
-              const hasPending = p.tickets?.some((t: any) => ['disponible', 'asignado', 'inscrito', 'embarcado'].includes(t.estado));
-              return hasPending && !hasVolado;
+              const hasPending = p.tickets?.some((t: any) => ['disponible', 'inscrito'].includes(t.estado));
+              return hasPending;
             }).length})
           </button>
         </div>
@@ -562,15 +561,11 @@ export default function PasajerosPage() {
                           <span
                             className={`inline-block px-2 py-1 rounded text-xs font-bold ${
                               ticket.estado === 'disponible'
-                                ? 'bg-green-400 text-green-900'
-                                : ticket.estado === 'asignado'
                                 ? 'bg-yellow-400 text-yellow-900'
                                 : ticket.estado === 'inscrito'
                                 ? 'bg-blue-400 text-blue-900'
                                 : ticket.estado === 'volado'
                                 ? 'bg-gray-400 text-gray-900'
-                                : ticket.estado === 'embarcado'
-                                ? 'bg-purple-400 text-purple-900'
                                 : 'bg-red-400 text-red-900'
                             }`}
                           >
@@ -647,7 +642,7 @@ export default function PasajerosPage() {
                                       )}
                                     </div>
                                   ))}
-                                  {ticket.estado !== 'volado' && ticket.estado !== 'embarcado' && (
+                                  {ticket.estado !== 'volado' && (
                                     <button
                                       onClick={() => handleEditTicketPassengers(ticket)}
                                       className="mt-1 text-xs text-blue-400 hover:text-blue-300"
@@ -676,7 +671,7 @@ export default function PasajerosPage() {
                                   <p className="text-xs theme-text-muted">
                                     Vuelo: Circuito #{ticket.flightNumber || 'N/A'}
                                   </p>
-                                  {ticket.estado !== 'embarcado' && (
+                                  {ticket.estado !== 'volado' && (
                                     <button
                                       onClick={() => handleDesinscribirTicket(ticket.id)}
                                       className="mt-1 text-xs text-red-400 hover:text-red-300"
