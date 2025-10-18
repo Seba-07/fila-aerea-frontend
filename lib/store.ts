@@ -19,7 +19,7 @@ interface Ticket {
   codigo_ticket: string;
   pasajeros: Pasajero[];
   flightId?: string;
-  estado: 'disponible' | 'asignado' | 'inscrito' | 'volado' | 'cancelado';
+  estado: 'disponible' | 'asignado' | 'inscrito' | 'embarcado' | 'volado' | 'cancelado';
   reprogramacion_pendiente?: {
     nuevo_flightId: string;
     numero_tanda_anterior: number;
