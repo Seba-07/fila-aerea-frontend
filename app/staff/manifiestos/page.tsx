@@ -230,19 +230,37 @@ export default function ManifiestosPage() {
                   <div className="space-y-6 print:space-y-4">
                     {selectedManifest.vuelos.map((vuelo: any, idx: number) => (
                       <div key={idx} className="theme-bg-secondary/50 rounded-xl p-6 print:bg-gray-100 print:border print:border-gray-300">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold theme-text-primary print:text-black">
-                              {vuelo.matricula}
-                            </h3>
-                            <p className="text-sm theme-text-muted print:text-gray-600">{vuelo.modelo}</p>
-                            <p className="text-sm theme-text-primary print:text-black mt-1">
-                              <span className="theme-text-muted print:text-gray-600">Piloto:</span> {vuelo.piloto_nombre}
-                            </p>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="text-xl font-bold theme-text-primary print:text-black">
+                                {vuelo.matricula}
+                              </h3>
+                              <p className="text-sm theme-text-muted print:text-gray-600">{vuelo.modelo}</p>
+                            </div>
+                            <span className="px-3 py-1 bg-blue-600 text-white rounded text-sm print:bg-gray-300 print:text-black">
+                              {vuelo.pasajeros?.length || 0} pasajeros
+                            </span>
                           </div>
-                          <span className="px-3 py-1 bg-blue-600 text-white rounded text-sm print:bg-gray-300 print:text-black">
-                            {vuelo.pasajeros?.length || 0} pasajeros
-                          </span>
+
+                          <div className="grid grid-cols-2 gap-2 mt-2 p-2 theme-bg-secondary/30 rounded print:bg-gray-50">
+                            <div>
+                              <p className="text-xs theme-text-muted print:text-gray-600">Piloto al mando:</p>
+                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_nombre}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs theme-text-muted print:text-gray-600">Licencia:</p>
+                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.piloto_licencia}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de salida:</p>
+                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_salida}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs theme-text-muted print:text-gray-600">Aeródromo de llegada:</p>
+                              <p className="text-sm theme-text-primary print:text-black font-medium">{vuelo.aerodromo_llegada}</p>
+                            </div>
+                          </div>
                         </div>
 
                         {vuelo.pasajeros && vuelo.pasajeros.length > 0 ? (

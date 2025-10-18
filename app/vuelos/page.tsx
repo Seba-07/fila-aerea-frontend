@@ -4,7 +4,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { flightsAPI, api, staffAPI } from '@/lib/api';
+import { flightsAPI, api, staffAPI, pilotsAPI } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { Html5Qrcode } from 'html5-qrcode';
 
@@ -13,6 +13,7 @@ export default function VuelosPage() {
   const { user, tickets, isAuthenticated } = useAuthStore();
   const [flights, setFlights] = useState<any[]>([]);
   const [aircrafts, setAircrafts] = useState<any[]>([]);
+  const [pilots, setPilots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateTanda, setShowCreateTanda] = useState(false);
   const [editingCapacity, setEditingCapacity] = useState<string | null>(null);
@@ -25,7 +26,7 @@ export default function VuelosPage() {
   const [rescheduleReason, setRescheduleReason] = useState<'combustible' | 'meteorologia' | 'mantenimiento'>('combustible');
   const [showCancelAircraftDay, setShowCancelAircraftDay] = useState(false);
   const [editingPilotoFlight, setEditingPilotoFlight] = useState<string | null>(null);
-  const [newPiloto, setNewPiloto] = useState<string>('');
+  const [newPilotId, setNewPilotId] = useState<string>('');
 
   // QR Scanner state
   const [scanningCircuito, setScanningCircuito] = useState<number | null>(null);
@@ -58,13 +59,15 @@ export default function VuelosPage() {
       // Para pasajeros, mostrar solo vuelos abiertos. Para staff, mostrar todos los estados activos.
       const estadosFilter = user?.rol === 'staff' ? undefined : 'abierto';
 
-      const [flightsRes, aircraftsRes] = await Promise.all([
+      const [flightsRes, aircraftsRes, pilotsRes] = await Promise.all([
         flightsAPI.getFlights(estadosFilter),
         api.get('/staff/aircrafts').catch(() => ({ data: [] })), // Ignorar error si no es staff
+        pilotsAPI.getAll().catch(() => ({ data: [] })), // Ignorar error si no es staff
       ]);
 
       setFlights(flightsRes.data);
       setAircrafts(aircraftsRes.data);
+      setPilots(pilotsRes.data);
 
       // Calcular siguiente número de circuito
       if (flightsRes.data.length > 0) {
@@ -101,11 +104,11 @@ export default function VuelosPage() {
   const handleUpdatePiloto = async (flightId: string) => {
     try {
       await flightsAPI.updateFlight(flightId, {
-        piloto_nombre: newPiloto,
+        pilotId: newPilotId || null,
       });
       alert('Piloto actualizado exitosamente');
       setEditingPilotoFlight(null);
-      setNewPiloto('');
+      setNewPilotId('');
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar piloto');
@@ -1011,14 +1014,24 @@ export default function VuelosPage() {
                           {/* Piloto - Editable por staff */}
                           {editingPilotoFlight === flight._id ? (
                             <div className="my-3 p-3 theme-input rounded-lg">
-                              <label className="block text-xs theme-text-muted mb-1">Nombre del piloto:</label>
-                              <input
-                                type="text"
-                                value={newPiloto}
-                                onChange={(e) => setNewPiloto(e.target.value)}
-                                placeholder="Ej: Juan Pérez"
+                              <label className="block text-xs theme-text-muted mb-1">Seleccionar piloto:</label>
+                              <select
+                                value={newPilotId}
+                                onChange={(e) => setNewPilotId(e.target.value)}
                                 className="w-full px-2 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
-                              />
+                              >
+                                <option value="">Sin asignar</option>
+                                {pilots.map((pilot) => (
+                                  <option key={pilot._id} value={pilot._id}>
+                                    {pilot.nombre} - {pilot.numero_licencia}
+                                  </option>
+                                ))}
+                              </select>
+                              {pilots.length === 0 && (
+                                <p className="text-xs text-yellow-500 mt-1">
+                                  No hay pilotos registrados. <a href="/staff/pilotos" className="underline">Crear piloto</a>
+                                </p>
+                              )}
                               <div className="flex gap-2 mt-2">
                                 <button
                                   onClick={() => handleUpdatePiloto(flight._id)}
@@ -1029,7 +1042,7 @@ export default function VuelosPage() {
                                 <button
                                   onClick={() => {
                                     setEditingPilotoFlight(null);
-                                    setNewPiloto('');
+                                    setNewPilotId('');
                                   }}
                                   className="flex-1 px-2 py-1 theme-input theme-text-primary rounded hover:theme-bg-secondary text-xs transition-all"
                                 >
@@ -1042,14 +1055,19 @@ export default function VuelosPage() {
                               <div>
                                 <p className="text-xs theme-text-muted">Piloto al mando</p>
                                 <p className="text-sm theme-text-primary font-medium">
-                                  {flight.piloto_nombre || 'Sin asignar'}
+                                  {flight.pilotId?.nombre || flight.piloto_nombre || 'Sin asignar'}
                                 </p>
+                                {flight.pilotId?.numero_licencia && (
+                                  <p className="text-xs theme-text-muted">
+                                    Lic: {flight.pilotId.numero_licencia}
+                                  </p>
+                                )}
                               </div>
                               {user?.rol === 'staff' && (
                                 <button
                                   onClick={() => {
                                     setEditingPilotoFlight(flight._id);
-                                    setNewPiloto(flight.piloto_nombre || '');
+                                    setNewPilotId(flight.pilotId?._id || '');
                                   }}
                                   className="text-xs text-blue-600 hover:text-blue-700"
                                 >

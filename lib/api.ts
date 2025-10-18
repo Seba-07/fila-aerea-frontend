@@ -121,3 +121,12 @@ export const manifestsAPI = {
   getAll: () => api.get('/manifests'),
   getByCircuito: (numeroCircuito: number) => api.get(`/manifests/circuito/${numeroCircuito}`),
 };
+
+// Pilotos
+export const pilotsAPI = {
+  getAll: () => api.get('/pilots'),
+  create: (data: { nombre: string; numero_licencia: string }) => api.post('/pilots', data),
+  update: (pilotId: string, data: { nombre?: string; numero_licencia?: string }) =>
+    api.patch(`/pilots/${pilotId}`, data),
+  delete: (pilotId: string) => api.delete(`/pilots/${pilotId}`),
+};
