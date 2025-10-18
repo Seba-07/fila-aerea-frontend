@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [pendingRefuelings, setPendingRefuelings] = useState<any[]>([]);
   const [reschedulingNotifications, setReschedulingNotifications] = useState<any[]>([]);
   const [ticketFilter, setTicketFilter] = useState<'activos' | 'embarcados' | 'volados'>('activos');
+  const [uploadingAuth, setUploadingAuth] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -157,6 +158,38 @@ export default function DashboardPage() {
       alert(error.response?.data?.error || 'Error al actualizar ticket');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadAutorizacion = async (ticketId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Solo se permiten archivos PDF');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('El archivo no puede superar 5MB');
+      return;
+    }
+
+    setUploadingAuth(ticketId);
+    try {
+      await userAPI.uploadAutorizacion(ticketId, file);
+
+      // Refresh tickets
+      const { data } = await userAPI.getMe();
+      if (data.tickets) {
+        updateTickets(data.tickets);
+      }
+
+      alert('✓ Autorización subida exitosamente');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al subir autorización');
+    } finally {
+      setUploadingAuth(null);
     }
   };
 
@@ -566,18 +599,54 @@ export default function DashboardPage() {
                           <div className="mt-4 pt-4 border-t theme-border text-sm space-y-1 text-center">
                             <p className="theme-text-muted">RUT: <span className="theme-text-primary">{pasajero.rut || 'No especificado'}</span></p>
                             {pasajero.esMenor && (
-                              <p className="text-amber-400 text-xs">Menor de edad</p>
+                              <div>
+                                <p className="text-amber-400 text-xs mb-2">Menor de edad</p>
+                                {pasajero.autorizacion_url ? (
+                                  <a
+                                    href={process.env.NEXT_PUBLIC_API_URL + pasajero.autorizacion_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-green-400 hover:text-green-300 underline"
+                                  >
+                                    ✓ Ver autorización
+                                  </a>
+                                ) : (
+                                  <p className="text-xs text-red-400">⚠️ Sin autorización</p>
+                                )}
+                              </div>
                             )}
                           </div>
                         )}
-                        {ticket.estado === 'disponible' && (
-                          <button
-                            onClick={() => handleEditTicket(ticket)}
-                            className="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm font-medium transition"
-                          >
-                            ✏️ Editar Datos
-                          </button>
-                        )}
+                        <div className="space-y-2 mt-4">
+                          {ticket.estado === 'disponible' && (
+                            <button
+                              onClick={() => handleEditTicket(ticket)}
+                              className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm font-medium transition"
+                            >
+                              ✏️ Editar Datos
+                            </button>
+                          )}
+                          {pasajero?.esMenor && (ticket.estado === 'disponible' || ticket.estado === 'inscrito') && (
+                            <div>
+                              <input
+                                type="file"
+                                id={`auth-${ticket.id}`}
+                                accept="application/pdf"
+                                onChange={(e) => handleUploadAutorizacion(ticket.id, e)}
+                                disabled={uploadingAuth === ticket.id}
+                                className="hidden"
+                              />
+                              <label
+                                htmlFor={`auth-${ticket.id}`}
+                                className={`block w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg text-sm font-medium transition text-center cursor-pointer ${
+                                  uploadingAuth === ticket.id ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                              >
+                                {uploadingAuth === ticket.id ? 'Subiendo...' : (pasajero.autorizacion_url ? '📄 Actualizar Autorización' : '📄 Subir Autorización')}
+                              </label>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

@@ -47,6 +47,15 @@ export const authAPI = {
 export const userAPI = {
   getMe: () => api.get('/me'),
   updateTicket: (ticketId: string, data: any) => api.patch(`/tickets/${ticketId}`, data),
+  uploadAutorizacion: (ticketId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('autorizacion', file);
+    return api.post(`/tickets/${ticketId}/autorizacion`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 // Vuelos

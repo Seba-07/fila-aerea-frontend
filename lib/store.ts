@@ -12,6 +12,7 @@ interface Pasajero {
   apellido: string;
   rut: string;
   esMenor?: boolean;
+  autorizacion_url?: string;
 }
 
 interface Ticket {
