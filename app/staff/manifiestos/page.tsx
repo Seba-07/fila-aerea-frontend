@@ -44,7 +44,8 @@ export default function ManifiestosPage() {
   const handleViewDetail = async (manifest: any) => {
     try {
       setLoadingDetail(true);
-      const { data } = await manifestsAPI.getByCircuito(manifest.numero_circuito);
+      const flightId = manifest.vuelo?.flightId || manifest.flightId;
+      const { data } = await manifestsAPI.getByFlight(flightId);
       setSelectedManifest(data);
     } catch (error) {
       console.error('Error al cargar detalle:', error);
@@ -128,63 +129,58 @@ export default function ManifiestosPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y theme-border">
-                  {manifests.flatMap((manifest) =>
-                    manifest.vuelos && manifest.vuelos.length > 0 ?
-                      manifest.vuelos.map((vuelo: any, idx: number) => (
-                        <tr key={`${manifest._id}-${idx}`} className="hover:theme-bg-secondary/30 transition">
-                          <td className="px-4 py-3 theme-text-primary font-medium">#{manifest.numero_circuito}</td>
-                          <td className="px-4 py-3">
-                            <div>
-                              <p className="theme-text-primary font-medium">{vuelo.matricula}</p>
-                              <p className="text-xs theme-text-muted">{vuelo.modelo}</p>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm theme-text-primary">
-                            {new Date(manifest.fecha_vuelo).toLocaleDateString('es-ES', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            })}
-                          </td>
-                          <td className="px-4 py-3 text-sm theme-text-primary font-medium">
-                            {(() => {
-                              const date = new Date(manifest.hora_despegue);
-                              const hours = String(date.getUTCHours()).padStart(2, '0');
-                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                              return `${hours}:${minutes}`;
-                            })()}
-                          </td>
-                          <td className="px-4 py-3 text-sm theme-text-primary">
-                            {manifest.hora_aterrizaje ? (() => {
-                              const date = new Date(manifest.hora_aterrizaje);
-                              const hours = String(date.getUTCHours()).padStart(2, '0');
-                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                              return `${hours}:${minutes}`;
-                            })() : <span className="text-yellow-500">En vuelo</span>}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-sm font-medium">
-                              {vuelo.pasajeros?.length || 0}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={() => handleViewDetail(manifest)}
-                              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-medium transition"
-                            >
-                              Ver
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    : (
-                      <tr key={manifest._id}>
-                        <td colSpan={7} className="px-4 py-3 text-center theme-text-muted text-sm">
-                          No hay vuelos en este circuito
+                  {manifests.map((manifest) => {
+                    const vuelo = manifest.vuelo;
+                    if (!vuelo) return null;
+
+                    return (
+                      <tr key={manifest._id} className="hover:theme-bg-secondary/30 transition">
+                        <td className="px-4 py-3 theme-text-primary font-medium">#{manifest.numero_circuito}</td>
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="theme-text-primary font-medium">{vuelo.matricula}</p>
+                            <p className="text-xs theme-text-muted">{vuelo.modelo}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm theme-text-primary">
+                          {new Date(manifest.fecha_vuelo).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-sm theme-text-primary font-medium">
+                          {(() => {
+                            const date = new Date(manifest.hora_despegue);
+                            const hours = String(date.getUTCHours()).padStart(2, '0');
+                            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                            return `${hours}:${minutes}`;
+                          })()}
+                        </td>
+                        <td className="px-4 py-3 text-sm theme-text-primary">
+                          {manifest.hora_aterrizaje ? (() => {
+                            const date = new Date(manifest.hora_aterrizaje);
+                            const hours = String(date.getUTCHours()).padStart(2, '0');
+                            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                            return `${hours}:${minutes}`;
+                          })() : vuelo.estado === 'finalizado' ? <span className="text-green-500">Finalizado</span> : <span className="text-yellow-500">En vuelo</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-sm font-medium">
+                            {vuelo.pasajeros_count || 0}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => handleViewDetail(manifest)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-medium transition"
+                          >
+                            Ver
+                          </button>
                         </td>
                       </tr>
-                    )
-                  )}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -252,9 +248,12 @@ export default function ManifiestosPage() {
               </div>
 
               <div className="p-8 print:p-4">
-                {selectedManifest.vuelos && selectedManifest.vuelos.length > 0 ? (
+                {selectedManifest.vuelo ? (
                   <div className="space-y-6 print:space-y-4">
-                    {selectedManifest.vuelos.map((vuelo: any, idx: number) => (
+                    {(() => {
+                      const vuelo = selectedManifest.vuelo;
+                      const idx = 0;
+                      return (
                       <div key={idx} className="theme-bg-secondary/50 rounded-xl p-6 print:bg-gray-100 print:border print:border-gray-300">
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-3">
@@ -383,10 +382,11 @@ export default function ManifiestosPage() {
                           <p className="theme-text-muted text-sm print:text-gray-600">Sin pasajeros</p>
                         )}
                       </div>
-                    ))}
+                      );
+                    })()}
                   </div>
                 ) : (
-                  <p className="theme-text-muted text-center print:text-gray-600">No hay informacion de vuelos</p>
+                  <p className="theme-text-muted text-center print:text-gray-600">No hay información de vuelo</p>
                 )}
               </div>
 

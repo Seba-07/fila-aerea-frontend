@@ -119,7 +119,8 @@ export const staffAPI = {
 // Manifiestos
 export const manifestsAPI = {
   getAll: () => api.get('/manifests'),
-  getByCircuito: (numeroCircuito: number) => api.get(`/manifests/circuito/${numeroCircuito}`),
+  getByFlight: (flightId: string) => api.get(`/manifests/flight/${flightId}`),
+  getByCircuito: (numeroCircuito: number) => api.get(`/manifests/circuito/${numeroCircuito}`), // Deprecated
 };
 
 // Pilotos
