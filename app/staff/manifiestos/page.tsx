@@ -87,75 +87,81 @@ export default function ManifiestosPage() {
             <p className="text-sm theme-text-muted mt-2">Los manifiestos se generan automaticamente al iniciar los vuelos</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {manifests.map((manifest) => (
-              <div
-                key={manifest._id}
-                className="theme-bg-card backdrop-blur-sm theme-border rounded-xl p-6 print:hidden"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-2xl font-bold theme-text-primary">Circuito #{manifest.numero_circuito}</h3>
-                    <p className="text-sm theme-text-muted mt-1">
-                      {new Date(manifest.fecha_vuelo).toLocaleDateString('es-ES', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleViewDetail(manifest)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
-                  >
-                    Ver Detalle
-                  </button>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs theme-text-muted">Hora Despegue</p>
-                    <p className="text-lg theme-text-primary font-medium">
-                      {(() => {
-                        const date = new Date(manifest.hora_despegue);
-                        const hours = String(date.getUTCHours()).padStart(2, '0');
-                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                        return `${hours}:${minutes}`;
-                      })()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs theme-text-muted">Hora Aterrizaje</p>
-                    <p className="text-lg theme-text-primary font-medium">
-                      {manifest.hora_aterrizaje ? (() => {
-                        const date = new Date(manifest.hora_aterrizaje);
-                        const hours = String(date.getUTCHours()).padStart(2, '0');
-                        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-                        return `${hours}:${minutes}`;
-                      })() : 'Pendiente'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs theme-text-muted">Total Pasajeros</p>
-                    <p className="text-lg theme-text-primary font-medium">{manifest.pasajeros?.length || 0}</p>
-                  </div>
-                </div>
-
-                {manifest.vuelos && manifest.vuelos.length > 0 && (
-                  <div className="mt-4 pt-4 border-t theme-border">
-                    <p className="text-xs theme-text-muted mb-2">Aviones en este circuito:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {manifest.vuelos.map((vuelo: any, idx: number) => (
-                        <span key={idx} className="px-3 py-1 theme-input theme-text-primary rounded text-sm">
-                          {vuelo.matricula} ({vuelo.estado})
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="theme-bg-card backdrop-blur-sm theme-border rounded-xl overflow-hidden print:hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="theme-bg-secondary">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Circuito</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Avión</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Fecha Vuelo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Hora Despegue</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Hora Aterrizaje</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Pasajeros</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium theme-text-muted uppercase">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y theme-border">
+                  {manifests.flatMap((manifest) =>
+                    manifest.vuelos && manifest.vuelos.length > 0 ?
+                      manifest.vuelos.map((vuelo: any, idx: number) => (
+                        <tr key={`${manifest._id}-${idx}`} className="hover:theme-bg-secondary/30 transition">
+                          <td className="px-4 py-3 theme-text-primary font-medium">#{manifest.numero_circuito}</td>
+                          <td className="px-4 py-3">
+                            <div>
+                              <p className="theme-text-primary font-medium">{vuelo.matricula}</p>
+                              <p className="text-xs theme-text-muted">{vuelo.modelo}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm theme-text-primary">
+                            {new Date(manifest.fecha_vuelo).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            })}
+                          </td>
+                          <td className="px-4 py-3 text-sm theme-text-primary font-medium">
+                            {(() => {
+                              const date = new Date(manifest.hora_despegue);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })()}
+                          </td>
+                          <td className="px-4 py-3 text-sm theme-text-primary">
+                            {manifest.hora_aterrizaje ? (() => {
+                              const date = new Date(manifest.hora_aterrizaje);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })() : <span className="text-yellow-500">En vuelo</span>}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-sm font-medium">
+                              {vuelo.pasajeros?.length || 0}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleViewDetail(manifest)}
+                              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-medium transition"
+                            >
+                              Ver
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    : (
+                      <tr key={manifest._id}>
+                        <td colSpan={7} className="px-4 py-3 text-center theme-text-muted text-sm">
+                          No hay vuelos en este circuito
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -243,11 +249,16 @@ export default function ManifiestosPage() {
                                 key={pIdx}
                                 className="theme-bg-secondary/50 rounded p-3 print:bg-white print:border print:border-gray-300"
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-1">
                                   <p className="theme-text-primary font-medium print:text-black">{pasajero.nombre}</p>
                                   {pasajero.esMenor && (
                                     <span className="px-2 py-0.5 bg-yellow-500 text-yellow-900 rounded text-xs font-bold print:bg-yellow-200">
                                       MENOR
+                                    </span>
+                                  )}
+                                  {pasajero.estado === 'embarcado' && (
+                                    <span className="px-2 py-0.5 bg-green-500 text-white rounded text-xs font-bold print:bg-green-200 print:text-black">
+                                      ✓ EMBARCADO
                                     </span>
                                   )}
                                 </div>
