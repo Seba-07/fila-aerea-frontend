@@ -249,7 +249,7 @@ export default function ManifiestosPage() {
                                 key={pIdx}
                                 className="theme-bg-secondary/50 rounded p-3 print:bg-white print:border print:border-gray-300"
                               >
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
                                   <p className="theme-text-primary font-medium print:text-black">{pasajero.nombre}</p>
                                   {pasajero.esMenor && (
                                     <span className="px-2 py-0.5 bg-yellow-500 text-yellow-900 rounded text-xs font-bold print:bg-yellow-200">
@@ -263,6 +263,24 @@ export default function ManifiestosPage() {
                                   )}
                                 </div>
                                 <p className="text-xs theme-text-muted print:text-gray-600">RUT: {pasajero.rut}</p>
+                                {pasajero.esMenor && (
+                                  <div className="mt-2">
+                                    {pasajero.autorizacion_url ? (
+                                      <a
+                                        href={pasajero.autorizacion_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-blue-400 hover:text-blue-300 underline print:text-blue-600"
+                                      >
+                                        📄 Ver autorización
+                                      </a>
+                                    ) : (
+                                      <p className="text-xs text-red-400 print:text-red-600">
+                                        ⚠️ Sin autorización subida
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
