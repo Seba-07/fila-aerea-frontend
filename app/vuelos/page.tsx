@@ -439,6 +439,40 @@ export default function VuelosPage() {
     }
   };
 
+  const handleClearHoraDespegue = async (flightId: string) => {
+    if (!confirm('¿Estás seguro de que deseas borrar la hora de despegue?')) {
+      return;
+    }
+
+    try {
+      await flightsAPI.updateFlight(flightId, {
+        hora_inicio_vuelo: null,
+      });
+
+      alert('Hora de despegue borrada exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al borrar hora de despegue');
+    }
+  };
+
+  const handleClearHoraAterrizaje = async (flightId: string) => {
+    if (!confirm('¿Estás seguro de que deseas borrar la hora de aterrizaje?')) {
+      return;
+    }
+
+    try {
+      await flightsAPI.updateFlight(flightId, {
+        hora_arribo: null,
+      });
+
+      alert('Hora de aterrizaje borrada exitosamente');
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al borrar hora de aterrizaje');
+    }
+  };
+
   const handleEditEstado = (flightId: string, estado_actual: string) => {
     setEditingEstadoFlight(flightId);
     setNewEstado(estado_actual);
@@ -1261,12 +1295,22 @@ export default function VuelosPage() {
                                 )}
                               </div>
                               {user?.rol === 'staff' && (
-                                <button
-                                  onClick={() => handleEditHoraDespegue(flight._id, flight.hora_inicio_vuelo)}
-                                  className="text-xs text-blue-600 hover:text-blue-700"
-                                >
-                                  ✏️
-                                </button>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleEditHoraDespegue(flight._id, flight.hora_inicio_vuelo)}
+                                    className="text-xs text-blue-600 hover:text-blue-700"
+                                  >
+                                    ✏️
+                                  </button>
+                                  {flight.hora_inicio_vuelo && (
+                                    <button
+                                      onClick={() => handleClearHoraDespegue(flight._id)}
+                                      className="text-xs text-red-600 hover:text-red-700"
+                                    >
+                                      🗑️
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
@@ -1317,12 +1361,22 @@ export default function VuelosPage() {
                                 )}
                               </div>
                               {user?.rol === 'staff' && (
-                                <button
-                                  onClick={() => handleEditHoraAterrizaje(flight._id, flight.hora_arribo)}
-                                  className="text-xs text-green-600 hover:text-green-700"
-                                >
-                                  ✏️
-                                </button>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleEditHoraAterrizaje(flight._id, flight.hora_arribo)}
+                                    className="text-xs text-green-600 hover:text-green-700"
+                                  >
+                                    ✏️
+                                  </button>
+                                  {flight.hora_arribo && (
+                                    <button
+                                      onClick={() => handleClearHoraAterrizaje(flight._id)}
+                                      className="text-xs text-red-600 hover:text-red-700"
+                                    >
+                                      🗑️
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
