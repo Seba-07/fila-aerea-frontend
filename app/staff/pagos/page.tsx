@@ -68,6 +68,20 @@ export default function PagosPage() {
     }
   };
 
+  const handleDeletePayment = async (paymentId: string, pasajeroNombre: string, monto: number) => {
+    if (!confirm(`¿Estás seguro de eliminar esta transacción de ${pasajeroNombre} por $${monto.toLocaleString('es-CL')}?\n\nEsta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      await staffAPI.deletePayment(paymentId);
+      alert('✓ Transacción eliminada correctamente');
+      fetchPayments(); // Recargar lista
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al eliminar transacción');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen theme-bg-primary flex items-center justify-center">
@@ -140,6 +154,7 @@ export default function PagosPage() {
                     <th className="px-6 py-4 text-center text-sm font-semibold theme-text-secondary">Tickets</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold theme-text-secondary">Método</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold theme-text-secondary">Monto</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold theme-text-secondary">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,6 +215,15 @@ export default function PagosPage() {
                       </td>
                       <td className={`px-6 py-4 text-right text-lg font-bold ${payment.monto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {payment.monto >= 0 ? '+' : ''}${payment.monto.toLocaleString('es-CL')}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => handleDeletePayment(payment.id, payment.usuario.nombre, payment.monto)}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all"
+                          title="Eliminar transacción"
+                        >
+                          🗑️ Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))}
