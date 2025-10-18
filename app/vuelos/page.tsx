@@ -29,6 +29,10 @@ export default function VuelosPage() {
   const [newPilotId, setNewPilotId] = useState<string>('');
   const [editingHoraAterrizajeFlight, setEditingHoraAterrizajeFlight] = useState<string | null>(null);
   const [newHoraAterrizaje, setNewHoraAterrizaje] = useState<string>('');
+  const [editingHoraDespegueFlight, setEditingHoraDespegueFlight] = useState<string | null>(null);
+  const [newHoraDespegue, setNewHoraDespegue] = useState<string>('');
+  const [editingEstadoFlight, setEditingEstadoFlight] = useState<string | null>(null);
+  const [newEstado, setNewEstado] = useState<string>('');
 
   // QR Scanner state
   const [scanningCircuito, setScanningCircuito] = useState<number | null>(null);
@@ -380,6 +384,82 @@ export default function VuelosPage() {
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar hora de aterrizaje');
+    }
+  };
+
+  const handleEditHoraDespegue = (flightId: string, hora_actual?: string) => {
+    setEditingHoraDespegueFlight(flightId);
+    if (hora_actual) {
+      const date = new Date(hora_actual);
+      const horas = String(date.getUTCHours()).padStart(2, '0');
+      const minutos = String(date.getUTCMinutes()).padStart(2, '0');
+      setNewHoraDespegue(`${horas}:${minutos}`);
+    } else {
+      setNewHoraDespegue('');
+    }
+  };
+
+  const handleSaveHoraDespegue = async (flightId: string) => {
+    if (!newHoraDespegue) {
+      alert('Debes ingresar una hora válida');
+      return;
+    }
+
+    try {
+      const flight = flights.find(f => f._id === flightId);
+      if (!flight) {
+        alert('Vuelo no encontrado');
+        return;
+      }
+
+      const fechaVuelo = new Date(flight.fecha_hora);
+      const [hours, minutes] = newHoraDespegue.split(':');
+
+      const fechaDespegue = new Date(
+        Date.UTC(
+          fechaVuelo.getUTCFullYear(),
+          fechaVuelo.getUTCMonth(),
+          fechaVuelo.getUTCDate(),
+          parseInt(hours),
+          parseInt(minutes),
+          0,
+          0
+        )
+      );
+
+      await flightsAPI.updateFlight(flightId, {
+        hora_inicio_vuelo: fechaDespegue.toISOString(),
+      });
+
+      alert('Hora de despegue actualizada exitosamente');
+      setEditingHoraDespegueFlight(null);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar hora de despegue');
+    }
+  };
+
+  const handleEditEstado = (flightId: string, estado_actual: string) => {
+    setEditingEstadoFlight(flightId);
+    setNewEstado(estado_actual);
+  };
+
+  const handleSaveEstado = async (flightId: string) => {
+    if (!newEstado) {
+      alert('Debes seleccionar un estado válido');
+      return;
+    }
+
+    try {
+      await flightsAPI.updateFlight(flightId, {
+        estado: newEstado,
+      });
+
+      alert('Estado del vuelo actualizado exitosamente');
+      setEditingEstadoFlight(null);
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar estado del vuelo');
     }
   };
 
@@ -1135,6 +1215,62 @@ export default function VuelosPage() {
                             </div>
                           )}
 
+                          {/* Hora de despegue - Editable por staff */}
+                          {editingHoraDespegueFlight === flight._id ? (
+                            <div className="my-3 p-3 theme-input rounded-lg">
+                              <label className="block text-xs theme-text-muted mb-1">Hora de despegue:</label>
+                              <input
+                                type="time"
+                                value={newHoraDespegue}
+                                onChange={(e) => setNewHoraDespegue(e.target.value)}
+                                className="w-full px-2 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleSaveHoraDespegue(flight._id)}
+                                  className="flex-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs transition-all shadow-sm"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingHoraDespegueFlight(null);
+                                    setNewHoraDespegue('');
+                                  }}
+                                  className="flex-1 px-2 py-1 theme-input theme-text-primary rounded hover:theme-bg-secondary text-xs transition-all"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between my-3 p-2 theme-input rounded-lg">
+                              <div>
+                                <p className="text-xs theme-text-muted">Hora de despegue</p>
+                                {flight.hora_inicio_vuelo ? (
+                                  <p className="text-sm theme-text-primary font-medium">
+                                    🛫 {(() => {
+                                      const date = new Date(flight.hora_inicio_vuelo);
+                                      const hours = String(date.getUTCHours()).padStart(2, '0');
+                                      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                                      return `${hours}:${minutes}`;
+                                    })()}
+                                  </p>
+                                ) : (
+                                  <p className="text-sm theme-text-muted">No registrada</p>
+                                )}
+                              </div>
+                              {user?.rol === 'staff' && (
+                                <button
+                                  onClick={() => handleEditHoraDespegue(flight._id, flight.hora_inicio_vuelo)}
+                                  className="text-xs text-blue-600 hover:text-blue-700"
+                                >
+                                  ✏️
+                                </button>
+                              )}
+                            </div>
+                          )}
+
                           {/* Hora de aterrizaje - Editable por staff */}
                           {editingHoraAterrizajeFlight === flight._id ? (
                             <div className="my-3 p-3 theme-input rounded-lg">
@@ -1184,6 +1320,62 @@ export default function VuelosPage() {
                                 <button
                                   onClick={() => handleEditHoraAterrizaje(flight._id, flight.hora_arribo)}
                                   className="text-xs text-green-600 hover:text-green-700"
+                                >
+                                  ✏️
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Estado del vuelo - Editable por staff */}
+                          {editingEstadoFlight === flight._id ? (
+                            <div className="my-3 p-3 theme-input rounded-lg">
+                              <label className="block text-xs theme-text-muted mb-1">Estado del vuelo:</label>
+                              <select
+                                value={newEstado}
+                                onChange={(e) => setNewEstado(e.target.value)}
+                                className="w-full px-2 py-1 theme-input border theme-border rounded theme-text-primary text-sm"
+                              >
+                                <option value="abierto">Abierto</option>
+                                <option value="en_vuelo">En vuelo</option>
+                                <option value="finalizado">Finalizado</option>
+                                <option value="cancelado">Cancelado</option>
+                                <option value="reprogramado">Reprogramado</option>
+                              </select>
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleSaveEstado(flight._id)}
+                                  className="flex-1 px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs transition-all shadow-sm"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingEstadoFlight(null);
+                                    setNewEstado('');
+                                  }}
+                                  className="flex-1 px-2 py-1 theme-input theme-text-primary rounded hover:theme-bg-secondary text-xs transition-all"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between my-3 p-2 theme-input rounded-lg">
+                              <div>
+                                <p className="text-xs theme-text-muted">Estado del vuelo</p>
+                                <p className="text-sm theme-text-primary font-medium capitalize">
+                                  {flight.estado === 'en_vuelo' ? '✈️ En vuelo' :
+                                   flight.estado === 'finalizado' ? '✅ Finalizado' :
+                                   flight.estado === 'abierto' ? '🟢 Abierto' :
+                                   flight.estado === 'cancelado' ? '❌ Cancelado' :
+                                   flight.estado === 'reprogramado' ? '🔄 Reprogramado' : flight.estado}
+                                </p>
+                              </div>
+                              {user?.rol === 'staff' && (
+                                <button
+                                  onClick={() => handleEditEstado(flight._id, flight.estado)}
+                                  className="text-xs text-purple-600 hover:text-purple-700"
                                 >
                                   ✏️
                                 </button>
