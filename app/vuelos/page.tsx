@@ -397,9 +397,9 @@ export default function VuelosPage() {
     const vuelos = flightsByCircuito[circuitoNum];
     if (!vuelos || vuelos.length === 0) return 'sin_estado';
 
-    const enVuelo = vuelos.some(v => v.estado === 'en_vuelo');
-    const finalizado = vuelos.every(v => v.estado === 'finalizado');
-    const abierto = vuelos.some(v => v.estado === 'abierto');
+    const enVuelo = vuelos.some((v: any) => v.estado === 'en_vuelo');
+    const finalizado = vuelos.every((v: any) => v.estado === 'finalizado');
+    const abierto = vuelos.some((v: any) => v.estado === 'abierto');
 
     if (enVuelo) return 'volando';
     if (finalizado) return 'finalizado';
