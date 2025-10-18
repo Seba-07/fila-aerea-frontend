@@ -4,12 +4,13 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { staffAPI } from '@/lib/api';
+import { staffAPI, flightsAPI, api } from '@/lib/api';
 
 export default function PasajerosPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [passengers, setPassengers] = useState<any[]>([]);
+  const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'todos' | 'volados' | 'pendientes'>('todos');
 
@@ -45,8 +46,15 @@ export default function PasajerosPage() {
 
   const fetchPassengers = async () => {
     try {
-      const { data } = await staffAPI.getPassengers();
-      setPassengers(data);
+      const [passengersRes, flightsRes] = await Promise.all([
+        staffAPI.getPassengers(),
+        flightsAPI.getFlights()
+      ]);
+      setPassengers(passengersRes.data);
+      const sortedFlights = flightsRes.data
+        .filter((f: any) => f.estado !== 'finalizado')
+        .sort((a: any, b: any) => a.numero_circuito - b.numero_circuito);
+      setFlights(sortedFlights);
     } catch (error) {
       console.error('Error al cargar pasajeros:', error);
     } finally {
@@ -133,6 +141,27 @@ export default function PasajerosPage() {
       fetchPassengers();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al actualizar pago');
+    }
+  };
+
+  const handleInscribirTicket = async (ticketId: string, flightId: string) => {
+    try {
+      await api.patch(`/tickets/${ticketId}`, { flightId });
+      alert('Ticket inscrito exitosamente');
+      fetchPassengers();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al inscribir ticket');
+    }
+  };
+
+  const handleDesinscribirTicket = async (ticketId: string) => {
+    if (!confirm('¿Desinscribir este ticket del vuelo?')) return;
+    try {
+      await api.delete(`/tickets/${ticketId}/flight`);
+      alert('Ticket desinscrito exitosamente');
+      fetchPassengers();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al desinscribir ticket');
     }
   };
 
@@ -502,11 +531,14 @@ export default function PasajerosPage() {
                                 ? 'bg-blue-400 text-blue-900'
                                 : ticket.estado === 'volado'
                                 ? 'bg-gray-400 text-gray-900'
+                                : ticket.estado === 'embarcado'
+                                ? 'bg-purple-400 text-purple-900'
                                 : 'bg-red-400 text-red-900'
                             }`}
                           >
                             {ticket.estado.toUpperCase()}
                           </span>
+
                           {ticket.pasajeros && ticket.pasajeros.length > 0 && (
                             <div className="mt-2">
                               <p className="text-xs theme-text-muted">Pasajero:</p>
@@ -523,6 +555,52 @@ export default function PasajerosPage() {
                                   )}
                                 </div>
                               ))}
+                            </div>
+                          )}
+
+                          {/* Inscripción de vuelo */}
+                          {ticket.pasajeros && ticket.pasajeros.length > 0 && (
+                            <div className="mt-2">
+                              {ticket.flightId ? (
+                                <div>
+                                  <p className="text-xs theme-text-muted">
+                                    Vuelo: Circuito #{ticket.flightNumber || 'N/A'}
+                                  </p>
+                                  {ticket.estado !== 'volado' && ticket.estado !== 'embarcado' && (
+                                    <button
+                                      onClick={() => handleDesinscribirTicket(ticket.id)}
+                                      className="mt-1 text-xs text-red-400 hover:text-red-300"
+                                    >
+                                      Desinscribir
+                                    </button>
+                                  )}
+                                </div>
+                              ) : (
+                                <select
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      handleInscribirTicket(ticket.id, e.target.value);
+                                      e.target.value = '';
+                                    }
+                                  }}
+                                  className="mt-1 w-full px-2 py-1 text-xs theme-bg-secondary border theme-border rounded theme-text-primary"
+                                  defaultValue=""
+                                >
+                                  <option value="">-- Inscribir en vuelo --</option>
+                                  {flights.map((flight) => {
+                                    const asientosDisponibles = flight.capacidad_total - flight.asientos_ocupados;
+                                    return (
+                                      <option
+                                        key={flight._id}
+                                        value={flight._id}
+                                        disabled={asientosDisponibles <= 0}
+                                      >
+                                        C#{flight.numero_circuito} | {flight.aircraftId?.matricula} ({asientosDisponibles}/{flight.capacidad_total})
+                                      </option>
+                                    );
+                                  })}
+                                </select>
+                              )}
                             </div>
                           )}
                         </div>
