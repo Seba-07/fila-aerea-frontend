@@ -30,6 +30,10 @@ export default function PasajerosPage() {
   const [editMontoPagado, setEditMontoPagado] = useState(0);
   const [editMetodoPago, setEditMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
 
+  // Estado para editar pasajeros del ticket
+  const [editingTicketPassengerId, setEditingTicketPassengerId] = useState<string | null>(null);
+  const [editTicketPassengers, setEditTicketPassengers] = useState<any[]>([]);
+
   // Estado para eliminar
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [montoDevolucion, setMontoDevolucion] = useState<number | ''>('');
@@ -163,6 +167,40 @@ export default function PasajerosPage() {
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al desinscribir ticket');
     }
+  };
+
+  const handleEditTicketPassengers = (ticket: any) => {
+    setEditingTicketPassengerId(ticket.id);
+    // Si el ticket tiene pasajeros, usarlos; si no, crear uno vacío
+    setEditTicketPassengers(
+      ticket.pasajeros && ticket.pasajeros.length > 0
+        ? ticket.pasajeros.map((p: any) => ({ ...p }))
+        : [{ nombre: '', apellido: '', rut: '', esMenor: false }]
+    );
+  };
+
+  const handleSaveTicketPassengers = async (ticketId: string) => {
+    // Filtrar pasajeros vacíos
+    const pasajerosValidos = editTicketPassengers.filter(
+      p => p.nombre.trim() || p.apellido.trim() || p.rut.trim()
+    );
+
+    try {
+      await staffAPI.updateTicketPassengers(ticketId, {
+        pasajeros: pasajerosValidos,
+      });
+      alert('Información actualizada exitosamente');
+      setEditingTicketPassengerId(null);
+      fetchPassengers();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Error al actualizar información');
+    }
+  };
+
+  const updateTicketPassengerField = (index: number, field: string, value: any) => {
+    const updated = [...editTicketPassengers];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditTicketPassengers(updated);
   };
 
   const handleDelete = async (passengerId: string) => {
@@ -539,23 +577,95 @@ export default function PasajerosPage() {
                             {ticket.estado.toUpperCase()}
                           </span>
 
-                          {ticket.pasajeros && ticket.pasajeros.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs theme-text-muted">Pasajero:</p>
-                              {ticket.pasajeros.map((p: any, idx: number) => (
-                                <div key={idx}>
-                                  <p className="text-xs theme-text-primary font-medium">{p.nombre} {p.apellido}</p>
-                                  {p.rut && (
-                                    <p className="text-xs theme-text-muted">RUT: {p.rut}</p>
-                                  )}
-                                  {p.esMenor && (
-                                    <span className="inline-block text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded mt-1">
-                                      Menor
-                                    </span>
-                                  )}
+                          {/* Editar pasajeros del ticket */}
+                          {editingTicketPassengerId === ticket.id ? (
+                            <div className="mt-2 space-y-2">
+                              <p className="text-xs theme-text-muted font-semibold">Editar Pasajero:</p>
+                              {editTicketPassengers.map((p: any, idx: number) => (
+                                <div key={idx} className="space-y-1 p-2 theme-bg-primary/30 rounded">
+                                  <input
+                                    type="text"
+                                    value={p.nombre}
+                                    onChange={(e) => updateTicketPassengerField(idx, 'nombre', e.target.value)}
+                                    placeholder="Nombre"
+                                    className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={p.apellido}
+                                    onChange={(e) => updateTicketPassengerField(idx, 'apellido', e.target.value)}
+                                    placeholder="Apellido"
+                                    className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={p.rut}
+                                    onChange={(e) => updateTicketPassengerField(idx, 'rut', e.target.value)}
+                                    placeholder="RUT"
+                                    className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
+                                  />
+                                  <label className="flex items-center gap-1 text-xs theme-text-primary">
+                                    <input
+                                      type="checkbox"
+                                      checked={p.esMenor}
+                                      onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
+                                    />
+                                    Es menor
+                                  </label>
                                 </div>
                               ))}
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => handleSaveTicketPassengers(ticket.id)}
+                                  className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={() => setEditingTicketPassengerId(null)}
+                                  className="px-2 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             </div>
+                          ) : (
+                            <>
+                              {ticket.pasajeros && ticket.pasajeros.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-xs theme-text-muted">Pasajero:</p>
+                                  {ticket.pasajeros.map((p: any, idx: number) => (
+                                    <div key={idx}>
+                                      <p className="text-xs theme-text-primary font-medium">{p.nombre} {p.apellido}</p>
+                                      {p.rut && (
+                                        <p className="text-xs theme-text-muted">RUT: {p.rut}</p>
+                                      )}
+                                      {p.esMenor && (
+                                        <span className="inline-block text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded mt-1">
+                                          Menor
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {ticket.estado !== 'volado' && ticket.estado !== 'embarcado' && (
+                                    <button
+                                      onClick={() => handleEditTicketPassengers(ticket)}
+                                      className="mt-1 text-xs text-blue-400 hover:text-blue-300"
+                                    >
+                                      Editar pasajero
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                              {(!ticket.pasajeros || ticket.pasajeros.length === 0) && ticket.estado === 'disponible' && (
+                                <button
+                                  onClick={() => handleEditTicketPassengers(ticket)}
+                                  className="mt-2 text-xs text-green-400 hover:text-green-300"
+                                >
+                                  + Asignar pasajero
+                                </button>
+                              )}
+                            </>
                           )}
 
                           {/* Inscripción de vuelo */}
