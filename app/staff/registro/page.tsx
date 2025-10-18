@@ -4,7 +4,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import { staffAPI } from '@/lib/api';
+import { staffAPI, userAPI } from '@/lib/api';
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function RegistroPage() {
   const [cantidadTickets, setCantidadTickets] = useState(1);
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
-  const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>>([]);
+  const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean; autorizacionFile?: File}>>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -68,12 +68,30 @@ export default function RegistroPage() {
         return;
       }
 
+      // Validar que los menores tengan autorización
+      const menoresSinAutorizacion = menores.filter(p => !p.autorizacionFile);
+      if (menoresSinAutorizacion.length > 0) {
+        const confirmacion = confirm(`⚠️ Hay ${menoresSinAutorizacion.length} menor(es) sin autorización. ¿Deseas continuar de todas formas?\n\nPodrás subir la autorización más tarde.`);
+        if (!confirmacion) {
+          setSubmitting(false);
+          return;
+        }
+      }
+
       // Filtrar pasajeros con datos completos o vacíos completamente
       const pasajerosValidos = pasajeros.filter(p =>
         p.nombre.trim() !== '' || p.apellido.trim() !== '' || p.rut.trim() !== ''
       );
 
-      await staffAPI.registerPassenger({
+      // Registrar pasajero sin los archivos primero
+      const pasajerosSinArchivos = pasajerosValidos.map(p => ({
+        nombre: p.nombre,
+        apellido: p.apellido,
+        rut: p.rut,
+        esMenor: p.esMenor
+      }));
+
+      const response = await staffAPI.registerPassenger({
         nombre,
         apellido,
         rut,
@@ -81,8 +99,25 @@ export default function RegistroPage() {
         cantidad_tickets: cantidadTickets,
         metodo_pago: metodoPago,
         monto,
-        ...(pasajerosValidos.length > 0 && { pasajeros: pasajerosValidos }),
+        ...(pasajerosSinArchivos.length > 0 && { pasajeros: pasajerosSinArchivos }),
       });
+
+      // Subir autorizaciones para los menores que tengan archivo
+      const ticketsCreados = response.data.tickets || [];
+      for (let i = 0; i < pasajerosValidos.length; i++) {
+        const pasajero = pasajerosValidos[i];
+        if (pasajero.esMenor && pasajero.autorizacionFile && ticketsCreados[i]) {
+          try {
+            const formData = new FormData();
+            formData.append('autorizacion', pasajero.autorizacionFile);
+
+            await userAPI.uploadAutorizacion(ticketsCreados[i].id, pasajero.autorizacionFile);
+          } catch (uploadError) {
+            console.error(`Error al subir autorización para ticket ${ticketsCreados[i].id}:`, uploadError);
+            alert(`⚠️ El pasajero fue registrado pero hubo un error al subir la autorización de ${pasajero.nombre}. Puedes subirla más tarde.`);
+          }
+        }
+      }
 
       alert(`✓ Pasajero ${nombre} ${apellido} registrado con ${cantidadTickets} tickets`);
 
@@ -334,6 +369,46 @@ export default function RegistroPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Upload de autorización para menores */}
+                      {pasajeros[index]?.esMenor && (
+                        <div className="mt-3 pt-3 border-t theme-border">
+                          <label className="block text-xs font-medium theme-text-muted mb-2">
+                            📄 Autorización de menor de edad (PDF)
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.type !== 'application/pdf') {
+                                  alert('Solo se permiten archivos PDF');
+                                  e.target.value = '';
+                                  return;
+                                }
+                                if (file.size > 5 * 1024 * 1024) { // 5MB
+                                  alert('El archivo no debe superar los 5MB');
+                                  e.target.value = '';
+                                  return;
+                                }
+                                const nuevos = [...pasajeros];
+                                nuevos[index] = { ...nuevos[index], autorizacionFile: file };
+                                setPasajeros(nuevos);
+                              }
+                            }}
+                            className="w-full px-3 py-2 theme-input border theme-border rounded-lg text-sm theme-text-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+                          />
+                          {pasajeros[index]?.autorizacionFile && (
+                            <p className="text-xs text-green-500 mt-1">
+                              ✓ {pasajeros[index].autorizacionFile?.name}
+                            </p>
+                          )}
+                          <p className="text-xs theme-text-muted mt-1">
+                            Máximo 5MB. Solo archivos PDF.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
