@@ -629,26 +629,26 @@ export default function PasajerosPage() {
                                         </label>
                                       </div>
 
-                                      <div className="flex items-center gap-2">
+                                      <div
+                                        className="flex items-center gap-2 cursor-pointer select-none"
+                                        onClick={() => {
+                                          console.log('🔴 Click en div wrapper de infante');
+                                          const nuevoValor = !p.esInfante;
+                                          updateTicketPassengerField(idx, 'esInfante', nuevoValor);
+                                          if (nuevoValor) {
+                                            updateTicketPassengerField(idx, 'esMenor', true);
+                                          }
+                                        }}
+                                      >
                                         <input
                                           type="checkbox"
-                                          id={`infante-${idx}`}
                                           checked={!!p.esInfante}
-                                          onChange={(e) => {
-                                            const nuevoValor = e.target.checked;
-                                            updateTicketPassengerField(idx, 'esInfante', nuevoValor);
-                                            if (nuevoValor) {
-                                              updateTicketPassengerField(idx, 'esMenor', true);
-                                            }
-                                          }}
-                                          className="w-4 h-4 cursor-pointer"
+                                          onChange={() => {}} // No-op para evitar warnings
+                                          className="w-4 h-4 pointer-events-none"
                                         />
-                                        <label
-                                          htmlFor={`infante-${idx}`}
-                                          className="text-xs theme-text-primary cursor-pointer"
-                                        >
+                                        <span className="text-xs theme-text-primary">
                                           👶 No ocupa asiento (infante {"<"} 2 años)
-                                        </label>
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
