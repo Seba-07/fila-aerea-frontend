@@ -11,8 +11,11 @@ export default function PagosPage() {
   const { user } = useAuthStore();
   const [payments, setPayments] = useState<any[]>([]);
   const [totalRecaudado, setTotalRecaudado] = useState(0);
-  const [totalConfirmado, setTotalConfirmado] = useState(0);
-  const [pendienteDevolucion, setPendienteDevolucion] = useState(0);
+  const [totalEfectivo, setTotalEfectivo] = useState(0);
+  const [totalTransferencia, setTotalTransferencia] = useState(0);
+  const [totalPassline, setTotalPassline] = useState(0);
+  const [totalSocio, setTotalSocio] = useState(0);
+  const [totalCombinado, setTotalCombinado] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,9 +31,39 @@ export default function PagosPage() {
     try {
       const { data } = await staffAPI.getPayments();
       setPayments(data.payments);
-      setTotalRecaudado(data.total_recaudado);
-      setTotalConfirmado(data.total_confirmado);
-      setPendienteDevolucion(data.pendiente_devolucion);
+
+      // Calcular total recaudado
+      const total = data.payments
+        .filter((p: any) => p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalRecaudado(total);
+
+      // Calcular totales por método de pago
+      const efectivo = data.payments
+        .filter((p: any) => p.metodo_pago === 'efectivo' && p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalEfectivo(efectivo);
+
+      const transferencia = data.payments
+        .filter((p: any) => p.metodo_pago === 'transferencia' && p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalTransferencia(transferencia);
+
+      const passline = data.payments
+        .filter((p: any) => p.metodo_pago === 'passline' && p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalPassline(passline);
+
+      const socio = data.payments
+        .filter((p: any) => p.metodo_pago === 'socio' && p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalSocio(socio);
+
+      const combinado = data.payments
+        .filter((p: any) => p.metodo_pago === 'combinado' && p.tipo !== 'devolucion')
+        .reduce((sum: number, p: any) => sum + p.monto, 0);
+      setTotalCombinado(combinado);
+
     } catch (error) {
       console.error('Error al cargar pagos:', error);
     } finally {
@@ -113,26 +146,39 @@ export default function PagosPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Totales */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        <div className="mb-8">
           {/* Total recaudado */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-2xl">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-2xl mb-4">
             <h2 className="text-sm opacity-90 mb-1">Total Recaudado</h2>
             <p className="text-4xl font-black">${totalRecaudado.toLocaleString('es-CL')}</p>
             <p className="text-xs opacity-75 mt-2">Dinero total ingresado</p>
           </div>
 
-          {/* Total confirmado */}
-          <div className="bg-gradient-to-r from-blue-600 to-cyan-700 rounded-2xl p-6 text-white shadow-2xl">
-            <h2 className="text-sm opacity-90 mb-1">Total Confirmado</h2>
-            <p className="text-4xl font-black">${totalConfirmado.toLocaleString('es-CL')}</p>
-            <p className="text-xs opacity-75 mt-2">De pasajeros que volaron</p>
-          </div>
+          {/* Desglose por método de pago */}
+          <div className="grid md:grid-cols-4 gap-4">
+            {/* Efectivo */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
+              <h3 className="text-xs opacity-90 mb-1">💵 Efectivo</h3>
+              <p className="text-2xl font-bold">${totalEfectivo.toLocaleString('es-CL')}</p>
+            </div>
 
-          {/* Pendiente devolución */}
-          <div className="bg-gradient-to-r from-orange-600 to-red-700 rounded-2xl p-6 text-white shadow-2xl">
-            <h2 className="text-sm opacity-90 mb-1">Pendiente Devolución</h2>
-            <p className="text-4xl font-black">${pendienteDevolucion.toLocaleString('es-CL')}</p>
-            <p className="text-xs opacity-75 mt-2">Posibles reembolsos</p>
+            {/* Transferencia */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg">
+              <h3 className="text-xs opacity-90 mb-1">🏦 Transferencia</h3>
+              <p className="text-2xl font-bold">${totalTransferencia.toLocaleString('es-CL')}</p>
+            </div>
+
+            {/* Passline */}
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg">
+              <h3 className="text-xs opacity-90 mb-1">💳 Passline</h3>
+              <p className="text-2xl font-bold">${totalPassline.toLocaleString('es-CL')}</p>
+            </div>
+
+            {/* Socio */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-lg">
+              <h3 className="text-xs opacity-90 mb-1">🤝 Socio</h3>
+              <p className="text-2xl font-bold">${totalSocio.toLocaleString('es-CL')}</p>
+            </div>
           </div>
         </div>
 
