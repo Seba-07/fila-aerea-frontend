@@ -605,24 +605,33 @@ export default function PasajerosPage() {
                                     placeholder="RUT"
                                     className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
                                   />
-                                  <div className="space-y-1">
-                                    <div className="flex gap-3">
-                                      <label className="flex items-center gap-1 text-xs theme-text-primary cursor-pointer">
+                                  <div className="space-y-2">
+                                    <div className="flex flex-col gap-2">
+                                      <div className="flex items-center gap-2">
                                         <input
                                           type="checkbox"
-                                          checked={p.esMenor}
-                                          onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
+                                          id={`menor-${idx}`}
+                                          checked={!!p.esMenor}
+                                          onChange={(e) => {
+                                            console.log('Checkbox esMenor clicked:', e.target.checked);
+                                            updateTicketPassengerField(idx, 'esMenor', e.target.checked);
+                                          }}
                                           className="w-4 h-4 cursor-pointer"
                                         />
-                                        Es menor
-                                      </label>
-                                      <label className="flex items-center gap-1 text-xs theme-text-primary cursor-pointer">
+                                        <label htmlFor={`menor-${idx}`} className="text-xs theme-text-primary cursor-pointer">
+                                          Es menor
+                                        </label>
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
                                         <input
                                           type="checkbox"
+                                          id={`infante-${idx}`}
                                           checked={!!p.esInfante}
                                           onChange={(e) => {
+                                            e.stopPropagation();
                                             const checked = e.target.checked;
-                                            console.log('Checkbox esInfante cambiado a:', checked);
+                                            console.log('Checkbox esInfante clicked:', checked);
                                             updateTicketPassengerField(idx, 'esInfante', checked);
                                             // Si marca infante, auto-marcar menor
                                             if (checked) {
@@ -631,12 +640,24 @@ export default function PasajerosPage() {
                                           }}
                                           className="w-4 h-4 cursor-pointer"
                                         />
-                                        👶 No ocupa asiento (infante {"<"} 2 años)
-                                      </label>
+                                        <label htmlFor={`infante-${idx}`} className="text-xs theme-text-primary cursor-pointer">
+                                          👶 No ocupa asiento (infante {"<"} 2 años)
+                                        </label>
+                                      </div>
                                     </div>
-                                    <div className="text-xs theme-text-muted">
-                                      Estado: esInfante = {p.esInfante ? 'true' : 'false'} | esMenor = {p.esMenor ? 'true' : 'false'}
+                                    <div className="text-xs theme-text-muted bg-yellow-500/10 p-1 rounded">
+                                      DEBUG - Estado: esInfante = {String(!!p.esInfante)} | esMenor = {String(!!p.esMenor)}
                                     </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        console.log('TEST BUTTON - Toggling esInfante');
+                                        updateTicketPassengerField(idx, 'esInfante', !p.esInfante);
+                                      }}
+                                      className="text-xs px-2 py-1 bg-purple-600 text-white rounded"
+                                    >
+                                      TEST: Toggle infante
+                                    </button>
                                   </div>
                                 </div>
                               );
