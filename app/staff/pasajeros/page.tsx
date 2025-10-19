@@ -207,10 +207,13 @@ export default function PasajerosPage() {
   };
 
   const updateTicketPassengerField = (index: number, field: string, value: any) => {
+    console.log('🟢 updateTicketPassengerField LLAMADO', { index, field, value });
+    console.log('🟢 Estado actual editTicketPassengers:', editTicketPassengers);
     const updated = [...editTicketPassengers];
     updated[index] = { ...updated[index], [field]: value };
-    console.log(`Actualizando campo ${field} en índice ${index}:`, value, 'Pasajero actualizado:', updated[index]);
+    console.log(`🟢 Actualizando campo ${field} en índice ${index}:`, value, 'Pasajero actualizado:', updated[index]);
     setEditTicketPassengers(updated);
+    console.log('🟢 setEditTicketPassengers llamado con:', updated);
   };
 
   const handleDelete = async (passengerId: string) => {
@@ -586,9 +589,7 @@ export default function PasajerosPage() {
                           {editingTicketPassengerId === ticket.id ? (
                             <div className="mt-2 space-y-2">
                               <p className="text-xs theme-text-muted font-semibold">Editar Pasajero:</p>
-                              {editTicketPassengers.map((p: any, idx: number) => {
-                                console.log('Renderizando pasajero en edición:', p);
-                                return (
+                              {editTicketPassengers.map((p: any, idx: number) => (
                                 <div key={idx} className="space-y-1 p-2 theme-bg-primary/30 rounded">
                                   <input
                                     type="text"
@@ -629,32 +630,39 @@ export default function PasajerosPage() {
                                         </label>
                                       </div>
 
-                                      <div
-                                        className="flex items-center gap-2 cursor-pointer select-none"
-                                        onClick={() => {
-                                          console.log('🔴 Click en div wrapper de infante');
-                                          const nuevoValor = !p.esInfante;
-                                          updateTicketPassengerField(idx, 'esInfante', nuevoValor);
-                                          if (nuevoValor) {
-                                            updateTicketPassengerField(idx, 'esMenor', true);
-                                          }
-                                        }}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={!!p.esInfante}
-                                          onChange={() => {}} // No-op para evitar warnings
-                                          className="w-4 h-4 pointer-events-none"
-                                        />
-                                        <span className="text-xs theme-text-primary">
-                                          👶 No ocupa asiento (infante {"<"} 2 años)
-                                        </span>
+                                      <div>
+                                        <div
+                                          className="flex items-center gap-2 cursor-pointer select-none bg-purple-500/10 p-2 rounded"
+                                          onClick={(e) => {
+                                            console.log('🔴 Click en div wrapper de infante', e);
+                                            console.log('Estado actual p.esInfante:', p.esInfante);
+                                            console.log('Todos los datos del pasajero:', p);
+                                            const nuevoValor = !p.esInfante;
+                                            console.log('Nuevo valor a setear:', nuevoValor);
+                                            updateTicketPassengerField(idx, 'esInfante', nuevoValor);
+                                            if (nuevoValor) {
+                                              updateTicketPassengerField(idx, 'esMenor', true);
+                                            }
+                                          }}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={!!p.esInfante}
+                                            onChange={() => {}} // No-op para evitar warnings
+                                            className="w-4 h-4 pointer-events-none"
+                                          />
+                                          <span className="text-xs theme-text-primary">
+                                            👶 No ocupa asiento (infante {"<"} 2 años)
+                                          </span>
+                                        </div>
+                                        <div className="text-xs mt-1 p-1 bg-yellow-500/20 rounded">
+                                          DEBUG: esInfante = {String(p.esInfante)} | esMenor = {String(p.esMenor)}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                              );
-                              })}
+                              ))}
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => handleSaveTicketPassengers(ticket.id)}
