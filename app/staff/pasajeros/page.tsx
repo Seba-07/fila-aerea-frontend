@@ -185,6 +185,8 @@ export default function PasajerosPage() {
       p => p.nombre.trim() || p.apellido.trim() || p.rut.trim()
     );
 
+    console.log('Guardando pasajeros:', pasajerosValidos);
+
     try {
       await staffAPI.updateTicketPassengers(ticketId, {
         pasajeros: pasajerosValidos,
@@ -193,6 +195,7 @@ export default function PasajerosPage() {
       setEditingTicketPassengerId(null);
       fetchPassengers();
     } catch (error: any) {
+      console.error('Error al actualizar:', error);
       alert(error.response?.data?.error || 'Error al actualizar información');
     }
   };
@@ -200,6 +203,7 @@ export default function PasajerosPage() {
   const updateTicketPassengerField = (index: number, field: string, value: any) => {
     const updated = [...editTicketPassengers];
     updated[index] = { ...updated[index], [field]: value };
+    console.log(`Actualizando campo ${field} en índice ${index}:`, value, 'Pasajero actualizado:', updated[index]);
     setEditTicketPassengers(updated);
   };
 
@@ -611,17 +615,19 @@ export default function PasajerosPage() {
                                     <label className="flex items-center gap-1 text-xs theme-text-primary">
                                       <input
                                         type="checkbox"
-                                        checked={p.esInfante || false}
+                                        checked={!!p.esInfante}
                                         onChange={(e) => {
                                           const checked = e.target.checked;
+                                          console.log('Checkbox esInfante cambiado a:', checked);
                                           updateTicketPassengerField(idx, 'esInfante', checked);
                                           // Si marca infante, auto-marcar menor
                                           if (checked) {
                                             updateTicketPassengerField(idx, 'esMenor', true);
                                           }
                                         }}
+                                        className="w-4 h-4"
                                       />
-                                      👶 No ocupa asiento
+                                      👶 No ocupa asiento (infante {"<"} 2 años)
                                     </label>
                                   </div>
                                 </div>
