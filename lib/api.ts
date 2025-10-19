@@ -112,7 +112,7 @@ export const staffAPI = {
     metodo_pago?: 'transferencia' | 'passline' | 'efectivo';
   }) => api.patch(`/staff/passengers/${passengerId}/payment`, data),
   updateTicketPassengers: (ticketId: string, data: {
-    pasajeros: Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>;
+    pasajeros: Array<{nombre: string; apellido: string; rut: string; esMenor: boolean; esInfante?: boolean}>;
   }) => api.patch(`/staff/tickets/${ticketId}/passengers`, data),
   deletePassenger: (passengerId: string, data: {
     monto_devolucion?: number;
