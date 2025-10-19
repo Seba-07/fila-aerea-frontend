@@ -18,7 +18,7 @@ export default function RegistroPage() {
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
   const [monto, setMonto] = useState(0);
   const [precioTicket, setPrecioTicket] = useState(0);
-  const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean}>>([]);
+  const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean; esInfante?: boolean}>>([]);
   const [submitting, setSubmitting] = useState(false);
 
   // Cargar precio del ticket desde configuración
@@ -41,7 +41,8 @@ export default function RegistroPage() {
       nombre: '',
       apellido: '',
       rut: '',
-      esMenor: false
+      esMenor: false,
+      esInfante: false
     })));
   }, [cantidadTickets]);
 
@@ -69,7 +70,8 @@ export default function RegistroPage() {
         nombre: nombre,
         apellido: apellido,
         rut: rut,
-        esMenor: false
+        esMenor: false,
+        esInfante: false
       };
       setPasajeros(nuevosPasajeros);
     }
@@ -106,17 +108,28 @@ export default function RegistroPage() {
         ...(pasajerosValidos.length > 0 && { pasajeros: pasajerosValidos }),
       });
 
-      alert(`✓ Pasajero ${nombre} ${apellido} registrado con ${cantidadTickets} tickets`);
+      // Mostrar opciones de navegación después de registrar
+      const action = confirm(
+        `✓ Pasajero ${nombre} ${apellido} registrado con ${cantidadTickets} tickets.\n\n` +
+        `¿Deseas inscribir estos tickets en un vuelo ahora?\n\n` +
+        `• OK: Ir a inscribir pasajeros\n` +
+        `• Cancelar: Registrar otro pasajero`
+      );
 
-      // Reset form
-      setNombre('');
-      setApellido('');
-      setRut('');
-      setEmail('');
-      setCantidadTickets(1);
-      setMetodoPago('efectivo');
-      setMonto(0);
-      setPasajeros([]);
+      if (action) {
+        // Navegar a página de inscripciones
+        router.push('/staff/inscribir');
+      } else {
+        // Reset form para registrar otro pasajero
+        setNombre('');
+        setApellido('');
+        setRut('');
+        setEmail('');
+        setCantidadTickets(1);
+        setMetodoPago('efectivo');
+        setMonto(0);
+        setPasajeros([]);
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al registrar pasajero');
     } finally {
@@ -360,6 +373,31 @@ export default function RegistroPage() {
                             />
                             <span className="ml-2 text-sm theme-text-secondary">
                               Es menor de edad
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium theme-text-muted mb-1">
+                            Infante ({"<"} 2 años)
+                          </label>
+                          <div className="flex items-center h-10">
+                            <input
+                              type="checkbox"
+                              checked={pasajeros[index]?.esInfante || false}
+                              onChange={(e) => {
+                                const nuevos = [...pasajeros];
+                                nuevos[index] = {
+                                  ...nuevos[index],
+                                  esInfante: e.target.checked,
+                                  // Si marca infante, automáticamente es menor
+                                  esMenor: e.target.checked ? true : nuevos[index]?.esMenor
+                                };
+                                setPasajeros(nuevos);
+                              }}
+                              className="w-5 h-5 theme-input theme-border rounded focus:ring-2 focus:ring-primary"
+                            />
+                            <span className="ml-2 text-sm theme-text-secondary">
+                              👶 No ocupa asiento
                             </span>
                           </div>
                         </div>
