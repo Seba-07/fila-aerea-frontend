@@ -174,7 +174,13 @@ export default function PasajerosPage() {
     // Si el ticket tiene pasajeros, usarlos; si no, crear uno vacío
     setEditTicketPassengers(
       ticket.pasajeros && ticket.pasajeros.length > 0
-        ? ticket.pasajeros.map((p: any) => ({ ...p }))
+        ? ticket.pasajeros.map((p: any) => ({
+            nombre: p.nombre || '',
+            apellido: p.apellido || '',
+            rut: p.rut || '',
+            esMenor: p.esMenor || false,
+            esInfante: p.esInfante || false, // Asegurar que siempre sea boolean
+          }))
         : [{ nombre: '', apellido: '', rut: '', esMenor: false, esInfante: false }]
     );
   };
@@ -628,10 +634,16 @@ export default function PasajerosPage() {
                                           type="checkbox"
                                           id={`infante-${idx}`}
                                           checked={!!p.esInfante}
+                                          onClick={(e) => {
+                                            console.log('CLICK EVENT - esInfante checkbox clicked!', e);
+                                          }}
                                           onChange={(e) => {
-                                            e.stopPropagation();
+                                            console.log('ONCHANGE EVENT - esInfante:', {
+                                              checked: e.target.checked,
+                                              currentValue: p.esInfante,
+                                              pasajero: p
+                                            });
                                             const checked = e.target.checked;
-                                            console.log('Checkbox esInfante clicked:', checked);
                                             updateTicketPassengerField(idx, 'esInfante', checked);
                                             // Si marca infante, auto-marcar menor
                                             if (checked) {
