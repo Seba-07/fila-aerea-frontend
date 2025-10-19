@@ -629,55 +629,28 @@ export default function PasajerosPage() {
                                         </label>
                                       </div>
 
-                                      <div className="flex items-center gap-2 relative z-10">
+                                      <div className="flex items-center gap-2">
                                         <input
                                           type="checkbox"
                                           id={`infante-${idx}`}
                                           checked={!!p.esInfante}
-                                          onClick={(e) => {
-                                            console.log('CLICK EVENT - esInfante checkbox clicked!', e);
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            // Forzar el toggle
-                                            updateTicketPassengerField(idx, 'esInfante', !p.esInfante);
-                                            if (!p.esInfante) {
+                                          onChange={(e) => {
+                                            const nuevoValor = e.target.checked;
+                                            updateTicketPassengerField(idx, 'esInfante', nuevoValor);
+                                            if (nuevoValor) {
                                               updateTicketPassengerField(idx, 'esMenor', true);
                                             }
                                           }}
-                                          onChange={(e) => {
-                                            console.log('ONCHANGE EVENT - This should not show if onClick works');
-                                          }}
-                                          className="w-4 h-4 cursor-pointer relative z-20 pointer-events-auto"
-                                          style={{ position: 'relative', zIndex: 9999 }}
+                                          className="w-4 h-4 cursor-pointer"
                                         />
                                         <label
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            console.log('Label clicked');
-                                            updateTicketPassengerField(idx, 'esInfante', !p.esInfante);
-                                            if (!p.esInfante) {
-                                              updateTicketPassengerField(idx, 'esMenor', true);
-                                            }
-                                          }}
+                                          htmlFor={`infante-${idx}`}
                                           className="text-xs theme-text-primary cursor-pointer"
                                         >
                                           👶 No ocupa asiento (infante {"<"} 2 años)
                                         </label>
                                       </div>
                                     </div>
-                                    <div className="text-xs theme-text-muted bg-yellow-500/10 p-1 rounded">
-                                      DEBUG - Estado: esInfante = {String(!!p.esInfante)} | esMenor = {String(!!p.esMenor)}
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        console.log('TEST BUTTON - Toggling esInfante');
-                                        updateTicketPassengerField(idx, 'esInfante', !p.esInfante);
-                                      }}
-                                      className="text-xs px-2 py-1 bg-purple-600 text-white rounded"
-                                    >
-                                      TEST: Toggle infante
-                                    </button>
                                   </div>
                                 </div>
                               );
