@@ -99,6 +99,7 @@ export const staffAPI = {
     flightId?: string;
     monto_transferencia?: number;
     monto_efectivo?: number;
+    nombre_socio?: string;
   }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),
   getPassengersWithoutFlight: () => api.get('/staff/passengers-without-flight'),

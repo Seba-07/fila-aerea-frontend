@@ -25,6 +25,9 @@ export default function RegistroPage() {
   const [montoTransferencia, setMontoTransferencia] = useState(0);
   const [montoEfectivo, setMontoEfectivo] = useState(0);
 
+  // Estado para nombre del socio
+  const [nombreSocio, setNombreSocio] = useState('');
+
   // Cargar precio del ticket desde configuración
   useEffect(() => {
     const fetchPrecioTicket = async () => {
@@ -110,6 +113,13 @@ export default function RegistroPage() {
         }
       }
 
+      // Validar pago socio
+      if (metodoPago === 'socio' && !nombreSocio.trim()) {
+        alert('⚠️ Debes ingresar el nombre del socio');
+        setSubmitting(false);
+        return;
+      }
+
       // Filtrar pasajeros con datos completos o vacíos completamente
       const pasajerosValidos = pasajeros.filter(p =>
         p.nombre.trim() !== '' || p.apellido.trim() !== '' || p.rut.trim() !== ''
@@ -130,6 +140,11 @@ export default function RegistroPage() {
       if (metodoPago === 'combinado') {
         registroData.monto_transferencia = montoTransferencia;
         registroData.monto_efectivo = montoEfectivo;
+      }
+
+      // Agregar nombre del socio si es pago socio
+      if (metodoPago === 'socio') {
+        registroData.nombre_socio = nombreSocio.trim();
       }
 
       await staffAPI.registerPassenger(registroData);
@@ -320,6 +335,25 @@ export default function RegistroPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Campo para nombre del socio */}
+                {metodoPago === 'socio' && (
+                  <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <label className="block text-sm font-medium theme-text-primary mb-2">
+                      Nombre del Socio
+                    </label>
+                    <input
+                      type="text"
+                      value={nombreSocio}
+                      onChange={(e) => setNombreSocio(e.target.value)}
+                      placeholder="Nombre completo del socio"
+                      className="w-full px-4 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
+                    />
+                    <p className="mt-2 text-xs theme-text-muted">
+                      Este nombre aparecerá en el historial de pagos para identificar a quién se debe cobrar
+                    </p>
+                  </div>
+                )}
 
                 {/* Campos para pago combinado */}
                 {metodoPago === 'combinado' && (
