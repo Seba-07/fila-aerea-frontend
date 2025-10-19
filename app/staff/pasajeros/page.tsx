@@ -175,7 +175,7 @@ export default function PasajerosPage() {
     setEditTicketPassengers(
       ticket.pasajeros && ticket.pasajeros.length > 0
         ? ticket.pasajeros.map((p: any) => ({ ...p }))
-        : [{ nombre: '', apellido: '', rut: '', esMenor: false }]
+        : [{ nombre: '', apellido: '', rut: '', esMenor: false, esInfante: false }]
     );
   };
 
@@ -599,14 +599,31 @@ export default function PasajerosPage() {
                                     placeholder="RUT"
                                     className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
                                   />
-                                  <label className="flex items-center gap-1 text-xs theme-text-primary">
-                                    <input
-                                      type="checkbox"
-                                      checked={p.esMenor}
-                                      onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
-                                    />
-                                    Es menor
-                                  </label>
+                                  <div className="flex gap-3">
+                                    <label className="flex items-center gap-1 text-xs theme-text-primary">
+                                      <input
+                                        type="checkbox"
+                                        checked={p.esMenor}
+                                        onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
+                                      />
+                                      Es menor
+                                    </label>
+                                    <label className="flex items-center gap-1 text-xs theme-text-primary">
+                                      <input
+                                        type="checkbox"
+                                        checked={p.esInfante || false}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          updateTicketPassengerField(idx, 'esInfante', checked);
+                                          // Si marca infante, auto-marcar menor
+                                          if (checked) {
+                                            updateTicketPassengerField(idx, 'esMenor', true);
+                                          }
+                                        }}
+                                      />
+                                      👶 No ocupa asiento
+                                    </label>
+                                  </div>
                                 </div>
                               ))}
                               <div className="flex gap-1">
@@ -635,11 +652,18 @@ export default function PasajerosPage() {
                                       {p.rut && (
                                         <p className="text-xs theme-text-muted">RUT: {p.rut}</p>
                                       )}
-                                      {p.esMenor && (
-                                        <span className="inline-block text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded mt-1">
-                                          Menor
-                                        </span>
-                                      )}
+                                      <div className="flex gap-1 mt-1">
+                                        {p.esMenor && (
+                                          <span className="inline-block text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
+                                            Menor
+                                          </span>
+                                        )}
+                                        {p.esInfante && (
+                                          <span className="inline-block text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">
+                                            👶 No ocupa asiento
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   ))}
                                   {ticket.estado !== 'volado' && (
