@@ -580,7 +580,9 @@ export default function PasajerosPage() {
                           {editingTicketPassengerId === ticket.id ? (
                             <div className="mt-2 space-y-2">
                               <p className="text-xs theme-text-muted font-semibold">Editar Pasajero:</p>
-                              {editTicketPassengers.map((p: any, idx: number) => (
+                              {editTicketPassengers.map((p: any, idx: number) => {
+                                console.log('Renderizando pasajero en edición:', p);
+                                return (
                                 <div key={idx} className="space-y-1 p-2 theme-bg-primary/30 rounded">
                                   <input
                                     type="text"
@@ -603,35 +605,42 @@ export default function PasajerosPage() {
                                     placeholder="RUT"
                                     className="w-full px-2 py-1 text-xs theme-input border theme-border rounded theme-text-primary"
                                   />
-                                  <div className="flex gap-3">
-                                    <label className="flex items-center gap-1 text-xs theme-text-primary">
-                                      <input
-                                        type="checkbox"
-                                        checked={p.esMenor}
-                                        onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
-                                      />
-                                      Es menor
-                                    </label>
-                                    <label className="flex items-center gap-1 text-xs theme-text-primary">
-                                      <input
-                                        type="checkbox"
-                                        checked={!!p.esInfante}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          console.log('Checkbox esInfante cambiado a:', checked);
-                                          updateTicketPassengerField(idx, 'esInfante', checked);
-                                          // Si marca infante, auto-marcar menor
-                                          if (checked) {
-                                            updateTicketPassengerField(idx, 'esMenor', true);
-                                          }
-                                        }}
-                                        className="w-4 h-4"
-                                      />
-                                      👶 No ocupa asiento (infante {"<"} 2 años)
-                                    </label>
+                                  <div className="space-y-1">
+                                    <div className="flex gap-3">
+                                      <label className="flex items-center gap-1 text-xs theme-text-primary cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={p.esMenor}
+                                          onChange={(e) => updateTicketPassengerField(idx, 'esMenor', e.target.checked)}
+                                          className="w-4 h-4 cursor-pointer"
+                                        />
+                                        Es menor
+                                      </label>
+                                      <label className="flex items-center gap-1 text-xs theme-text-primary cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={!!p.esInfante}
+                                          onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            console.log('Checkbox esInfante cambiado a:', checked);
+                                            updateTicketPassengerField(idx, 'esInfante', checked);
+                                            // Si marca infante, auto-marcar menor
+                                            if (checked) {
+                                              updateTicketPassengerField(idx, 'esMenor', true);
+                                            }
+                                          }}
+                                          className="w-4 h-4 cursor-pointer"
+                                        />
+                                        👶 No ocupa asiento (infante {"<"} 2 años)
+                                      </label>
+                                    </div>
+                                    <div className="text-xs theme-text-muted">
+                                      Estado: esInfante = {p.esInfante ? 'true' : 'false'} | esMenor = {p.esMenor ? 'true' : 'false'}
+                                    </div>
                                   </div>
                                 </div>
-                              ))}
+                              );
+                              })}
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => handleSaveTicketPassengers(ticket.id)}
