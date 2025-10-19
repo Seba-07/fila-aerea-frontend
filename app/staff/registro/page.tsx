@@ -28,6 +28,9 @@ export default function RegistroPage() {
   // Estado para nombre del socio
   const [nombreSocio, setNombreSocio] = useState('');
 
+  // Estado para tickets bloqueados
+  const [ticketsBloqueados, setTicketsBloqueados] = useState(0);
+
   // Cargar precio del ticket desde configuración
   useEffect(() => {
     const fetchPrecioTicket = async () => {
@@ -137,6 +140,11 @@ export default function RegistroPage() {
         registroData.nombre_socio = nombreSocio.trim();
       }
 
+      // Agregar tickets bloqueados si hay
+      if (ticketsBloqueados > 0) {
+        registroData.tickets_bloqueados = ticketsBloqueados;
+      }
+
       await staffAPI.registerPassenger(registroData);
 
       // Mostrar opciones de navegación después de registrar
@@ -160,6 +168,7 @@ export default function RegistroPage() {
         setMetodoPago('efectivo');
         setMonto(0);
         setPasajeros([]);
+        setTicketsBloqueados(0);
       }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Error al registrar pasajero');
@@ -255,7 +264,14 @@ export default function RegistroPage() {
                   <input
                     type="number"
                     value={cantidadTickets}
-                    onChange={(e) => setCantidadTickets(parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      const newValue = parseInt(e.target.value) || 1;
+                      setCantidadTickets(newValue);
+                      // Resetear tickets bloqueados si cambia la cantidad
+                      if (ticketsBloqueados > newValue) {
+                        setTicketsBloqueados(0);
+                      }
+                    }}
                     min={1}
                     max={10}
                     step={1}
@@ -264,6 +280,28 @@ export default function RegistroPage() {
                   />
                 </div>
 
+                {cantidadTickets > 0 && (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                    <label className="block text-sm font-medium theme-text-primary mb-2">
+                      🔒 Tickets Bloqueados (sin pasajero)
+                    </label>
+                    <input
+                      type="number"
+                      value={ticketsBloqueados}
+                      onChange={(e) => setTicketsBloqueados(Math.min(parseInt(e.target.value) || 0, cantidadTickets))}
+                      min={0}
+                      max={cantidadTickets}
+                      step={1}
+                      className="w-full px-4 py-3 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
+                    />
+                    <p className="mt-2 text-xs theme-text-muted">
+                      Tickets que ocupan asiento pero sin pasajero asignado (máx: {cantidadTickets})
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-1 mt-6">
                 <div>
                   <label className="block text-sm font-medium theme-text-secondary mb-2">
                     Monto Pagado ($)

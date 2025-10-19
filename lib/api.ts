@@ -100,6 +100,7 @@ export const staffAPI = {
     monto_transferencia?: number;
     monto_efectivo?: number;
     nombre_socio?: string;
+    tickets_bloqueados?: number;
   }) => api.post('/staff/passengers', data),
   getPassengers: () => api.get('/staff/passengers'),
   getPassengersWithoutFlight: () => api.get('/staff/passengers-without-flight'),
