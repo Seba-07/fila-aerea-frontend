@@ -15,11 +15,15 @@ export default function RegistroPage() {
   const [rut, setRut] = useState('');
   const [email, setEmail] = useState('');
   const [cantidadTickets, setCantidadTickets] = useState(1);
-  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
+  const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo' | 'socio' | 'combinado'>('efectivo');
   const [monto, setMonto] = useState(0);
   const [precioTicket, setPrecioTicket] = useState(0);
   const [pasajeros, setPasajeros] = useState<Array<{nombre: string; apellido: string; rut: string; esMenor: boolean; esInfante?: boolean}>>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  // Estados para pago combinado
+  const [montoTransferencia, setMontoTransferencia] = useState(0);
+  const [montoEfectivo, setMontoEfectivo] = useState(0);
 
   // Cargar precio del ticket desde configuración
   useEffect(() => {
@@ -92,12 +96,26 @@ export default function RegistroPage() {
         return;
       }
 
+      // Validar pago combinado
+      if (metodoPago === 'combinado') {
+        if (montoTransferencia + montoEfectivo !== monto) {
+          alert('⚠️ La suma de Transferencia y Efectivo debe ser igual al monto total');
+          setSubmitting(false);
+          return;
+        }
+        if (montoTransferencia <= 0 || montoEfectivo <= 0) {
+          alert('⚠️ Ambos montos deben ser mayores a 0 para pago combinado');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       // Filtrar pasajeros con datos completos o vacíos completamente
       const pasajerosValidos = pasajeros.filter(p =>
         p.nombre.trim() !== '' || p.apellido.trim() !== '' || p.rut.trim() !== ''
       );
 
-      await staffAPI.registerPassenger({
+      const registroData: any = {
         nombre,
         apellido,
         rut,
@@ -106,7 +124,15 @@ export default function RegistroPage() {
         metodo_pago: metodoPago,
         monto,
         ...(pasajerosValidos.length > 0 && { pasajeros: pasajerosValidos }),
-      });
+      };
+
+      // Agregar montos si es pago combinado
+      if (metodoPago === 'combinado') {
+        registroData.monto_transferencia = montoTransferencia;
+        registroData.monto_efectivo = montoEfectivo;
+      }
+
+      await staffAPI.registerPassenger(registroData);
 
       // Mostrar opciones de navegación después de registrar
       const action = confirm(
@@ -262,7 +288,7 @@ export default function RegistroPage() {
                 <label className="block text-sm font-medium theme-text-secondary mb-3">
                   Método de Pago
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-3 mb-3">
                   {(['efectivo', 'transferencia', 'passline'] as const).map((metodo) => (
                     <button
                       key={metodo}
@@ -278,6 +304,65 @@ export default function RegistroPage() {
                     </button>
                   ))}
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['socio', 'combinado'] as const).map((metodo) => (
+                    <button
+                      key={metodo}
+                      type="button"
+                      onClick={() => setMetodoPago(metodo)}
+                      className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${
+                        metodoPago === metodo
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'theme-input theme-text-secondary hover:theme-bg-secondary'
+                      }`}
+                    >
+                      {metodo.charAt(0).toUpperCase() + metodo.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Campos para pago combinado */}
+                {metodoPago === 'combinado' && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm font-medium theme-text-primary mb-3">Desglose del Pago Combinado</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium theme-text-secondary mb-2">
+                          Monto Transferencia ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={montoTransferencia === 0 ? '' : montoTransferencia}
+                          onChange={(e) => setMontoTransferencia(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
+                          min={0}
+                          step={1}
+                          placeholder="0"
+                          className="w-full px-3 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium theme-text-secondary mb-2">
+                          Monto Efectivo ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={montoEfectivo === 0 ? '' : montoEfectivo}
+                          onChange={(e) => setMontoEfectivo(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
+                          min={0}
+                          step={1}
+                          placeholder="0"
+                          className="w-full px-3 py-2 theme-input border theme-border rounded-lg focus:ring-2 focus:ring-primary theme-text-primary"
+                        />
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs theme-text-muted">
+                      Total: ${(montoTransferencia + montoEfectivo).toLocaleString()}
+                      {montoTransferencia + montoEfectivo !== monto && (
+                        <span className="text-red-600 ml-2">⚠️ No coincide con el monto total (${monto.toLocaleString()})</span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
