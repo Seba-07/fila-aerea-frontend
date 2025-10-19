@@ -639,10 +639,16 @@ export default function PasajerosPage() {
                                             console.log('Todos los datos del pasajero:', p);
                                             const nuevoValor = !p.esInfante;
                                             console.log('Nuevo valor a setear:', nuevoValor);
-                                            updateTicketPassengerField(idx, 'esInfante', nuevoValor);
-                                            if (nuevoValor) {
-                                              updateTicketPassengerField(idx, 'esMenor', true);
-                                            }
+
+                                            // Actualizar ambos campos en una sola operación
+                                            const updated = [...editTicketPassengers];
+                                            updated[idx] = {
+                                              ...updated[idx],
+                                              esInfante: nuevoValor,
+                                              esMenor: nuevoValor ? true : updated[idx].esMenor
+                                            };
+                                            console.log('🔴 Pasajero actualizado:', updated[idx]);
+                                            setEditTicketPassengers(updated);
                                           }}
                                         >
                                           <input
