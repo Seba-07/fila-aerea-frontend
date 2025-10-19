@@ -89,16 +89,6 @@ export default function RegistroPage() {
     setSubmitting(true);
 
     try {
-      // Validar que si hay menores, haya al menos un adulto
-      const menores = pasajeros.filter(p => p.nombre.trim() && p.esMenor);
-      const adultos = pasajeros.filter(p => p.nombre.trim() && !p.esMenor);
-
-      if (menores.length > 0 && adultos.length === 0) {
-        alert('⚠️ Si hay menores de edad, debe haber al menos un adulto en la reserva');
-        setSubmitting(false);
-        return;
-      }
-
       // Validar pago combinado
       if (metodoPago === 'combinado') {
         if (montoTransferencia + montoEfectivo !== monto) {
