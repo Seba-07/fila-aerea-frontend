@@ -109,6 +109,7 @@ export const staffAPI = {
     cantidad_tickets: number;
     monto_ajuste?: number;
     metodo_pago?: 'transferencia' | 'passline' | 'efectivo' | 'socio' | 'combinado';
+    tickets_bloqueados?: number;
   }) => api.patch(`/staff/passengers/${passengerId}/tickets`, data),
   updatePassengerPayment: (passengerId: string, data: {
     nuevo_monto: number;

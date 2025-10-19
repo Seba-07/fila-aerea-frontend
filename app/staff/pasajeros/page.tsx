@@ -24,6 +24,7 @@ export default function PasajerosPage() {
   const [editTicketCount, setEditTicketCount] = useState(0);
   const [montoAjuste, setMontoAjuste] = useState<number | ''>('');
   const [metodoPago, setMetodoPago] = useState<'transferencia' | 'passline' | 'efectivo'>('efectivo');
+  const [ticketsBloqueados, setTicketsBloqueados] = useState(0);
 
   // Estado para editar pago
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export default function PasajerosPage() {
     setEditTicketCount(passenger.tickets_count);
     setMontoAjuste('');
     setMetodoPago('efectivo');
+    setTicketsBloqueados(0);
   };
 
   const handleSaveTickets = async (passengerId: string, currentCount: number) => {
@@ -106,11 +108,18 @@ export default function PasajerosPage() {
       return;
     }
 
+    // Validar tickets bloqueados
+    if (diferencia > 0 && ticketsBloqueados > diferencia) {
+      alert(`No puedes tener más tickets bloqueados (${ticketsBloqueados}) que tickets nuevos (${diferencia})`);
+      return;
+    }
+
     try {
       await staffAPI.updatePassengerTickets(passengerId, {
         cantidad_tickets: editTicketCount,
         monto_ajuste: Number(montoAjuste),
         metodo_pago: metodoPago,
+        tickets_bloqueados: diferencia > 0 ? ticketsBloqueados : 0,
       });
 
       const accion = diferencia > 0 ? 'agregados' : 'eliminados';
@@ -399,6 +408,26 @@ export default function PasajerosPage() {
                             className="w-24 px-3 py-2 theme-bg-secondary border theme-border rounded-lg theme-text-primary text-center"
                           />
                         </div>
+
+                        {editTicketCount > passenger.tickets_count && (
+                          <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
+                            <label className="text-xs theme-text-secondary block mb-1">
+                              🔒 Tickets bloqueados (sin pasajero)
+                            </label>
+                            <input
+                              type="number"
+                              value={ticketsBloqueados}
+                              onChange={(e) => setTicketsBloqueados(Math.min(parseInt(e.target.value) || 0, editTicketCount - passenger.tickets_count))}
+                              min={0}
+                              max={editTicketCount - passenger.tickets_count}
+                              className="w-24 px-3 py-2 theme-bg-secondary border theme-border rounded-lg theme-text-primary text-center"
+                            />
+                            <p className="text-xs theme-text-muted mt-1">
+                              Tickets que ocupan asiento pero sin pasajero asignado
+                            </p>
+                          </div>
+                        )}
+
                         <div>
                           <label className="text-xs theme-text-secondary block mb-1">
                             Monto ajuste * {editTicketCount > passenger.tickets_count ? '(pago extra)' : editTicketCount < passenger.tickets_count ? '(devolución)' : ''}
@@ -567,19 +596,26 @@ export default function PasajerosPage() {
                           key={ticket.id}
                           className="theme-bg-secondary/50 rounded-lg p-2 border theme-border"
                         >
-                          <span
-                            className={`inline-block px-2 py-1 rounded text-xs font-bold ${
-                              ticket.estado === 'disponible'
-                                ? 'bg-yellow-400 text-yellow-900'
-                                : ticket.estado === 'inscrito'
-                                ? 'bg-blue-400 text-blue-900'
-                                : ticket.estado === 'volado'
-                                ? 'bg-gray-400 text-gray-900'
-                                : 'bg-red-400 text-red-900'
-                            }`}
-                          >
-                            {ticket.estado.toUpperCase()}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-block px-2 py-1 rounded text-xs font-bold ${
+                                ticket.estado === 'disponible'
+                                  ? 'bg-yellow-400 text-yellow-900'
+                                  : ticket.estado === 'inscrito'
+                                  ? 'bg-blue-400 text-blue-900'
+                                  : ticket.estado === 'volado'
+                                  ? 'bg-gray-400 text-gray-900'
+                                  : 'bg-red-400 text-red-900'
+                              }`}
+                            >
+                              {ticket.estado.toUpperCase()}
+                            </span>
+                            {ticket.bloqueado && (
+                              <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-orange-500 text-white">
+                                🔒 BLOQUEADO
+                              </span>
+                            )}
+                          </div>
 
                           {/* Editar pasajeros del ticket */}
                           {editingTicketPassengerId === ticket.id ? (
